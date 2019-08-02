@@ -8,6 +8,7 @@ BASEURL = 'https://graviex.net/api/v3'
 
 # API ENDPOINTS
 MARKETS = '/markets'
+TICKERS = '/tickers'
 
 # REQUEST METHODS
 PUT = "PUT"
@@ -71,6 +72,23 @@ class GraviexClient:
         if market_id is None:
             return self._api_call(endpoint=MARKETS, method=GET)
         return self._api_call(endpoint=MARKETS+"/"+market_id, method=GET, params={'market': market_id})
+
+    def _list_tickers(self, market_id=None):
+        if market_id is None:
+            return self._api_call(endpoint=TICKERS, method=GET)
+        return self._api_call(endpoint=TICKERS+"/"+market_id, method=GET, params={'market': market_id})
+
+    def get_all_coin_tickers(self) -> dict:
+        """
+        Returns dictionary with all coin tickers
+        """
+        return self._list_tickers()
+
+    def get_ticker(self, coin) -> dict:
+        """
+        Returns a coin ticker
+        """
+        return self._list_tickers(coin)
 
     def get_all_markets_by_name(self) -> list:
         """
