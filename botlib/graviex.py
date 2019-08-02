@@ -103,31 +103,27 @@ class GraviexClient:
         return response.json()
 
     def _list_orders(self, market_id=None):
-        if market_id is None:
-            return self._api_call(endpoint=ORDERS, method=GET)
-        return self._api_call(
-            endpoint=ORDERS,
-            method=GET,
-            params={'market': market_id}
-        )
+        params = {}
+        endpoint = ORDERS
+        if market_id:
+            endpoint += "/" + market_id
+        return self._api_call(endpoint=endpoint, method=GET, params=params)
 
     def _list_markets(self, market_id=None):
-        if market_id is None:
-            return self._api_call(endpoint=MARKETS, method=GET)
-        return self._api_call(
-            endpoint=MARKETS+"/"+market_id,
-            method=GET,
-            params={'market': market_id}
-        )
+        params = {}
+        endpoint = MARKETS
+        if market_id:
+            endpoint += "/" + market_id
+        return self._api_call(endpoint=endpoint, method=GET, params=params)
 
     def _list_tickers(self, market_id=None):
         params = {}
         endpoint = TICKERS
-        if id:
+        if market_id:
             endpoint += "/" + market_id
         return self._api_call(endpoint=endpoint, method=GET, params=params)
 
-    def _list_account(self, **kwargs):
+    def _list_account_history(self, **kwargs):
         params = {}
         for kw in kwargs:
             params.update({kw: kwargs[kw]})
@@ -164,4 +160,9 @@ class GraviexClient:
         return self._list_markets(market_id)
 
     def get_account_info(self):
-        return self._list_account()
+        return self._list_account_history()
+
+    def get_open_orders(self, market_id=None):
+        if market_id is None:
+            return self._list_orders()
+        return self._list_orders(market_id)
