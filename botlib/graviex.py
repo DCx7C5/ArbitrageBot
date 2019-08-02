@@ -15,6 +15,8 @@ ORDERS = '/orders'
 DEPOSIT_ADDR = '/deposit_address'
 GEN_DEPOSIT = '/gen_deposit_address'
 MEMBERS = '/members/me'
+CANCEL = '/order/delete'
+ORDER = '/order'
 
 # REQUEST METHODS
 POST = "POST"
@@ -100,7 +102,6 @@ class GraviexClient:
         print(url)
         response = request(url, params=params)
         print(response.text)
-        assert response.status_code is 200
 
         return response.json()
 
@@ -181,7 +182,34 @@ class GraviexClient:
     def get_account_info(self):
         return self._list_account_history()
 
-    def get_open_orders(self, market_id=None):
+    def get_open_orders(self, market_id=None) -> list:
+        """
+        Returns list(dict(),) with open orders
+        """
         if market_id is None:
             return self._list_orders()
         return self._list_orders(market=market_id)
+
+    def get_open_order_ids(self) -> list:
+        """
+        Returns list with open order IDs
+        """
+        return [order['id'] for order in self.get_open_orders()]
+
+    def cancel_order(self, order_id):
+        """
+        Cancels Order by order_id and returns True
+        """
+        if not order_id:
+            raise Exception('Order ID must be set')
+        params = {'id': order_id}
+        return self._api_call(POST, CANCEL, params=params)
+
+    def get_order_info(self, order_id):
+        """
+        Gives information about order_id
+        """
+        if not order_id:
+            raise Exception('Order ID must be set')
+        params = {'id': order_id}
+        return self._api_call(GET, ORDER, params=params)
