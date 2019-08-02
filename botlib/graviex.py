@@ -1,3 +1,4 @@
+import asyncio
 import time
 import hmac
 import hashlib
@@ -24,9 +25,13 @@ api_secret = "7KNZMzxUNDcfSPxOJWJZMlW98VeeXaw0EcJPSHQP"
 
 class GraviexClient:
 
-    def __init__(self, api_key, api_secret):
+    def __init__(self, api_key, api_secret, calls_per_second=15, asyncbot=False):
         self.api_key = api_key
         self.api_secret = api_secret
+        self.rate_limit = 1.0 / calls_per_second
+        self._last_call = None
+        if asyncbot is True:
+            self._async_bot = True
 
     def _generate_request_string(self, params):
         params_string = ""
@@ -42,6 +47,26 @@ class GraviexClient:
         return hmac.new(key=self.api_secret.encode(),
                         msg=msg_string.encode(),
                         digestmod=hashlib.sha256).hexdigest()
+
+    def _wait(self):
+        if self._last_call is None:
+            self._last_call = time.time()
+        else:
+            now = time.time()
+            passed = now - self._last_call
+            if passed < self.rate_limit:
+                time.sleep(self.rate_limit - passed)
+            self._last_call = time.time()
+
+    async def _wait_async(self):
+        if self._last_call is None:
+            self._last_call = time.time()
+        else:
+            now = time.time()
+            passed = now - self._last_call
+            if passed < self.rate_limit:
+                await asyncio.sleep(self.rate_limit - passed)
+            self._last_call = time.time()
 
     def _api_call(self, method: str,
                   endpoint: str,
@@ -69,6 +94,8 @@ class GraviexClient:
         else:
             request = requests.get
 
+        self._wait()
+
         response = request(url, params=params)
 
         assert response.status_code is 200
@@ -94,9 +121,11 @@ class GraviexClient:
         )
 
     def _list_tickers(self, market_id=None):
-        if market_id is None:
-            return self._api_call(endpoint=TICKERS, method=GET)
-        return self._api_call(endpoint=TICKERS+"/"+market_id, method=GET, params={'market': market_id})
+        params = {}
+        endpoint = TICKERS
+        if id:
+            endpoint += "/" + market_id
+        return self._api_call(endpoint=endpoint, method=GET, params=params)
 
     def _list_account(self, **kwargs):
         params = {}
