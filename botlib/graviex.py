@@ -42,13 +42,11 @@ class GraviexClient:
         BASE FUNCTION FOR MAKING API CALLS TO GRAVIEX
         """
         params_req_str = ""
-        params_url_str = ""
         if not params:
             req_string = f'access_key={self.api_key}&tonce={int(time.time() * 1000)}'
         else:
             for i in params:
                 params_req_str += f'&{i}={params[i]}'
-                params_url_str = f"/{params[i]}"
             req_string = f'access_key={self.api_key}{params_req_str}&tonce={int(time.time() * 1000)}'
 
         if method is PUT:
@@ -63,13 +61,13 @@ class GraviexClient:
             request = requests.get
 
         msg_string = f'{method}|/api/v3{endpoint}|{req_string}'
-        print(msg_string)
+
         signature = self._generate_hash_signature(msg_string)
 
         url = f'{BASEURL}{endpoint}?{req_string}&signature={signature}'
-        print(url)
+
         response = request(url, params=params)
-        print(params)
+
         assert response.status_code is 200
 
         return response.json()
@@ -79,19 +77,20 @@ class GraviexClient:
             return self._api_call(endpoint=MARKETS, method=GET)
         return self._api_call(endpoint=MARKETS+"/"+market_id, method=GET, params={'market': market_id})
 
-    def get_all_markets_by_name(self):
+    def get_all_markets_by_name(self) -> list:
         """
         Returns a list of all available market pairs
         """
         return [m['name'] for m in self._list_markets()]
 
-    def get_all_markets_by_id(self):
+    def get_all_markets_by_id(self) -> list:
         """
         Returns a list of all available market pair ids
         """
         return [m['id'] for m in self._list_markets()]
 
-    def get_market_info_by_id(self, market_id):
+    def get_market_info_by_id(self, market_id) -> dict:
         """
         Returns a dictionary with with market infos for specific pair
         """
+        return self._list_markets(market_id)
