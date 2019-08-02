@@ -31,7 +31,7 @@ class GraviexClient:
         self.rate_limit = 1.0 / calls_per_second
         self._last_call = None
         if asyncbot is True:
-            self._async_bot = True
+            self._async = True
 
     def _generate_request_string(self, params):
         params_string = ""
@@ -95,7 +95,8 @@ class GraviexClient:
             request = requests.get
 
         self._wait()
-
+        print(url)
+        print(params)
         response = request(url, params=params)
 
         assert response.status_code is 200
@@ -103,21 +104,21 @@ class GraviexClient:
         return response.json()
 
     def _list_orders(self, market_id=None):
-        params = {}
+        params = {'market': market_id}
         endpoint = ORDERS
         if market_id:
             endpoint += "/" + market_id
-        return self._api_call(endpoint=endpoint, method=GET, params=params)
+        return self._api_call(endpoint=endpoint, method=POST, params=params)
 
     def _list_markets(self, market_id=None):
-        params = {}
+        params = {'market': market_id}
         endpoint = MARKETS
         if market_id:
             endpoint += "/" + market_id
         return self._api_call(endpoint=endpoint, method=GET, params=params)
 
     def _list_tickers(self, market_id=None):
-        params = {}
+        params = {'market': market_id}
         endpoint = TICKERS
         if market_id:
             endpoint += "/" + market_id
