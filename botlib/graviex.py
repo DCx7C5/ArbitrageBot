@@ -9,11 +9,6 @@ BASEURL = 'https://graviex.net/api/v3'
 # API ENDPOINTS
 MARKETS = '/markets'
 
-# REQUEST HEADER VARIABLES
-XAPISIGN = 'x-api-sign'
-XAPIKEY = 'x-api-key'
-XAPINONCE = 'x-api-nonce'
-
 # REQUEST METHODS
 PUT = "PUT"
 DELETE = "DELETE"
