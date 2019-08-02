@@ -102,11 +102,10 @@ class GraviexClient:
         print(response.text)
         assert response.status_code is 200
 
-
         return response.json()
 
     def _list_orders(self, **kwargs):
-        params = {}
+        params = {'market': 'all'}
         for kw in kwargs:
             params.update({kw: kwargs[kw]})
         return self._api_call(endpoint=ORDERS, method=GET, params=params)
