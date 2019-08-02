@@ -55,7 +55,7 @@ class GraviexClient:
             params = params
         
         req_string = self._generate_request_string(params=params)
-        print(req_string)
+
         msg_string = self._generate_message_string(method=method, endpoint=endpoint, params=params)
 
         signature = self._generate_hash_signature(msg_string)
@@ -68,10 +68,9 @@ class GraviexClient:
             request = requests.post
         else:
             request = requests.get
-        print(url)
-        print(params)
+
         response = request(url, params=params)
-        print(response.text)
+
         assert response.status_code is 200
 
         return response.json()
