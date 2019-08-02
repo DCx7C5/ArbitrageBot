@@ -43,8 +43,7 @@ class GraviexClient:
         return f'access_key={self.api_key}{params_string}&tonce={int(time.time() * 1000)}'
 
     def _generate_message_string(self, method, endpoint, params):
-        req_string = self._generate_request_string(params=params)
-        return f'{method}|/api/v3{endpoint}|{req_string}'
+        return f'{method}|/api/v3{endpoint}|{self._generate_request_string(params=params)}'
 
     def _generate_hash_signature(self, msg_string):
         return hmac.new(key=self.api_secret.encode(),
@@ -204,6 +203,28 @@ class GraviexClient:
             raise Exception('Order ID must be set')
         params = {'id': order_id}
         return self._api_call(POST, CANCEL, params=params)
+
+    def _create_order(self, **kwargs):
+        params = {}
+        for kw in kwargs:
+            params.update({kw: kwargs[kw]})
+        return self._api_call(POST, ORDERS, params=params)
+
+    def create_buy_order(self, market_id, amount, price=None):
+        """
+        Creates buy order for market_id: ex: 'rvnbtc'
+        """
+        if price is None:
+            return self._create_order(market=market_id, side='buy', volume=amount)
+        return self._create_order(market=market_id, side='buy', volume=amount, price=price)
+
+    def create_sell_order(self, market_id, amount, price=None):
+        """
+        Creates sell order for market_id: ex: 'rvnbtc'
+        """
+        if price is None:
+            return self._create_order(market=market_id, side='sell', volume=amount)
+        return self._create_order(market=market_id, side='sell', volume=amount, price=price)
 
     def get_order_info(self, order_id):
         """
