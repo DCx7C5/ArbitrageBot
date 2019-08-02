@@ -12,10 +12,11 @@ MARKETS = '/markets'
 TICKERS = '/tickers'
 ACCOUNT = '/account/history'
 ORDERS = '/orders'
+DEPOSIT_ADDR = '/deposit_address'
+GEN_DEPOSIT = '/gen_deposit_address'
+MEMBERS = '/members/me'
 
 # REQUEST METHODS
-PUT = "PUT"
-DELETE = "DELETE"
 POST = "POST"
 GET = "GET"
 
@@ -95,40 +96,57 @@ class GraviexClient:
             request = requests.get
 
         self._wait()
-        print(url)
         print(params)
+        print(url)
         response = request(url, params=params)
-
+        print(response.text)
         assert response.status_code is 200
 
         return response.json()
 
-    def _list_orders(self, market_id=None):
-        params = {'market': market_id}
-        endpoint = ORDERS
-        if market_id:
-            endpoint += "/" + market_id
-        return self._api_call(endpoint=endpoint, method=POST, params=params)
+    def _list_orders(self, **kwargs):
+        params = {}
+        for kw in kwargs:
+            params.update({kw: kwargs[kw]})
+        return self._api_call(endpoint=ORDERS, method=GET, params=params)
 
     def _list_markets(self, market_id=None):
-        params = {'market': market_id}
+        params = {}
         endpoint = MARKETS
         if market_id:
             endpoint += "/" + market_id
+            params.update({'market': market_id})
         return self._api_call(endpoint=endpoint, method=GET, params=params)
 
     def _list_tickers(self, market_id=None):
-        params = {'market': market_id}
+        params = {}
         endpoint = TICKERS
         if market_id:
             endpoint += "/" + market_id
+            params.update({'market': market_id})
         return self._api_call(endpoint=endpoint, method=GET, params=params)
+
+    def _generate_deposit_address(self, coin):
+        return self._api_call(endpoint=GEN_DEPOSIT, method=GET, params={'currency': coin})
 
     def _list_account_history(self, **kwargs):
         params = {}
         for kw in kwargs:
             params.update({kw: kwargs[kw]})
         return self._api_call(endpoint=ACCOUNT, method=GET, params=params)
+
+    def whoami(self):
+        return self._api_call(endpoint=MEMBERS, method=GET)
+
+    def get_deposit_address(self, coin) -> str:
+        """
+        Returns deposit address for coin as string
+        """
+        if self._generate_deposit_address(coin) == 'request_accepted':
+            return self._api_call(endpoint=DEPOSIT_ADDR, method=GET, params={'currency': coin})[1:-1]
+
+    def get_withdrawal_fee(self, coin):
+        pass
 
     def get_all_coin_tickers(self) -> dict:
         """
@@ -166,4 +184,4 @@ class GraviexClient:
     def get_open_orders(self, market_id=None):
         if market_id is None:
             return self._list_orders()
-        return self._list_orders(market_id)
+        return self._list_orders(market=market_id)
