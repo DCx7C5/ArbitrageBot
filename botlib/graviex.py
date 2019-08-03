@@ -81,14 +81,11 @@ class GraviexClient:
         params.update({'signature': signature})
 
         self._wait()
-        print(params)
-        print(url)
+
         if method is POST:
             response = self.client.post(url, params=params)
         else:
             response = self.client.get(url, params=params)
-
-        print(response.text)
 
         return response.json()
 
