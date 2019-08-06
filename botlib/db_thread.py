@@ -1,10 +1,12 @@
+from concurrent.futures.thread import ThreadPoolExecutor
+from queue import Queue
 from threading import RLock, Thread, Event
 
 from secrets import SystemRandom
 from botlib.crex import CrexClient
 from botlib.graviex import GraviexClient
 
-from botlib.sql.coins_sql import get_coins_list
+from botlib.sql.bot_markets_sql import get_coins_list
 from botlib.sql.exchanges_sql import get_exchanges_list
 
 sec = SystemRandom()
@@ -14,7 +16,6 @@ EXCHANGES = {}
 
 COINS_LOCK = RLock()
 EXCHANGE_LOCK = RLock()
-
 
 
 def update_active_exchanges():
@@ -92,3 +93,11 @@ class DatabaseThread(Thread):
                 self.coin_update_event.set()
             print(get_coins().keys())
             self.timer.wait(sec.randint(6, 16) / 10)
+
+
+def main_db_loop():
+    print("Starting ThreadPoolExecutor")
+    with ThreadPoolExecutor(max_workers=2) as executor:
+        future = executor.submit(task, (2))
+        future = executor.submit(task, (3))
+        print("All tasks complete")

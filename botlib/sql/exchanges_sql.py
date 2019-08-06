@@ -1,4 +1,5 @@
-from sqlalchemy import Column, UnicodeText, Integer
+from sqlalchemy import Column
+from sqlalchemy.dialects.mysql import INTEGER, VARCHAR
 
 from botlib.sql import BASE, SESSION
 
@@ -6,11 +7,11 @@ from botlib.sql import BASE, SESSION
 class Exchanges(BASE):
 
     __tablename__ = "exchanges"
-    id = Column(Integer, primary_key=True)
-    name = Column(UnicodeText, nullable=False)
-    active = Column(Integer, default=0)
-    key = Column(UnicodeText)
-    secret = Column(UnicodeText)
+    id = Column(INTEGER(11), primary_key=True)
+    name = Column(VARCHAR(255), nullable=False)
+    active = Column(INTEGER(11), default=0)
+    key = Column(VARCHAR(255))
+    secret = Column(VARCHAR(255))
 
     def __init__(self, name, active, key, secret):
         self.name = name

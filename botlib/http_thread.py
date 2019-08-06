@@ -1,13 +1,13 @@
 from threading import Thread, Event, RLock
 
-from botlib.helper import get_exchanges
+from botlib.db_thread import get_exchanges
 
 ORDER_BOOK = {}
 TICKERS = {}
 
-
 ORDER_BOOK_LOCK = RLock()
 TICKERS_LOCK = RLock()
+
 
 
 class GetOrderBook(Thread):
@@ -23,16 +23,11 @@ class GetOrderBook(Thread):
     def _get_order_book(self):
         with ORDER_BOOK_LOCK:
             func = self.exchange.get_order_book(self.coin, self.limit)
-            print(func)
             ORDER_BOOK['buy'] = {self.exchange.name.lower(): func}
             ORDER_BOOK['sell'] = {self.exchange.name.lower(): func}
 
     def run(self) -> None:
         self._get_order_book()
-
-
-class GetTickers(Thread):
-
 
 
 class HttpThreads(Thread):
@@ -50,7 +45,7 @@ class HttpThreads(Thread):
 
     def run(self):
         while True:
-            if self.init_event.is_set():
+            if self.e.is_set():
                 self.exchange =
                 self.init_event.clear()
                 print("API ACTUALIZED")
