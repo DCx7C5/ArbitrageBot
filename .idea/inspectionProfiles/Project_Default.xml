@@ -7,6 +7,9 @@
           <option value="botlib.sql.coins_sql.Coins.*" />
           <option value="botlib.sql.exchanges_sql.Exchanges.__table__" />
           <option value="botlib.sql.orders_sql.PlacedOrders.__table__" />
+          <option value="botlib.sql.bot_markets_sql.BotMarkets.__table__" />
+          <option value="botlib.sql.jobs_sql.Jobs.__table__" />
+          <option value="botlib.sql.orders_sql.Orders.__table__" />
         </list>
       </option>
     </inspection_tool>

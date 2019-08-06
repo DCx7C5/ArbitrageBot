@@ -1,58 +1,70 @@
 import threading
+import time
 
-from sqlalchemy import Column, UnicodeText, Integer, Time, TIMESTAMP
+from sqlalchemy import Column
+from sqlalchemy.dialects.mysql import INTEGER, VARCHAR, DATETIME
 
 from botlib.sql import BASE, SESSION
 
 
-class PlacedOrders(BASE):
+class Orders(BASE):
 
-    __tablename__ = "placed_orders"
-    id = Column(Integer, primary_key=True)
-    order_id = Column(Integer, nullable=False)
-    market = Column(UnicodeText, nullable=False)
-    order_type = Column(UnicodeText, nullable=False)
-    exchange = Column(UnicodeText, nullable=False)
-    status = Column(UnicodeText, nullable=False)
+    __tablename__ = "orders"
+    id = Column(INTEGER(11), primary_key=True)
+    bot_market_id = Column(INTEGER(11))
+    refid = Column(VARCHAR(255))
+    status = Column(VARCHAR(255))
+    side = Column(VARCHAR(255))
+    price = Column(VARCHAR(255))
+    volume = Column(VARCHAR(255))
+    executed_volume = Column(VARCHAR(255))
+    created = Column(DATETIME)
+    modified = Column(DATETIME)
 
-    def __init__(self, order_id, market, order_type, exchange, status):
-        self.order_id = order_id
-        self.market = market
-        self.order_type = order_type
-        self.exchange = exchange
+    def __init__(self, bot_market_id, refid, status, side, price, volume, executed_volume, timestamp):
+        self.bot_market_id = bot_market_id
+        self.refid = refid
         self.status = status
+        self.side = side
+        self.price = price
+        self.volume = volume
+        self.executed_volume = executed_volume
+        self.created = timestamp
+        self.modified = timestamp
 
     def to_dict(self):
         return {
-            "order_id": self.order_id,
-            "market": self.market,
-            "order_type": self.order_type,
-            "exchange": self.exchange,
-            "status": self.status,
+            "bot_market_id": self.bot_market_id,
+            "refid": self.refid,
+            "order_type": self.status,
+            "exchange": self.side,
+            "status": self.price,
+            "volume": self.volume,
+            "executed_volume": self.executed_volume,
+            "created": self.created,
+            "modified": self.modified
             }
 
 
-PlacedOrders.__table__.create(checkfirst=True)
+Orders.__table__.create(checkfirst=True)
 ORDER_INSERTION_LOCK = threading.RLock()
 
 
-def update_order(order_id, market, order_type, exchange, status):
+def update_order(bot_market_id, refid,
+                 status, side, price, volume, executed_volume, timestamp=time.strftime('%Y-%m-%d %H:%M:%S')):
+
     with ORDER_INSERTION_LOCK:
 
-        order = SESSION.query(PlacedOrders).get(order_id)
+        order = SESSION.query(Orders).get(bot_market_id)
 
         if not order:
-            order = PlacedOrders(order_id, market, order_type, exchange, status)
+            order = Orders(bot_market_id, refid, status, side, price, volume, executed_volume, timestamp)
             SESSION.add(order)
             SESSION.flush()
         else:
             order.status = status
-
+            order.price = price
+            order.volume = volume
+            order.modified = timestamp
+            order.executed_volume = volume
         SESSION.commit()
-
-
-def get_order_by_id(order_id):
-    try:
-        return SESSION.query(PlacedOrders).get(PlacedOrders.order_id == int(order_id)).first()
-    finally:
-        SESSION.close()

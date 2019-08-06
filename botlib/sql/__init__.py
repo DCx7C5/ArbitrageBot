@@ -1,6 +1,8 @@
+from sqlalchemy import Column
 from sqlalchemy import create_engine
 from sqlalchemy.ext.declarative import declarative_base
 from sqlalchemy.orm import sessionmaker, scoped_session
+from sqlalchemy.dialects.mysql import INTEGER, TINYINT, VARCHAR
 
 
 URI = 'mysql://backend:password@localhost:3306/arbitrage'
