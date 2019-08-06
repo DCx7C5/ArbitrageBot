@@ -1,51 +1,8 @@
 import sys
-import logging
 import threading
-from botlib.graviex import GraviexClient
-from config.configmanager import ExchConfManager
 
-logging.basicConfig(level=logging.DEBUG,
-                    format='[%(levelname)s] (%(threadName)-10s) %(message)s',
-                    )
-
-EXCHANGES = {}
-TICKERS = {}
-ORDERBOOKS = {}
-
-e_lock = threading.RLock()
-t_lock = threading.RLock()
-o_lock = threading.RLock()
-
-
-class Exchanges:
-
-    def __init__(self):
-        self.clients = {}
-        self.c_lock = threading.RLock()
-        self.cfg_man = ExchConfManager()
-        self._exchange_configs = self.cfg_man.get_active_exchanges()
-
-        # get active exchs on init
-        self.init_active_exchanges()
-
-    def init_active_exchanges(self):
-        with self.c_lock:
-            for i in self._exchange_configs:
-                if i in self.clients.keys():
-                    continue
-                if i == "graviex":
-                    exch = GraviexClient(
-                        api_key=self._exchange_configs['graviex'].get('api_key'),
-                        api_secret=self._exchange_configs['graviex'].get('api_secret')
-                    )
-
-                    self.clients.update({i: exch})
-
-    def get_clients(self):
-        with self.c_lock:
-            return self.clients
-
-
+from threading import RLock
+from botlib.db_thread import DatabaseThread
 
 
 class ArbitrageBot:
@@ -54,17 +11,19 @@ class ArbitrageBot:
         self.exchs = {}
         self.tickers = {}
         self.orderbook = {}
+        self.coin_update_event = threading.Event()
+        self.exch_update_event = threading.Event()
 
+        self.threads = []
 
     def start(self):
-        tickerdaemon = TickersDaemon()
-        tickerdaemon.start()
+        dbt = DatabaseThread(self.exch_update_event, self.coin_update_event)
+        dbt.start()
 
 
 if __name__ == '__main__':
-    bot = Exchanges()
-    bot.init_active_exchanges()
+    bot = ArbitrageBot()
     try:
-        bot.init_active_exchanges()
+        bot.start()
     except KeyboardInterrupt:
         sys.exit()

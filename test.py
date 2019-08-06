@@ -1,44 +1,35 @@
-# -*- coding: utf-8 -*-
+import datetime
+import base64
+import hmac
+from hashlib import sha512
+from urllib.request import urlopen, Request
+from urllib.error import HTTPError
 
-import asyncio
-import ccxt
-import ccxt.async_support as ccxta  # noqa: E402
-import time
-import os
-import sys
+baseUrl = "https://api.crex24.com"
+apiKey = "ea33efcd-71cc-4445-8ca5-61f85bb0d04b"
+secret = "6SiG6QG2xmd8YD/+Jj8MfQysCldp8U7uS9CmZNIoTqY+cBXvMgbb6D108MtOuLabONpTBdb9rbhkBJ840srMvA=="
 
-root = os.path.dirname(os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
-sys.path.append(root + '/python')
+path = "/v2/account/balance?currency=BTC"
+nonce = round(datetime.datetime.now().timestamp() * 1000000)
+print(nonce)
+key = base64.b64decode(secret)
+message = str.encode(path + str(nonce), "utf-8")
+hmacv = hmac.new(key, message, sha512)
+signature = base64.b64encode(hmacv.digest()).decode()
+print(baseUrl + path)
+request = Request(baseUrl + path)
+request.method = "GET"
+request.add_header("X-CREX24-API-KEY", apiKey)
+request.add_header("X-CREX24-API-NONCE", nonce)
+request.add_header("X-CREX24-API-SIGN", signature)
 
+try:
+    response = urlopen(request)
+except HTTPError as e:
+    response = e
 
-def sync_client(exchange):
-    client = getattr(ccxt, exchange)()
-    tickers = client.fetch_tickers()
-    return tickers
+status = response.getcode()
+body = bytes.decode(response.read())
 
-
-async def async_client(exchange):
-    client = getattr(ccxta, exchange)()
-    tickers = await client.fetch_tickers()
-    await client.close()
-    return tickers
-
-
-async def fetch_multiple_tickers(exchanges):
-    input_coroutines = [async_client(exchange) for exchange in exchanges]
-    tickers = await asyncio.gather(*input_coroutines, return_exceptions=True)
-    return tickers
-
-
-if __name__ == '__main__':
-    exchanges = ["binance", "bittrex", "bitfinex", "poloniex", "hitbtc"]
-
-    tic = time.time()
-    a = asyncio.get_event_loop().run_until_complete(fetch_multiple_tickers(exchanges))
-    print("async call spended seconds:", time.time() - tic)
-
-    time.sleep(1)
-
-    tic = time.time()
-    a = [sync_client(exchange) for exchange in exchanges]
-    print("sync call spended seconds:", time.time() - tic)
+print("Status code: " + str(status))
+print(body)

@@ -14,7 +14,6 @@ class PlacedOrders(BASE):
     order_type = Column(UnicodeText, nullable=False)
     exchange = Column(UnicodeText, nullable=False)
     status = Column(UnicodeText, nullable=False)
-    timestamp = Column(Time, nullable=False)
 
     def __init__(self, order_id, market, order_type, exchange, status):
         self.order_id = order_id
@@ -22,12 +21,14 @@ class PlacedOrders(BASE):
         self.order_type = order_type
         self.exchange = exchange
         self.status = status
-        self.timestamp = TIMESTAMP
 
     def to_dict(self):
         return {
             "order_id": self.order_id,
             "market": self.market,
+            "order_type": self.order_type,
+            "exchange": self.exchange,
+            "status": self.status,
             }
 
 

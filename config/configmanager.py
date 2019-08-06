@@ -7,9 +7,6 @@ class ExchConfManager:
         self.configs = {}
         self.api_conf = configparser.ConfigParser()
 
-        # Read config file on class init
-        self.read_config()
-
     def read_config(self):
         self.api_conf.read('config/api.conf')
         for sec in self.api_conf.sections():

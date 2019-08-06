@@ -28,6 +28,7 @@ GET = "GET"
 class GraviexClient:
 
     def __init__(self, api_key, api_secret, calls_per_second=15):
+        self.name = 'Graviex'
         self.api_key = api_key
         self.api_secret = api_secret
         self.rate_limit = 1.0 / calls_per_second
@@ -56,6 +57,7 @@ class GraviexClient:
                 now = time.time()
                 passed = now - self._last_call
                 if passed < self.rate_limit:
+
                     time.sleep(self.rate_limit - passed)
                 self._last_call = time.time()
 
@@ -224,5 +226,3 @@ class GraviexClient:
             raise Exception('Order ID must be set')
         params = {'id': order_id}
         return self._api_call(GET, ORDER, params=params)
-
-

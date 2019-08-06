@@ -15,7 +15,7 @@ class ArbitrageBot:
     async def ticker_coroutine(self):
         while True:
             try:
-                ticker = await self.grav.get_ticker('rvnbtc')
+                ticker = await self.grav.update_ticker('rvnbtc')
                 print(ticker.get('high'))
             except JSONDecodeError:
                 pass

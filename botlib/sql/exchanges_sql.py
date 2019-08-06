@@ -12,8 +12,7 @@ class Exchanges(BASE):
     key = Column(UnicodeText)
     secret = Column(UnicodeText)
 
-    def __init__(self, user_id, name, active, key, secret):
-        self.id = user_id
+    def __init__(self, name, active, key, secret):
         self.name = name
         self.active = active
         self.key = key
@@ -34,5 +33,12 @@ Exchanges.__table__.create(checkfirst=True)
 def get_exchanges_list():
     try:
         return [x.to_dict() for x in SESSION.query(Exchanges).all()]
+    finally:
+        SESSION.close()
+
+
+def count_active_exchanges():
+    try:
+        return SESSION.query(Exchanges).filter(Exchanges.active == 1).count()
     finally:
         SESSION.close()
