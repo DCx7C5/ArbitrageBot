@@ -60,7 +60,6 @@ class Jobs(BASE):
             }
 
 
-Jobs.__table__.create(checkfirst=True)
 JOB_INSERTION_LOCK = RLock()
 
 

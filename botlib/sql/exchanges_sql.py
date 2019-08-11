@@ -1,3 +1,5 @@
+import threading
+
 from sqlalchemy import Column
 from sqlalchemy.dialects.mysql import INTEGER, VARCHAR
 
@@ -28,18 +30,13 @@ class Exchanges(BASE):
             }
 
 
-Exchanges.__table__.create(checkfirst=True)
+INSERTION_LOCK = threading.RLock()
 
 
-def get_exchanges_list():
+def get_exchanges_sql(name=None, active=False):
     try:
+        if active:
+            return [x.to_dict() for x in SESSION.query(Exchanges).filter(Exchanges.active == 1).all()]
         return [x.to_dict() for x in SESSION.query(Exchanges).all()]
-    finally:
-        SESSION.close()
-
-
-def count_active_exchanges():
-    try:
-        return SESSION.query(Exchanges).filter(Exchanges.active == 1).count()
     finally:
         SESSION.close()

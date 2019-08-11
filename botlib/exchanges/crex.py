@@ -3,6 +3,7 @@ import base64
 import hmac
 import json
 import threading
+import aiohttp
 import time
 from hashlib import sha512
 from urllib.request import urlopen, Request
@@ -25,26 +26,14 @@ CONTENT_LENGTH = "Content-Length"
 # BALANCE PARAMETERS
 CURRENCY = 'currency'
 
-# ORDER PARAMETERS
-INSTRUMENT = "instrument"
-SIDE = "side"
-VOLUME = "volume"
-PRICE = "price"
-STOPPRICE = "stopPrice"
-STRICTVALIDATION = "strictValidation"
-TIMEINFORCE = "timeInForce"
-TYPE = "type"
-BUY = "buy"
-SELL = "sell"
-
-# ORDER TYPES
-LIMIT = "limit"
-MARKET = "market"
-STOPLIMIT = "stopLimit"
-
 # REQUEST TYPES
 GET = 'GET'
 POST = 'POST'
+
+
+# API TYPE
+PRIVATE = "PRIVATE"
+PUBLIC = "PUBLIC"
 
 
 def _generate_path(params, endpoint):
@@ -58,26 +47,14 @@ def _translate_coin_to_instrument(coin):
     return coin.upper() + "-" + "BTC"
 
 
-class CrexClient:
+class CrexClien:
 
     def __init__(self, api_key, api_secret, calls_per_second=6):
-        self.name = 'Crex'
         self.api_key = api_key
         self.api_secret = api_secret
         self.rate_limit = 1.0 / calls_per_second
         self._last_call = None
         self._wait_lock = threading.RLock()
-
-    def _wait(self):
-        with self._wait_lock:
-            if self._last_call is None:
-                self._last_call = time.time()
-            else:
-                now = time.time()
-                passed = now - self._last_call
-                if passed < self.rate_limit:
-                    time.sleep(self.rate_limit - passed)
-                self._last_call = time.time()
 
     def _api_call(self, method: str,
                   endpoint: str,

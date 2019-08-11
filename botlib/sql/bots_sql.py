@@ -1,5 +1,4 @@
-from threading import RLock
-
+from botlib.sql import logger
 from sqlalchemy import Column
 from sqlalchemy.dialects.mysql import INTEGER, TINYINT, VARCHAR
 
@@ -19,24 +18,16 @@ class Bots(BASE):
 
     def to_dict(self):
         return {
+            "id": self.id,
             "title": self.title,
             "enabled": self.enabled
             }
 
 
-Bots.__table__.create(checkfirst=True)
-BOTS_INSERTION_LOCK = RLock()
-
-
-def update_bots(title, enabled=0):
-    with BOTS_INSERTION_LOCK:
-
-        bot = SESSION.query(Bots).get(title)
-
-        if not bot:
-            bot = Bots(title, enabled)
-            SESSION.add(bot)
-            SESSION.flush()
-        else:
-            bot.enabled = enabled
-        SESSION.commit()
+def get_bots_sql(active=False):
+    try:
+        if active:
+            return [x.to_dict() for x in SESSION.query(Bots).filter(Bots.enabled == 1).all()]
+        return [x.to_dict() for x in SESSION.query(Bots).all()]
+    finally:
+        SESSION.close()

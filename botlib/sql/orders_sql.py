@@ -32,28 +32,14 @@ class Orders(BASE):
         self.created = timestamp
         self.modified = timestamp
 
-    def to_dict(self):
-        return {
-            "bot_market_id": self.bot_market_id,
-            "refid": self.refid,
-            "order_type": self.status,
-            "exchange": self.side,
-            "status": self.price,
-            "volume": self.volume,
-            "executed_volume": self.executed_volume,
-            "created": self.created,
-            "modified": self.modified
-            }
 
-
-Orders.__table__.create(checkfirst=True)
-ORDER_INSERTION_LOCK = threading.RLock()
+INSERTION_LOCK = threading.RLock()
 
 
 def update_order(bot_market_id, refid,
                  status, side, price, volume, executed_volume, timestamp=time.strftime('%Y-%m-%d %H:%M:%S')):
 
-    with ORDER_INSERTION_LOCK:
+    with INSERTION_LOCK:
 
         order = SESSION.query(Orders).get(bot_market_id)
 

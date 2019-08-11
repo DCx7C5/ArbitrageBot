@@ -1,9 +1,9 @@
 import threading
-
-from sqlalchemy import Column
-from sqlalchemy.dialects.mysql import INTEGER, TINYINT, VARCHAR
+import time
 
 from botlib.sql import BASE, SESSION
+from sqlalchemy import Column, Table
+from sqlalchemy.dialects.mysql import INTEGER, TINYINT, VARCHAR
 
 
 class BotMarkets(BASE):
@@ -42,19 +42,26 @@ class BotMarkets(BASE):
             }
 
 
-BotMarkets.__table__.create(checkfirst=True)
-BOT_MARKETS_LOCK = threading.RLock()
+INSERTION_LOCK = threading.RLock()
 
 
-def get_coins_list():
+def get_bot_markets_sql(active=False):
     try:
+        if active:
+            return [x.to_dict() for x in SESSION.query(BotMarkets).filter(BotMarkets.enabled == 1).all()]
         return [x.to_dict() for x in SESSION.query(BotMarkets).all()]
     finally:
         SESSION.close()
 
 
-def get_active_coins_list():
+def get_bot_market_sql(bot_id):
     try:
-        return [x.to_dict() for x in SESSION.query(BotMarkets).filter(BotMarkets.enabled == 1).all()]
+        return [x.to_dict() for x in SESSION.query(BotMarkets).filter(BotMarkets.bot_id == bot_id).all()][0]
     finally:
         SESSION.close()
+
+
+st = time.time()
+for r in range(10000):
+    get_bot_market_sql(1)
+print(time.time() - st)

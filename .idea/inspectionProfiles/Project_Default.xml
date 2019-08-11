@@ -11,6 +11,11 @@
           <option value="botlib.sql.jobs_sql.Jobs.__table__" />
           <option value="botlib.sql.orders_sql.Orders.__table__" />
           <option value="botlib.sql.bots_sql.Bots.__table__" />
+          <option value="botlib.aio_sql.Orders.__table__" />
+          <option value="botlib.aio_sql.Jobs.*" />
+          <option value="botlib.aio_sql.Exchanges.__table__" />
+          <option value="botlib.aio_sql.BotMarkets.__table__" />
+          <option value="botlib.aio_sql.Bots.__table__" />
         </list>
       </option>
     </inspection_tool>
