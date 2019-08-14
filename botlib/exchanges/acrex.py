@@ -1,21 +1,26 @@
 import asyncio
-import time
+import base64
+import concurrent
 import hmac
 import aiohttp
 import hashlib
 
-BASEURL = 'https://graviex.net/api/v3'
+import yarl
+from aiohttp import ContentTypeError
+from concurrent.futures import TimeoutError
+
+BASE_URL = "https://api.crex24.com"
 
 # API ENDPOINTS
 BALANCE = "/v2/account/balance"
-PLACEORDER = "/v2/trading/placeOrder"
+PLACE_ORDER = "/v2/trading/placeOrder"
 TICKERS = "/v2/public/tickers"
-ORDERBOOK = "/v2/public/orderBook"
+ORDER_BOOK = "/v2/public/orderBook"
 
 # REQUEST HEADER VARIABLES
-XAPISIGN = 'X-CREX24-API-SIGN'
-XAPIKEY = 'X-CREX24-API-KEY'
-XAPINONCE = 'X-CREX24-API-NONCE'
+X_API_SIGN = 'X-CREX24-API-SIGN'
+X_API_KEY = 'X-CREX24-API-KEY'
+X_API_NONCE = 'X-CREX24-API-NONCE'
 CONTENT_LENGTH = "Content-Length"
 
 # REQUEST METHODS
@@ -29,77 +34,95 @@ PUBLIC = "PUBLIC"
 
 class CrexClientAIO:
 
-    def __init__(self, api_key, api_secret, loop=None, logger=None):
+    def __init__(self, api_key, api_secret, loop):
         self.api_key = api_key
         self.api_secret = api_secret
         self.rate_limit = 1 / 6.0
         self._last_call = None
+        self._loop = loop if loop else asyncio.get_event_loop()
+        self._session = aiohttp.ClientSession()
 
-    async def _generate_message_string(self, method, endpoint, params):
-        params_str = ""
+    async def _wait_async(self):
+        if self._last_call is None:
+            self._last_call = self._loop.time()
+        else:
+            now = self._loop.time()
+            passed = now - self._last_call
+            if passed < self.rate_limit:
+                await self._loop.sleep(self.rate_limit - passed)
+            self._last_call = self._loop.time()
+
+    @staticmethod
+    async def _generate_path(params, endpoint):
+        params_string = "?"
         for p in params:
-            params_str += f"&{p}={params[p]}"
-        return f'{method}|/api/v3{endpoint}|{params_str}'
+            params_string += f'{p}={params[p]}' + "&"
+        return f'{endpoint}{params_string[:-1]}'
 
     async def _generate_hash_signature(self, msg_string):
-        return hmac.new(key=self.api_secret.encode(),
-                        msg=msg_string.encode(),
-                        digestmod=hashlib.sha256).hexdigest()
+        return hmac.new(key=base64.b64decode(self.api_secret),
+                        msg=msg_string,
+                        digestmod=hashlib.sha512).digest()
 
-    async def _api_call_public(self, method, endpoint, params):
-        url = f'{BASEURL}{endpoint}'
-        async with aiohttp.ClientSession() as session:
-            if method is POST:
-                data = await session.post(url, params=params)
-            else:
-                data = await session.get(url, params=params)
+    async def _api_call_public(self, method: str, endpoint: str, params: dict):
+        headers = {'Connection': 'keep-alive'}
+        url = f'{BASE_URL}{endpoint}'
+        async with self._session.request(method=method, url=yarl.URL(url), params=params, headers=headers) as request:
             try:
-                assert data.status == 200
+                assert request.status == 200
+                if await request.json() is None:
+                    return request
+                return await request.json()
             except AssertionError as e:
-                print(e)
-            return await data.json()
+                await asyncio.sleep(.001)
+                pass
+            except ContentTypeError as e:
+                await asyncio.sleep(.001)
+                pass
+            except TimeoutError as e:
+                await asyncio.sleep(.001)
+                pass
+            except RuntimeError as e:
+                await asyncio.sleep(.001)
+                pass
 
-    async def _api_call_private(self, method, endpoint, params):
-        params.update({'tonce': int(time.time() * 1000), 'access_key': self.api_key})
-        async with self._generate_message_string(method, endpoint, params) as msg_string:
-            async with self._generate_hash_signature(msg_string) as signature:
-                params.update({'signature': signature})
-                url = f'{BASEURL}{endpoint}'
-                async with aiohttp.ClientSession() as session:
-                    await self._wait_async()
-                    if method is POST:
-                        data = await session.post(url, params=params)
-                    else:
-                        data = await session.get(url, params=params)
-                    try:
-                        assert data.status == 200
-                    except AssertionError as e:
-                        print(e)
-                    return await data.json()
+    async def _api_call_private(self, method: str, endpoint: str, params: dict):
+        headers = {'Connection': 'keep-alive'}
+        nonce = round(self._loop.time() * 1000000000)
+        path = await self._generate_path(params, endpoint)
+        msg_string = str.encode(path + str(nonce) + str(params), "utf-8")
+        signature = await self._generate_hash_signature(msg_string)
+        headers.update({X_API_KEY: self.api_key, X_API_NONCE: str(nonce), X_API_SIGN: signature})
+        headers.update({CONTENT_LENGTH: len(params)})
+        await self._wait_async()
+        url = f'{BASE_URL}{endpoint}'
+        async with self._session.request(method=method, url=yarl.URL(url), params=params, headers=headers) as request:
+            try:
+                assert request.status == 200
+                if await request.json() is None:
+                    return request
+                return await request.json()
+            except AssertionError as e:
+                await asyncio.sleep(.001)
+                pass
+            except ContentTypeError as e:
+                await asyncio.sleep(.001)
+                pass
 
-    async def get_order_book(self, refid, asks_limit=None, bids_limit=None):
-        params = {'market': refid}
-        if asks_limit is not None:
-            params.update({'asks_limit': asks_limit})
-        if bids_limit is not None:
-            params.update({'bids_limit': bids_limit})
+            except RuntimeError as e:
+                await asyncio.sleep(.001)
+                pass
+
+    async def get_order_book(self, refid, limit=None):
+        params = {'instrument': refid}
+        if limit is not None:
+            params.update({'limit': limit})
         return await self._api_call_public(endpoint=ORDER_BOOK, method=GET, params=params)
 
     async def get_lowest_ask(self, refid):
-        data = await self.get_order_book(refid=refid, asks_limit=3, bids_limit=3)
-        return data['asks'][0]['price']
+        data = await self.get_order_book(refid=refid, limit=100)
+        return data['buyLevels'][0]['price']
 
     async def get_highest_bid(self, refid):
-        data = await self.get_order_book(refid=refid, asks_limit=3, bids_limit=3)
-        return data['bids'][0]['price']
-
-
-if __name__ == '__main__':
-    from pprint import pprint
-    loop = asyncio.get_event_loop()
-    grav = CrexClientAIO(
-        'ea33efcd-71cc-4445-8ca5-61f85bb0d04b',
-        '6SiG6QG2xmd8YD/+Jj8MfQysCldp8U7uS9CmZNIoTqY+cBXvMgbb6D108MtOuLabONpTBdb9rbhkBJ840srMvA=='
-    )
-    pprint("HighestBid " + loop.run_until_complete(grav.get_highest_bid('DOGE-BTC')))
-    pprint("LowestAsk  " + loop.run_until_complete(grav.get_lowest_ask('DOGE-BTC')))
+        data = await self.get_order_book(refid=refid, limit=100)
+        return data['sellLevels'][0]['price']

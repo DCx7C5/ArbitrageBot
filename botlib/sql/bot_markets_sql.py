@@ -1,9 +1,10 @@
 import threading
-import time
 
 from botlib.sql import BASE, SESSION
-from sqlalchemy import Column, Table
+from sqlalchemy import Column
 from sqlalchemy.dialects.mysql import INTEGER, TINYINT, VARCHAR
+
+from botlib.sql.exchanges_sql import Exchanges
 
 
 class BotMarkets(BASE):
@@ -31,6 +32,7 @@ class BotMarkets(BASE):
 
     def to_dict(self):
         return {
+            'id': self.id,
             "bot_id": self.bot_id,
             "exchange_id": self.exchange_id,
             "enabled": self.enabled,
@@ -45,7 +47,7 @@ class BotMarkets(BASE):
 INSERTION_LOCK = threading.RLock()
 
 
-def get_bot_markets_sql(active=False):
+def get_active_bot_markets_sql(active=False):
     try:
         if active:
             return [x.to_dict() for x in SESSION.query(BotMarkets).filter(BotMarkets.enabled == 1).all()]
@@ -54,14 +56,9 @@ def get_bot_markets_sql(active=False):
         SESSION.close()
 
 
-def get_bot_market_sql(bot_id):
+def get_bot_market_sql():
     try:
-        return [x.to_dict() for x in SESSION.query(BotMarkets).filter(BotMarkets.bot_id == bot_id).all()][0]
+        return [x.to_dict() for x in SESSION.query(BotMarkets).all()]
     finally:
         SESSION.close()
 
-
-st = time.time()
-for r in range(10000):
-    get_bot_market_sql(1)
-print(time.time() - st)

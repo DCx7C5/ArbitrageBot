@@ -1,8 +1,11 @@
-from botlib.sql import logger
 from sqlalchemy import Column
 from sqlalchemy.dialects.mysql import INTEGER, TINYINT, VARCHAR
 
 from botlib.sql import BASE, SESSION
+from botlib.sql.bot_markets_sql import BotMarkets
+from botlib.sql.jobs_sql import Jobs
+from botlib.sql.orders_sql import Orders
+from botlib.sql.exchanges_sql import Exchanges
 
 
 class Bots(BASE):
@@ -31,3 +34,4 @@ def get_bots_sql(active=False):
         return [x.to_dict() for x in SESSION.query(Bots).all()]
     finally:
         SESSION.close()
+

@@ -40,3 +40,11 @@ def get_exchanges_sql(name=None, active=False):
         return [x.to_dict() for x in SESSION.query(Exchanges).all()]
     finally:
         SESSION.close()
+
+
+def get_key_and_secret(exchange):
+    try:
+        k, s = [(x.to_dict()['key'], x.to_dict()['secret']) for x in SESSION.query(Exchanges).filter(Exchanges.name == exchange).all()][0]
+        return k, s
+    finally:
+        SESSION.close()
