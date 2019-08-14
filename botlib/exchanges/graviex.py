@@ -18,6 +18,7 @@ MEMBERS = '/members/me'
 CANCEL = '/order/delete'
 ORDER = '/order'
 ORDER_BOOK = '/order_book'
+FUNDS = '/fund_sources'
 
 # REQUEST METHODS
 POST = "POST"
@@ -167,3 +168,9 @@ class GraviexClient:
                   'asks_limit': limit if limit else 100}
         resp = self._api_call(endpoint=ORDER_BOOK, method=GET, params=params)
         return [(x['price'], x['volume']) for x in resp['bids']], [(x['price'], x['volume']) for x in resp['asks']]
+
+    def get_balance(self, ref_id):
+        params = {"currency": ref_id.replace('btc', '')}
+        return self._api_call(endpoint=FUNDS, method=GET, params=params)
+
+

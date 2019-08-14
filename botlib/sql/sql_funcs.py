@@ -1,7 +1,6 @@
 from pprint import pprint
 
 from botlib.sql.bots_sql import Bots
-from botlib.sql.exchanges_sql import Exchanges
 from botlib.sql import BASE, SESSION, CONNECTION
 from botlib.sql.bot_markets_sql import BotMarkets
 from botlib.sql.jobs_sql import Jobs
@@ -51,12 +50,12 @@ def get_table_columns(table):
         SESSION.close()
 
 
-def get_actual_bot_markets(bid):
+def bot_markets_from_bot_id(bid):
     return CONNECTION.execute(
-            f'SELECT (SELECT name FROM arbitrage.exchanges '
-            f'WHERE bot_markets.exchange_id = exchanges.id),refid'
-            f' FROM arbitrage.bot_markets'
-            f' WHERE bot_id={bid}').fetchall()
+        f'SELECT (SELECT name FROM arbitrage.exchanges '
+        f'WHERE bot_markets.exchange_id = exchanges.id),refid'
+        f' FROM arbitrage.bot_markets'
+        f' WHERE bot_id={bid}').fetchall()
 
 
 def get_trading_limits_with_refid(ref_id):

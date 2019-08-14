@@ -4,29 +4,30 @@ from random import randint
 
 
 from botlib.sql.bot_markets_sql import get_bot_market_sql
+from botlib.sql.exchanges_sql import get_exchanges_sql
+from botlib.sql.sql_funcs import bot_markets_from_bot_id
 
 
-class BackgroundLogger(threading.Thread):
+class BotMarketSettings:
 
     def __init__(self):
-        threading.Thread.__init__(self)
-        self.daemon = True
-        self.name = "BackGroundDaemon"
-        self.bot_markets = []
-        self._bm_lock = threading.RLock()
-        self._quit_flag = False
+        self._lock = threading.RLock()
+        self._bot_markets = []
+        self._bot_markets =
 
-    def synchronize_database(self):
-        time.sleep(randint(30, 80) / 100)
-        for abm in get_bot_market_sql():
-            if abm not in self.bot_markets:
-                with self._bm_lock:
-                    self.bot_markets.append(abm)
 
-    def quit(self):
-        self._quit_flag = True
-        del self
+    def __getitem__(self, item):
+        """Makes class subscribable"""
+        return self.__getattribute__(item)
 
-    def run(self) -> None:
-        while not self._quit_flag:
-            self.synchronize_database()
+    def __setitem__(self, table, **kwargs):
+        """Dictionary style storage management"""
+        for kw in kwargs:
+            self[table].update({kw: kwargs[kw]})
+
+
+
+
+
+bg = BackgroundLogger()
+bg.start()
