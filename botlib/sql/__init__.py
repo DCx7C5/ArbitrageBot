@@ -5,14 +5,12 @@ from sqlalchemy.orm import sessionmaker, scoped_session
 URI = 'mysql://backend:password@localhost:3306/arbitrage'
 
 
-def start() -> scoped_session:
+def start():
     engine = create_engine(URI)
     BASE.metadata.bind = engine
     BASE.metadata.create_all(engine)
-    return scoped_session(sessionmaker(bind=engine, autoflush=False))
+    return scoped_session(sessionmaker(bind=engine, autoflush=False)), engine
 
 
 BASE = declarative_base()
-SESSION = start()
-
-CONNECTION = create_engine(URI)
+SESSION, CONNECTION = start()
