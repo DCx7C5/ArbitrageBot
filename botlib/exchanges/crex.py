@@ -102,4 +102,5 @@ class CrexClient:
         if limit:
             params['limit'] = limit
         resp = self.__api_call(endpoint=ORDER_BOOK, method=GET, params=params)
-        return [[x['price'], x['volume']] for x in resp['buyLevels']], [[x['price'], x['volume']] for x in resp['sellLevels']]
+        return [[x['price'], round(float(x['volume']), 10)] for x in resp['buyLevels']],\
+               [[x['price'], round(float(x['volume']), 10)] for x in resp['sellLevels']]

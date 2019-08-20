@@ -2,8 +2,8 @@ import time
 
 from sqlalchemy import func
 
-from botlib.sql import SESSION
-from botlib.sql.arbitrage__bots import Bots
+from botlib.sql import SESSION, CONNECTION
+from botlib.sql.bots import Bots
 from botlib.sql.bot_markets import BotMarkets
 from botlib.sql.exchanges import Exchanges
 from botlib.sql.jobs import JOB_INSERTION_LOCK, Jobs
@@ -17,42 +17,17 @@ def get_enabled_bots_ids() -> list:
         SESSION.close()
 
 
-def count_enabled_bots() -> int:
+def get_active_bot_markets_sql(bot_ids: list) -> list:
     try:
-        return SESSION.query(func.count(Bots.id)).filter(Bots.enabled == 1).scalar()
-    finally:
-        SESSION.close()
-
-
-def get_active_bot_markets_sql(active=False):
-    try:
-        if active:
-            return [x.to_dict() for x in SESSION.query(BotMarkets).filter(BotMarkets.enabled == 1).all()]
-        return [x.to_dict() for x in SESSION.query(BotMarkets).all()]
-    finally:
-        SESSION.close()
-
-
-def get_bot_market_sql():
-    try:
-        return [x.to_dict() for x in SESSION.query(BotMarkets).all()]
-    finally:
-        SESSION.close()
-
-
-def get_exchanges_sql(name=None, active=False):
-    try:
-        if active:
-            return [x.to_dict() for x in SESSION.query(Exchanges).filter(Exchanges.active == 1).all()]
-        return [x.to_dict() for x in SESSION.query(Exchanges).all()]
+        bot_ids = tuple(bot_ids)
+        return CONNECTION.execute(f"SELECT bot_id, name, refid FROM arbitrage.bot_markets JOIN arbitrage.exchanges ON exchange_id = exchanges.id AND bot_id IN {bot_ids}").fetchall()
     finally:
         SESSION.close()
 
 
 def get_key_and_secret(exchange):
     try:
-        k, s = [(x.to_dict()['key'], x.to_dict()['secret']) for x in SESSION.query(Exchanges).filter(Exchanges.name == exchange).all()][0]
-        return k, s
+        return SESSION.query(Exchanges.key, Exchanges.secret).filter(Exchanges.name == exchange).all()[0]
     finally:
         SESSION.close()
 

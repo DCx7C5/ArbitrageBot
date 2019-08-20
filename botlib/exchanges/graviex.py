@@ -163,9 +163,9 @@ class GraviexClient:
                   'bids_limit': limit if limit else 100,
                   'asks_limit': limit if limit else 100}
         resp = self.__api_call(endpoint=ORDER_BOOK, method=GET, params=params)
-        bids_raw = [[float(x['price']), float(x['volume'])] for x in resp['bids']]
-        asks_raw = [[float(x['price']), float(x['volume'])] for x in resp['asks']]
-        for p, v in bids_raw:
+
+        # Volume addition of redundant positions
+        for p, v in [[float(x['price']), round(float(x['volume']), 10)] for x in resp['bids']]:
             if p not in was_seen:
                 was_seen.add(p)
                 bids.append([p, v])
@@ -173,7 +173,7 @@ class GraviexClient:
                 for t in bids:
                     if t[0] == p:
                         t[1] += v
-        for p, v in asks_raw:
+        for p, v in [[float(x['price']), round(float(x['volume']), 10)] for x in resp['asks']]:
             if p not in was_seen:
                 was_seen.add(p)
                 asks.append([p, v])
@@ -184,5 +184,7 @@ class GraviexClient:
         return bids, asks
 
     def get_balance(self, ref_id):
-        params = {"currency": ref_id.replace('btc', '')}
+        currency = ref_id.lower()
+        currency = currency.replace('btc', '') if ref_id != "btc" else None
+        params = {"currency": currency}
         return self.__api_call(endpoint=FUNDS, method=GET, params=params)

@@ -40,6 +40,3 @@ class BotMarkets(BASE):
             "max_size": self.max_size,
             "min_profit": self.min_profit
             }
-
-
-INSERTION_LOCK = threading.RLock()
