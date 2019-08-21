@@ -1,3 +1,7 @@
+import base64
+import hashlib
+import time
+
 from botlib.exchanges.baseclient import BaseClient
 
 
@@ -11,8 +15,8 @@ GEN_DEPOSIT = '/gen_deposit_address'
 MEMBERS = '/members/me'
 CANCEL = '/order/delete'
 ORDER = '/order'
-ORDER_BOOK = '/order_book'
-BALANCES = '/account/history'
+ORDER_BOOK = '/api/v3/order_book'
+BALANCES = '/api/v3/account/history'
 
 # REQUEST METHODS
 POST = "POST"
@@ -21,7 +25,16 @@ GET = "GET"
 
 class GraviexClient(BaseClient):
 
-    BASE_URL = 'https://graviex.net/api/v3'
+    BASE_URL = 'https://graviex.net'
+
+    PUBLIC = {
+        'get': ['/api/v3/order_book', ],
+    }
+
+    PRIVATE = {
+        'get': ['/account/history', '/orders', '/order'],
+        'post': ['/orders', '/order'],
+    }
 
     def __init__(self, api_key, api_secret, calls_per_second=15):
         BaseClient.__init__(self)
@@ -30,7 +43,30 @@ class GraviexClient(BaseClient):
         self._rate_limit = 1.0 / calls_per_second
 
     def sign(self, path, api='public', method='GET', params=None, headers=None, body=None):
-        pass
+        if params is None:
+            params = {}
+
+        request = self.BASE_URL + self.implode_params(path, params)
+
+        if api == 'private':
+            nonce = round(time.time() * 1000)
+            request = f'access_key={self._api_key}&tonce={nonce}'
+            message = f'{method}|{path}|{request}'
+            query = self.omit(params, self.extract_params(path))
+            if method == 'GET':
+                if query:
+                    request += '?' + self.url_encode(query)
+            auth = request + str(nonce)
+            if method == 'POST':
+                body = self.json(params)
+                auth += body
+            signature = self.hmac(self.encode(message), self._api_secret)
+            return {'url': signature, 'method': method, 'body': body, 'headers': headers}
+
+        return {'url': request, 'method': method, 'body': body, 'headers': headers}
+
+
+
 
     def get_order_book(self, ref_id, limit=None):
         was_seen = set()

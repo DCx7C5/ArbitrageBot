@@ -26,14 +26,12 @@ class BinanceClient(BaseClient):
     WAPI = 'https://api.binance.com/api/v3'
     WITHDRAW_API_URL = 'https://api.binance.com/wapi'
     MARGIN_API_URL = 'https://api.binance.com/sapi'
-
     PUBLIC = {
-        'get': ['ping', 'time', 'depth', 'trades', 'aggTrades', 'historicalTrades', 'klines', 'exchangeInfo'],
+        'get': ['depth', 'trades', 'aggTrades', 'historicalTrades', 'klines', 'exchangeInfo'],
         'put': ['userDataStream'],
         'post': ['userDataStream'],
         'delete': ['userDataStream']
     }
-
     PRIVATE = {
         'get': ['order', 'openOrders', 'allOrders', 'account', 'myTrades'],
         'post': ['order', 'order/test'],
@@ -96,5 +94,4 @@ class BinanceClient(BaseClient):
                [[x[0], round(float(x[1]), 10)] for x in resp['asks']]
 
     def get_balance(self, symbol):
-
         print(self.api_call(endpoint=ACCOUNT, params=None, api='private'))

@@ -5,18 +5,12 @@ import hmac
 import io
 import json
 import re
-import ssl
 import base64
 import time
 import zlib
 
 from requests import Session
 import urllib.parse as _url_encode
-
-
-ctx = ssl.create_default_context()
-ctx.check_hostname = False
-ctx.verify_mode = ssl.CERT_NONE
 
 
 class BaseClient:
@@ -37,8 +31,7 @@ class BaseClient:
 
     def sign(self, path, api='public', method='GET', params=None, headers=None, body=None):
         if params is None:
-            params = {}
-        raise Exception('sign() pure method must be redefined in derived classes')
+            pass
 
     def __fetch2(self, path, api='public', method='GET', params=None, headers=None, body=None):
         if params is None:
@@ -51,10 +44,6 @@ class BaseClient:
             params = {}
         return self.__fetch2(path, api, method, params, headers, body)
 
-    def parse_json(self, http_response):
-        if BaseClient.is_json_encoded_object(http_response):
-            return json.loads(http_response)
-
     def __prepare_request_headers(self, headers=None):
         headers = headers or {}
         headers.update(self.headers)
@@ -62,7 +51,6 @@ class BaseClient:
         return headers
 
     def fetch(self, url, method='GET', headers=None, body=None):
-        """Perform a HTTP request and return decoded JSON data"""
         request_headers = self.__prepare_request_headers(headers)
         if body:
             body = body.encode()
