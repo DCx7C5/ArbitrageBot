@@ -1,3 +1,4 @@
+from botlib.exchanges.binance import BinanceClient
 from botlib.exchanges.crex import CrexClient
 from botlib.exchanges.graviex import GraviexClient
 from botlib.sql.sql_functions import get_key_and_secret
@@ -8,6 +9,7 @@ class Exchange:
     def __init__(self):
         self.Crex24 = CrexClient(*get_key_and_secret('Crex24'))
         self.Graviex = GraviexClient(*get_key_and_secret('Graviex'))
+        self.Binance = BinanceClient(*get_key_and_secret('Binance'))
 
     def __getitem__(self, item):
         """Makes class subscribable"""

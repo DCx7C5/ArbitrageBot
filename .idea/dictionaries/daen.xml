@@ -1,14 +1,18 @@
 <component name="ProjectDictionaryState">
   <dictionary name="daen">
     <words>
+      <w>apikey</w>
+      <w>appl</w>
       <w>asyncbot</w>
       <w>asyncloop</w>
+      <w>binance</w>
       <w>creds</w>
       <w>crex</w>
       <w>exas</w>
       <w>exma</w>
       <w>graviex</w>
       <w>orderbooks</w>
+      <w>pyth</w>
       <w>refid</w>
       <w>rvnbtc</w>
       <w>tablename</w>

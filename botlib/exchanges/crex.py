@@ -1,14 +1,6 @@
 import base64
-import hmac
-import json
-import time
-
-from hashlib import sha512
-from urllib.request import urlopen, Request
-from urllib.error import HTTPError
-
-BASE_URL = "https://api.crex24.com"
-
+import hashlib
+from botlib.exchanges.baseclient import BaseClient
 
 # API ENDPOINTS
 BALANCE = "/v2/account/balance"
@@ -31,76 +23,46 @@ PRIVATE = "PRIVATE"
 PUBLIC = "PUBLIC"
 
 
-class CrexClient:
+class CrexClient(BaseClient):
+
+    BASE_URL = "https://api.crex24.com"
 
     def __init__(self, api_key, api_secret, calls_per_second=6):
-        self.__api_key = api_key
-        self.__api_secret = api_secret
-        self.__rate_limit = 1.0 / calls_per_second
-        self.__last_call = None
+        BaseClient.__init__(self)
+        self._api_key = api_key
+        self._api_secret = api_secret
+        self._rate_limit = 1.0 / calls_per_second
+        self._last_call = None
 
-    def __getitem__(self, item):
-        """Makes class subscribable"""
-        return self.__getattribute__(item)
-
-    @staticmethod
-    def __generate_path(params, endpoint):
-        params_string = "?"
-        for p in params:
-            params_string += f'{p}={params[p]}' + "&"
-        return f'{endpoint}{params_string[:-1]}'
-
-    def __generate_hash_signature(self, msg_string):
-        return base64.b64encode(hmac.new(key=self.__api_secret,
-                                         msg=msg_string,
-                                         digestmod=sha512).digest())
-
-    def __api_call(self, method: str, endpoint: str, params: dict = None):
-        if not params:
+    def sign(self, path, api='public', method='GET', params=None, headers=None, body=None):
+        if params is None:
             params = {}
-        path = self.__generate_path(params, endpoint)
-        nonce = round(time.time() * 1000000)
-        key = base64.b64decode(self.__api_secret)
-        url = f'{BASE_URL}{path}'
-        request = Request(url)
-        if method == POST:
-            data = json.dumps(params, separators=(',', ':'))
-            message = str.encode(path + str(nonce) + data, "utf-8")
-            request.data = str.encode(data, "utf-8")
-            request.add_header(CONTENT_LENGTH, len(data))
-        else:
-            message = str.encode(path + str(nonce), "utf-8")
-        hmacvar = hmac.new(key, message, sha512)
-        signature = base64.b64encode(hmacvar.digest())
-        request.method = method
-        request.add_header(X_API_KEY, self.__api_key)
-        request.add_header(X_API_NONCE, nonce)
-        request.add_header(X_API_SIGN, signature)
-        try:
-            response = urlopen(request)
-        except HTTPError as e:
-            response = e
-        return json.loads(bytes.decode(response.read()))
-
-    def get_balance(self, currency=None):
-        params = {"currency": currency} if currency else {}
-        return self.__api_call(GET, BALANCE, params)
-
-    def create_order(self, refid, side, amount, price, order_type=None):
-        params = {"instrument": refid, "side": side, "volume": amount}
-        if order_type != "stop_limit":
-            params.update({"price": price})
-        if order_type is not None:
-            params.update({"type": order_type})
-        return self.__api_call(POST, PLACE_ORDER, params)
-
-    def cancel_order(self):
-        pass
+        request = '/v2/' + api + '/' + self.implode_params(path, params)
+        query = self.omit(params, self.extract_params(path))
+        if method == 'GET':
+            if query:
+                request += '?' + self.url_encode(query)
+        url = self.BASE_URL + request
+        if (api == 'trading') or (api == 'account'):
+            nonce = str(self.nonce())
+            secret = base64.b64decode(self._api_secret)
+            auth = request + nonce
+            headers = {
+                'X-CREX24-API-KEY': self._api_key,
+                'X-CREX24-API-NONCE': nonce,
+            }
+            if method == 'POST':
+                headers['Content-Type'] = 'application/json'
+                body = self.json(params)
+                auth += body
+            signature = base64.b64encode(self.hmac(self.encode(auth), secret, hashlib.sha512, 'binary'))
+            headers['X-CREX24-API-SIGN'] = self.decode(signature)
+        return {'url': url, 'method': method, 'body': body, 'headers': headers}
 
     def get_order_book(self, refid, limit=None):
         params = {"instrument": refid}
         if limit:
             params['limit'] = limit
-        resp = self.__api_call(endpoint=ORDER_BOOK, method=GET, params=params)
+        resp = self.api_call_public(path=ORDER_BOOK, params=params)
         return [[x['price'], round(float(x['volume']), 10)] for x in resp['buyLevels']],\
                [[x['price'], round(float(x['volume']), 10)] for x in resp['sellLevels']]
