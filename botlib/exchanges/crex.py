@@ -1,5 +1,6 @@
 import base64
 import hashlib
+import json
 import time
 
 from botlib.exchanges.baseclient import BaseClient
@@ -52,7 +53,7 @@ class CrexClient(BaseClient):
             headers = {'X-CREX24-API-KEY': self._api_key, 'X-CREX24-API-NONCE': str(nonce)}
             if method == 'POST':
                 headers['Content-Type'] = 'application/json'
-                body = self.json(params)
+                body = json.dumps(params, separators=(',', ':'))
                 auth += body
             signature = base64.b64encode(self.hmac(self.encode(auth), secret, hashlib.sha512, 'binary'))
             headers['X-CREX24-API-SIGN'] = self.decode(signature)

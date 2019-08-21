@@ -93,5 +93,7 @@ class BinanceClient(BaseClient):
         return [[x[0], round(float(x[1]), 10)] for x in resp['bids']],\
                [[x[0], round(float(x[1]), 10)] for x in resp['asks']]
 
-    def get_balance(self, symbol):
+    def get_balance(self, symbol=None):
+        if symbol is None:
+            pass
         print(self.api_call(endpoint=ACCOUNT, params=None, api='private'))

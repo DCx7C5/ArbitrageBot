@@ -1,5 +1,6 @@
 import base64
 import hashlib
+import json
 import time
 
 from botlib.exchanges.baseclient import BaseClient
@@ -58,15 +59,12 @@ class GraviexClient(BaseClient):
                     request += '?' + self.url_encode(query)
             auth = request + str(nonce)
             if method == 'POST':
-                body = self.json(params)
+                body = json.dumps(params, separators=(',', ':'))
                 auth += body
             signature = self.hmac(self.encode(message), self._api_secret)
             return {'url': signature, 'method': method, 'body': body, 'headers': headers}
 
         return {'url': request, 'method': method, 'body': body, 'headers': headers}
-
-
-
 
     def get_order_book(self, ref_id, limit=None):
         was_seen = set()
@@ -75,7 +73,7 @@ class GraviexClient(BaseClient):
         params = {"market": ref_id,
                   'bids_limit': limit if limit else 100,
                   'asks_limit': limit if limit else 100}
-        resp = self.api_call(ORDER_BOOK, params)
+        resp = self.api_call(ORDER_BOOK, params, api='public')
         print("dfg" + resp)
         # Volume addition of redundant positions
         for p, v in [[float(x['price']), round(float(x['volume']), 10)] for x in resp['bids']]:
@@ -95,4 +93,3 @@ class GraviexClient(BaseClient):
                     if t[0] == p:
                         t[1] += v
         return bids, asks
-

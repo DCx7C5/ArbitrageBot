@@ -1,13 +1,10 @@
 import collections
-import gzip
 import hashlib
 import hmac
-import io
 import json
 import re
 import base64
 import time
-import zlib
 
 from requests import Session
 import urllib.parse as _url_encode
@@ -79,24 +76,14 @@ class BaseClient:
         return BaseClient.decode(base64.urlsafe_b64encode(s)).replace('=', '')
 
     @staticmethod
-    def is_json_encoded_object(input):
-        return (isinstance(input, str) and
-                (len(input) >= 2) and
-                ((input[0] == '{') or (input[0] == '[')))
+    def is_json_encoded_object(in_put):
+        return (isinstance(in_put, str) and
+                (len(in_put) >= 2) and
+                ((in_put[0] == '{') or (in_put[0] == '[')))
 
     @staticmethod
     def decode(string):
         return string.decode()
-
-    @staticmethod
-    def gzip_deflate(response, text):
-        encoding = response.info().get('Content-Encoding')
-        if encoding in ('gzip', 'x-gzip', 'deflate'):
-            if encoding == 'deflate':
-                return zlib.decompress(text, -zlib.MAX_WBITS)
-            else:
-                return gzip.GzipFile('', 'rb', 9, io.BytesIO(text)).read()
-        return text
 
     @staticmethod
     def extract_params(string):
@@ -117,7 +104,6 @@ class BaseClient:
     @staticmethod
     def extend(*args):
         if args is not None:
-            result = None
             if type(args[0]) is collections.OrderedDict:
                 result = collections.OrderedDict()
             else:
@@ -128,18 +114,11 @@ class BaseClient:
         return {}
 
     @staticmethod
-    def unjson(input):
-        return json.loads(input)
-
-    @staticmethod
-    def json(data, params=None):
-        return json.dumps(data, separators=(',', ':'))
-
-    @staticmethod
     def encode(string):
         return string.encode()
 
-    def nonce(self):
+    @staticmethod
+    def nonce():
         return time.time()
 
     @staticmethod
@@ -174,12 +153,6 @@ class BaseClient:
         if (type(params) is dict) or isinstance(params, collections.OrderedDict):
             return _url_encode.urlencode(params)
         return params
-
-    @staticmethod
-    def raw_encode(params=None):
-        if params is None:
-            params = {}
-        return _url_encode.unquote(BaseClient.url_encode(params))
 
     @staticmethod
     def hmac(request, secret, algorithm=hashlib.sha256, digest='hex'):
