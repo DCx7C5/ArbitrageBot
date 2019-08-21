@@ -62,7 +62,6 @@ class GraviexClient(BaseClient):
                 body = json.dumps(params, separators=(',', ':'))
                 auth += body
             signature = self.hmac(self.encode(message), self._api_secret)
-            return {'url': signature, 'method': method, 'body': body, 'headers': headers}
 
         return {'url': request, 'method': method, 'body': body, 'headers': headers}
 
@@ -73,9 +72,8 @@ class GraviexClient(BaseClient):
         params = {"market": ref_id,
                   'bids_limit': limit if limit else 100,
                   'asks_limit': limit if limit else 100}
-        resp = self.api_call(ORDER_BOOK, params, api='public')
-        print("dfg" + resp)
-        # Volume addition of redundant positions
+        resp = self.api_call(endpoint=ORDER_BOOK, params=params, api='public')
+        print(resp)
         for p, v in [[float(x['price']), round(float(x['volume']), 10)] for x in resp['bids']]:
             if p not in was_seen:
                 was_seen.add(p)
