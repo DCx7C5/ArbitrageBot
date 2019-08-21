@@ -24,22 +24,22 @@ class BaseClient:
         self.options = dict()
 
     def api_call(self, endpoint, params, api):
-        return self.__fetch2(path=endpoint, params=params, api=api)
+        return self.__fetch_wrap(path=endpoint, params=params, api=api)
 
     def sign(self, path, api='public', method='GET', params=None, headers=None, body=None):
         if params is None:
             pass
 
-    def __fetch2(self, path, api='public', method='GET', params=None, headers=None, body=None):
+    def __fetch_wrap(self, path, api='public', method='GET', params=None, headers=None, body=None):
         if params is None:
             params = {}
         request = self.sign(path, api, method, params, headers, body)
-        return self.fetch(request['url'], request['method'], request['headers'], request['body'])
+        return self.__fetch(request['url'], request['method'], request['headers'], request['body'])
 
     def __request(self, path, api='public', method='GET', params=None, headers=None, body=None):
         if params is None:
             params = {}
-        return self.__fetch2(path, api, method, params, headers, body)
+        return self.__fetch_wrap(path, api, method, params, headers, body)
 
     def __prepare_request_headers(self, headers=None):
         headers = headers or {}
@@ -47,7 +47,7 @@ class BaseClient:
         headers.update({'Accept-Encoding': 'gzip, deflate'})
         return headers
 
-    def fetch(self, url, method='GET', headers=None, body=None):
+    def __fetch(self, url, method='GET', headers=None, body=None):
         request_headers = self.__prepare_request_headers(headers)
         if body:
             body = body.encode()

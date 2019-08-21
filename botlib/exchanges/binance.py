@@ -80,7 +80,7 @@ class BinanceClient(BaseClient):
     def request(self, path, api='public', method='GET', params=None, headers=None, body=None):
         if params is None:
             params = {}
-        response = self.__fetch2(path, api, method, params, headers, body)
+        response = self.__fetch_wrap(path, api, method, params, headers, body)
         # a workaround for {"code":-2015,"msg":"Invalid API-key, IP, or permissions for action."}
         if (api == 'private') or (api == 'wapi'):
             self.options['hasAlreadyAuthenticatedSuccessfully'] = True
