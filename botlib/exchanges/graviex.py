@@ -43,7 +43,7 @@ class GraviexClient(BaseClient):
         self._api_secret = api_secret
         self._rate_limit = 1.0 / calls_per_second
 
-    def sign(self, path, api='public', method='GET', params=None, headers=None, body=None):
+    def sign_data_for_prv_api(self, path, api='public', method='GET', params=None, headers=None, body=None):
         if params is None:
             params = {}
 
@@ -61,7 +61,7 @@ class GraviexClient(BaseClient):
             if method == 'POST':
                 body = json.dumps(params, separators=(',', ':'))
                 auth += body
-            signature = self.hmac(self.encode(message), self._api_secret)
+            signature = self.hmac(message.encode(), self._api_secret)
 
         return {'url': request, 'method': method, 'body': body, 'headers': headers}
 

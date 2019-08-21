@@ -1,3 +1,5 @@
+import time
+
 from botlib.exchanges.baseclient import BaseClient
 import urllib.parse as _url_encode
 
@@ -44,7 +46,7 @@ class BinanceClient(BaseClient):
         self._api_secret = api_secret
         self._rate_limit = 1.0 / calls_per_second
 
-    def sign(self, path, api='public', method='GET', params=None, headers=None, body=None):
+    def sign_data_for_prv_api(self, path, api='public', method='GET', params=None, headers=None, body=None):
         if params is None:
             params = {}
         url = self.PUBLIC_API
@@ -58,12 +60,11 @@ class BinanceClient(BaseClient):
             body = _url_encode.urlencode(params)
             headers = {'X-MBX-APIKEY': self._api_key, 'Content-Type': 'application/x-www-form-urlencoded'}
         if (api == 'private') or (api == 'wapi' and path != 'systemStatus'):
-            print(12)
+            nonce = int(time.time() * 1000)
             query = _url_encode.urlencode(self.extend({
-                'timestamp': int(self.nonce() * 1000),
+                'timestamp': nonce,
                 'recvWindow': 5000}, params))
-            print(self.nonce())
-            signature = self.hmac(self.encode(query), self.encode(self._api_secret))
+            signature = self.hmac(query.encode(), self._api_secret.encode())
             query += '&' + 'signature=' + signature
             headers = {'X-MBX-APIKEY': self._api_key}
             if (method == 'GET') or (method == 'DELETE') or (api == 'wapi'):
@@ -83,7 +84,7 @@ class BinanceClient(BaseClient):
         response = self.__fetch_wrap(path, api, method, params, headers, body)
         # a workaround for {"code":-2015,"msg":"Invalid API-key, IP, or permissions for action."}
         if (api == 'private') or (api == 'wapi'):
-            self.options['hasAlreadyAuthenticatedSuccessfully'] = True
+            self.__options['hasAlreadyAuthenticatedSuccessfully'] = True
         return response
 
     def get_order_book(self, refid, limit=None):

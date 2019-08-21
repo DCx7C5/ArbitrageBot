@@ -3,10 +3,10 @@ import time
 from pprint import pprint
 from queue import Queue
 from threading import RLock, Thread
-from botlib.exchanges import Exchange
-from botlib.sql.sql_functions import get_enabled_bots_ids, get_active_bot_markets_sql
+from botlib.sql.sql_functions import get_enabled_bots_ids, get_enabled_bot_markets_sql
 from botlib.orderbooks import OrderBooks
 from botlib.bot_locker import BotLocker
+from botlib.exchanges import Exchange
 
 
 class FetchOrderBook(Thread):
@@ -45,7 +45,7 @@ class OrderBookDaemon(Thread):
             args = self.__queue.get()
             t = FetchOrderBook(*args)
             t.start()
-            time.sleep(0.15)
+            time.sleep(0.2)
 
 
 class BackGroundDaemon(Thread):
@@ -65,7 +65,7 @@ class BackGroundDaemon(Thread):
         # List with tuples (bot_id, exchange, refid)
         self.bot_markets = []
 
-    def __update_enabled_bot_ids(self, bot_ids: list):
+    def __update_enabled_bot_ids(self, bot_ids: tuple or list):
         for bid in bot_ids:
             if bid not in self.enabled_bot_ids:
                 with self.__lock:
@@ -102,24 +102,27 @@ class BackGroundDaemon(Thread):
             ids = get_enabled_bots_ids()
             self.__update_enabled_bot_ids(ids)
             with self.__lock:
-                self.bot_markets = get_active_bot_markets_sql(ids)
+                self.bot_markets = get_enabled_bot_markets_sql(ids)
             time.sleep(1.5)
 
 
-class ArbitrageBot(Thread):
+class TradeOptions(Thread):
+    """
+    Runs as daemon in background and loops through list of unique bot_ids
+    to find arbitrage, catch_order, or any other trading opportunities .
+    """
 
     def __init__(self):
         Thread.__init__(self)
-        pass
+        self.daemon = True
+        self.name = f'TradeOptionDaemon'
 
 
 class CatchOrderBot(Thread):
 
-    def __init__(self, bot_id):
-        super().__init__()
-        self.bot_id = bot_id
-
-        self.name = f"BotID {self.bot_id} | CatchOrder"
+    def __init__(self):
+        Thread.__init__(self)
+        pass
 
 
 ex = Exchange()
@@ -133,5 +136,9 @@ if __name__ == '__main__':
     bg_daemon.start()
     obd.start()
     while True:
-        pprint(ob.__dict__)
-        time.sleep(10)
+        pprint(bg_daemon.get_bot_markets())
+        try:
+            print(ob.get_order_book('Crex24', "DOGE-BTC"), end="\r")
+        except TypeError:
+            print("Loading....", end="\r")
+        time.sleep(1)

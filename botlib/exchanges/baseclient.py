@@ -2,38 +2,35 @@ import collections
 import hashlib
 import hmac
 import json
-import re
 import base64
-import time
 
 from requests import Session
-import urllib.parse as _url_encode
+import urllib.parse
 
 
 class BaseClient:
-
-    BASE_URL_V1 = None
 
     def __init__(self):
         self._api_key = None
         self._api_secret = None
         self._rate_limit = None
         self._last_call = None
-        self.session = Session()
-        self.headers = dict()
-        self.options = dict()
+        self.__pub_session = Session()
+        self.__prv_session = Session()
+        self.__headers = dict()
+        self.__options = dict()
 
     def api_call(self, endpoint, params, api):
         return self.__fetch_wrap(path=endpoint, params=params, api=api)
 
-    def sign(self, path, api='public', method='GET', params=None, headers=None, body=None):
+    def sign_data_for_prv_api(self, path, api='public', method='GET', params=None, headers=None, body=None):
         if params is None:
             pass
 
     def __fetch_wrap(self, path, api='public', method='GET', params=None, headers=None, body=None):
         if params is None:
             params = {}
-        request = self.sign(path, api, method, params, headers, body)
+        request = self.sign_data_for_prv_api(path, api, method, params, headers, body)
         return self.__fetch(request['url'], request['method'], request['headers'], request['body'])
 
     def __request(self, path, api='public', method='GET', params=None, headers=None, body=None):
@@ -43,16 +40,20 @@ class BaseClient:
 
     def __prepare_request_headers(self, headers=None):
         headers = headers or {}
-        headers.update(self.headers)
+        headers.update(self.__headers)
         headers.update({'Accept-Encoding': 'gzip, deflate'})
         return headers
 
-    def __fetch(self, url, method='GET', headers=None, body=None):
+    def __fetch(self, url, method='GET', headers=None, body=None, api='public'):
         request_headers = self.__prepare_request_headers(headers)
         if body:
             body = body.encode()
-        self.session.cookies.clear()
-        response = self.session.request(method, url, data=body, headers=request_headers)
+        if api != 'public':
+            self.__prv_session.cookies.clear()
+            response = self.__prv_session.request(method, url, data=body, headers=request_headers)
+        else:
+            self.__pub_session.cookies.clear()
+            response = self.__pub_session.request(method, url, data=body, headers=request_headers)
         http_response = response.text
         json_response = json.loads(http_response)
 
@@ -68,26 +69,11 @@ class BaseClient:
         return f'{endpoint}{params_string[:-1]}'
 
     def __getitem__(self, item):
-        """Makes class subscribable"""
         return self.__getattribute__(item)
     
     @staticmethod
     def base64_url_encode(s):
-        return BaseClient.decode(base64.urlsafe_b64encode(s)).replace('=', '')
-
-    @staticmethod
-    def is_json_encoded_object(in_put):
-        return (isinstance(in_put, str) and
-                (len(in_put) >= 2) and
-                ((in_put[0] == '{') or (in_put[0] == '[')))
-
-    @staticmethod
-    def decode(string):
-        return string.decode()
-
-    @staticmethod
-    def extract_params(string):
-        return re.findall(r'{([\w-]+)}', string)
+        return base64.urlsafe_b64encode(s).decode().replace('=', '')
 
     @staticmethod
     def implode_params(string, params):
@@ -99,7 +85,7 @@ class BaseClient:
 
     @staticmethod
     def encode_uri_component(uri):
-        return _url_encode.quote(uri, safe="~()*!.'")
+        return urllib.parse.quote(uri, safe="~()*!.'")
 
     @staticmethod
     def extend(*args):
@@ -112,24 +98,6 @@ class BaseClient:
                 result.update(arg)
             return result
         return {}
-
-    @staticmethod
-    def encode(string):
-        return string.encode()
-
-    @staticmethod
-    def nonce():
-        return time.time()
-
-    @staticmethod
-    def url(path, params=None):
-        if params is None:
-            params = {}
-        result = BaseClient.implode_params(path, params)
-        query = BaseClient.omit(params, BaseClient.extract_params(path))
-        if query:
-            result += '?' + _url_encode.urlencode(query)
-        return result
 
     @staticmethod
     def omit(d, *args):
@@ -150,8 +118,8 @@ class BaseClient:
     def url_encode(params=None):
         if params is None:
             params = {}
-        if (type(params) is dict) or isinstance(params, collections.OrderedDict):
-            return _url_encode.urlencode(params)
+        if isinstance(params, dict) or isinstance(params, collections.OrderedDict):
+            return urllib.parse.urlencode(params)
         return params
 
     @staticmethod

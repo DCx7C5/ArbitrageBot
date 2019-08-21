@@ -26,5 +26,3 @@ class OrderBooks(Storage):
                 return self[exchange][pair]
         except (AttributeError, KeyError):
             raise Exception("OrderBook wasn't found in class OrderBooks(Storage)")
-
-
