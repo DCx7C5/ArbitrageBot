@@ -1,12 +1,15 @@
 import base64
+import datetime
 import hashlib
+import time
+
 from botlib.exchanges.baseclient import BaseClient
 
 # API ENDPOINTS
-BALANCE = "/account/balance"
-PLACE_ORDER = "/placeOrder"
-TICKERS = "/tickers"
-ORDER_BOOK = "/orderBook"
+BALANCE = "balance"
+PLACE_ORDER = "placeOrder"
+TICKERS = "tickers"
+ORDER_BOOK = "orderBook"
 
 # REQUEST HEADER VARIABLES
 X_API_SIGN = 'X-CREX24-API-SIGN'
@@ -44,13 +47,10 @@ class CrexClient(BaseClient):
                 request += '?' + self.url_encode(query)
         url = self.BASE_URL + request
         if (api == 'trading') or (api == 'account'):
-            nonce = str(self.nonce())
+            nonce = round(time.time() * 1000000)
             secret = base64.b64decode(self._api_secret)
-            auth = request + nonce
-            headers = {
-                'X-CREX24-API-KEY': self._api_key,
-                'X-CREX24-API-NONCE': nonce,
-            }
+            auth = request + str(nonce)
+            headers = {'X-CREX24-API-KEY': self._api_key, 'X-CREX24-API-NONCE': str(nonce)}
             if method == 'POST':
                 headers['Content-Type'] = 'application/json'
                 body = self.json(params)
@@ -63,10 +63,10 @@ class CrexClient(BaseClient):
         params = {"instrument": refid}
         if limit:
             params['limit'] = limit
-        resp = self.api_call(endpoint=ORDER_BOOK, params=params)
+        resp = self.api_call(endpoint=ORDER_BOOK, params=params, api='public')
         return [[x['price'], round(float(x['volume']), 10)] for x in resp['buyLevels']],\
                [[x['price'], round(float(x['volume']), 10)] for x in resp['sellLevels']]
 
     def get_balance(self, symbol):
         params = {"instrument": symbol}
-        print(self.api_call(endpoint=ORDER_BOOK, params=params))
+        print(self.api_call(endpoint=BALANCE, params=params, api='account'))

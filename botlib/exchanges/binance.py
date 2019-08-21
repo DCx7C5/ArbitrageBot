@@ -55,17 +55,10 @@ class BinanceClient(BaseClient):
             url += '.html'
         user_data_stream = (path == 'userDataStream')
         if path == 'historicalTrades':
-            headers = {
-                'X-MBX-APIKEY': self._api_key,
-            }
+            headers = {'X-MBX-APIKEY': self._api_key}
         elif user_data_stream:
             body = _url_encode.urlencode(params)
-            headers = {
-                'X-MBX-APIKEY': self._api_key,
-                'Content-Type': 'application/x-www-form-urlencoded',
-            }
-        print(url)
-
+            headers = {'X-MBX-APIKEY': self._api_key, 'Content-Type': 'application/x-www-form-urlencoded'}
         if (api == 'private') or (api == 'wapi' and path != 'systemStatus'):
             print(12)
             query = _url_encode.urlencode(self.extend({
@@ -74,9 +67,7 @@ class BinanceClient(BaseClient):
             print(self.nonce())
             signature = self.hmac(self.encode(query), self.encode(self._api_secret))
             query += '&' + 'signature=' + signature
-            headers = {
-                'X-MBX-APIKEY': self._api_key,
-            }
+            headers = {'X-MBX-APIKEY': self._api_key}
             if (method == 'GET') or (method == 'DELETE') or (api == 'wapi'):
                 url += '?' + query
             else:
