@@ -45,7 +45,7 @@ class OrderBookDaemon(Thread):
             args = self.__queue.get()
             t = FetchOrderBook(*args)
             t.start()
-            time.sleep(0.1)
+            time.sleep(0.15)
 
 
 class BackGroundDaemon(Thread):

@@ -1,7 +1,3 @@
-import time
-
-from sqlalchemy import func
-
 from botlib.sql import SESSION, CONNECTION
 from botlib.sql.bots import Bots
 from botlib.sql.bot_markets import BotMarkets
@@ -20,7 +16,7 @@ def get_enabled_bots_ids() -> list:
 def get_active_bot_markets_sql(bot_ids: list) -> list:
     try:
         bot_ids = tuple(bot_ids)
-        return CONNECTION.execute(f"SELECT bot_id, name, refid FROM arbitrage.bot_markets JOIN arbitrage.exchanges ON exchange_id = exchanges.id AND bot_id IN {bot_ids}").fetchall()
+        return CONNECTION.execute(f"SELECT bot_id, name, refid FROM arbitrage.bot_markets JOIN arbitrage.exchanges ON exchange_id = exchanges.id AND arbitrage.exchanges.active = 1 AND bot_id IN {bot_ids}").fetchall()
     finally:
         SESSION.close()
 

@@ -21,7 +21,7 @@ ctx.verify_mode = ssl.CERT_NONE
 
 class BaseClient:
 
-    BASE_URL = None
+    BASE_URL_V1 = None
 
     def __init__(self):
         self._api_key = None
@@ -29,37 +29,33 @@ class BaseClient:
         self._rate_limit = None
         self._last_call = None
         self.session = Session()
-        self.headers = None
-        self.options = dict() if self.options is None else self.options
+        self.headers = dict()
+        self.options = dict()
 
+    def api_call(self, endpoint, params, api):
+        return self.__fetch2(path=endpoint, params=params, api=api)
 
     def sign(self, path, api='public', method='GET', params=None, headers=None, body=None):
         if params is None:
             params = {}
         raise Exception('sign() pure method must be redefined in derived classes')
 
-    def api_call_public(self, path, params=None):
-        return self.fetch2(path, params=params)
-
-    def fetch2(self, path, api='public', method='GET', params=None, headers=None, body=None):
+    def __fetch2(self, path, api='public', method='GET', params=None, headers=None, body=None):
         if params is None:
             params = {}
         request = self.sign(path, api, method, params, headers, body)
         return self.fetch(request['url'], request['method'], request['headers'], request['body'])
 
-    def request(self, path, api='public', method='GET', params=None, headers=None, body=None):
+    def __request(self, path, api='public', method='GET', params=None, headers=None, body=None):
         if params is None:
             params = {}
-        return self.fetch2(path, api, method, params, headers, body)
+        return self.__fetch2(path, api, method, params, headers, body)
 
     def parse_json(self, http_response):
-        try:
-            if BaseClient.is_json_encoded_object(http_response):
-                return json.loads(http_response)
-        except ValueError:
-            pass
+        if BaseClient.is_json_encoded_object(http_response):
+            return json.loads(http_response)
 
-    def prepare_request_headers(self, headers=None):
+    def __prepare_request_headers(self, headers=None):
         headers = headers or {}
         headers.update(self.headers)
         headers.update({'Accept-Encoding': 'gzip, deflate'})
@@ -67,14 +63,13 @@ class BaseClient:
 
     def fetch(self, url, method='GET', headers=None, body=None):
         """Perform a HTTP request and return decoded JSON data"""
-        request_headers = self.prepare_request_headers(headers)
+        request_headers = self.__prepare_request_headers(headers)
         if body:
             body = body.encode()
         self.session.cookies.clear()
         response = self.session.request(method, url, data=body, headers=request_headers)
-
         http_response = response.text
-        json_response = self.parse_json(response.text)
+        json_response = json.loads(http_response)
 
         if json_response is not None:
             return json_response
@@ -156,36 +151,8 @@ class BaseClient:
     def encode(string):
         return string.encode()
 
-    @staticmethod
-    def to_array(value):
-        return list(value.values()) if type(value) is dict else value
-
     def nonce(self):
-        return BaseClient.seconds()
-
-    @staticmethod
-    def sec():
-        return BaseClient.seconds()
-
-    @staticmethod
-    def msec():
-        return BaseClient.milliseconds()
-
-    @staticmethod
-    def usec():
-        return BaseClient.microseconds()
-
-    @staticmethod
-    def seconds():
-        return int(time.time())
-
-    @staticmethod
-    def milliseconds():
-        return int(time.time() * 1000)
-
-    @staticmethod
-    def microseconds():
-        return int(time.time() * 1000000)
+        return time.time()
 
     @staticmethod
     def url(path, params=None):

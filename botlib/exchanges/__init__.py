@@ -16,10 +16,7 @@ class Exchange:
         return self.__getattribute__(item)
 
     def get_order_book(self, exchange, ref_id, limit=None):
-        try:
-            return self[exchange].get_order_book(ref_id, limit)
-        except:
-            pass
+        return self[exchange].get_order_book(ref_id, limit)
 
     def get_lowest_ask(self, exchange, ref_id):
         return self[exchange].get_lowest_ask(ref_id)

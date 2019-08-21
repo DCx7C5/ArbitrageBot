@@ -3,7 +3,9 @@ import urllib.parse as _url_encode
 
 # API ENDPOINTS
 
-ORDER_BOOK = '/depth'
+ORDER_BOOK = 'depth'
+ACCOUNT = 'account'
+
 
 # REQUEST METHODS
 POST = "POST"
@@ -19,13 +21,14 @@ BIN_PYTH = 'binance/python'
 
 class BinanceClient(BaseClient):
 
-    BASE_URL = 'https://api.binance.com/api/v1'
+    PUBLIC_API = 'https://api.binance.com/api/v1'
+    PRIVATE_API = 'https://api.binance.com/api/v3'
+    WAPI = 'https://api.binance.com/api/v3'
     WITHDRAW_API_URL = 'https://api.binance.com/wapi'
     MARGIN_API_URL = 'https://api.binance.com/sapi'
 
     PUBLIC = {
-        'get': ['ping', 'time', 'depth', 'trades', 'aggTrades', 'historicalTrades', 'klines', 'ticker/24hr',
-                'ticker/allPrices', 'ticker/allBookTickers', 'ticker/price', 'ticker/bookTicker', 'exchangeInfo'],
+        'get': ['ping', 'time', 'depth', 'trades', 'aggTrades', 'historicalTrades', 'klines', 'exchangeInfo'],
         'put': ['userDataStream'],
         'post': ['userDataStream'],
         'delete': ['userDataStream']
@@ -43,10 +46,10 @@ class BinanceClient(BaseClient):
         self._api_secret = api_secret
         self._rate_limit = 1.0 / calls_per_second
 
-    def _sign_routine(self, path, api='public', method='GET', params=None, headers=None, body=None):
+    def sign(self, path, api='public', method='GET', params=None, headers=None, body=None):
         if params is None:
             params = {}
-        url = 'https://api.binance.com/api/v1'
+        url = self.PUBLIC_API
         url += '/' + path
         if api == 'wapi':
             url += '.html'
@@ -56,16 +59,19 @@ class BinanceClient(BaseClient):
                 'X-MBX-APIKEY': self._api_key,
             }
         elif user_data_stream:
-            # v1 special case for userDataStream
             body = _url_encode.urlencode(params)
             headers = {
                 'X-MBX-APIKEY': self._api_key,
                 'Content-Type': 'application/x-www-form-urlencoded',
             }
+        print(url)
+
         if (api == 'private') or (api == 'wapi' and path != 'systemStatus'):
+            print(12)
             query = _url_encode.urlencode(self.extend({
-                'timestamp': self.nonce(),
-                'recvWindow': self.options['recvWindow']}, params))
+                'timestamp': int(self.nonce() * 1000),
+                'recvWindow': 5000}, params))
+            print(self.nonce())
             signature = self.hmac(self.encode(query), self.encode(self._api_secret))
             query += '&' + 'signature=' + signature
             headers = {
@@ -82,10 +88,22 @@ class BinanceClient(BaseClient):
                     url += '?' + self.url_encode(params)
         return {'url': url, 'method': method, 'body': body, 'headers': headers}
 
+    def request(self, path, api='public', method='GET', params=None, headers=None, body=None):
+        if params is None:
+            params = {}
+        response = self.__fetch2(path, api, method, params, headers, body)
+        # a workaround for {"code":-2015,"msg":"Invalid API-key, IP, or permissions for action."}
+        if (api == 'private') or (api == 'wapi'):
+            self.options['hasAlreadyAuthenticatedSuccessfully'] = True
+        return response
+
     def get_order_book(self, refid, limit=None):
         params = {"symbol": refid,
                   'limit': limit if limit else 500}
-        resp = self.api_call_public(path=ORDER_BOOK, params=params)
+        resp = self.api_call(endpoint=ORDER_BOOK, params=params, api='public')
         return [[x[0], round(float(x[1]), 10)] for x in resp['bids']],\
                [[x[0], round(float(x[1]), 10)] for x in resp['asks']]
 
+    def get_balance(self, symbol):
+
+        print(self.api_call(endpoint=ACCOUNT, params=None, api='private'))

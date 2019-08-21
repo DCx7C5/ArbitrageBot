@@ -3,10 +3,10 @@ import hashlib
 from botlib.exchanges.baseclient import BaseClient
 
 # API ENDPOINTS
-BALANCE = "/v2/account/balance"
-PLACE_ORDER = "/v2/trading/placeOrder"
-TICKERS = "/v2/public/tickers"
-ORDER_BOOK = "/v2/public/orderBook"
+BALANCE = "/account/balance"
+PLACE_ORDER = "/placeOrder"
+TICKERS = "/tickers"
+ORDER_BOOK = "/orderBook"
 
 # REQUEST HEADER VARIABLES
 X_API_SIGN = 'X-CREX24-API-SIGN'
@@ -63,6 +63,10 @@ class CrexClient(BaseClient):
         params = {"instrument": refid}
         if limit:
             params['limit'] = limit
-        resp = self.api_call_public(path=ORDER_BOOK, params=params)
+        resp = self.api_call(endpoint=ORDER_BOOK, params=params)
         return [[x['price'], round(float(x['volume']), 10)] for x in resp['buyLevels']],\
                [[x['price'], round(float(x['volume']), 10)] for x in resp['sellLevels']]
+
+    def get_balance(self, symbol):
+        params = {"instrument": symbol}
+        print(self.api_call(endpoint=ORDER_BOOK, params=params))
