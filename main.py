@@ -1,9 +1,8 @@
 import random
 import time
-from pprint import pprint
-from queue import Queue
+from asyncio import Queue
 from threading import RLock, Thread
-from botlib.sql.sql_functions import get_enabled_bots_ids, get_enabled_bot_markets_sql
+from botlib.sqltabs.sql_functions import get_enabled_bots_ids, get_enabled_bot_markets_sql
 from botlib.orderbooks import OrderBooks
 from botlib.bot_locker import BotLocker
 from botlib.exchanges import Exchange
@@ -117,11 +116,7 @@ class TradeOptions(Thread):
         self.daemon = True
         self.name = f'TradeOptionDaemon'
 
-
-class CatchOrderBot(Thread):
-
-    def __init__(self):
-        Thread.__init__(self)
+    def run(self) -> None:
         pass
 
 
@@ -136,9 +131,8 @@ if __name__ == '__main__':
     bg_daemon.start()
     obd.start()
     while True:
-        pprint(bg_daemon.get_bot_markets())
         try:
-            print(ob.get_order_book('Crex24', "DOGE-BTC"), end="\r")
+            print(ob.get_order_book('Crex24', "DOGE-BTC"))
         except TypeError:
             print("Loading....", end="\r")
         time.sleep(1)

@@ -84,7 +84,7 @@ class BinanceClient(BaseClient):
         response = self.__fetch_wrap(path, api, method, params, headers, body)
         # a workaround for {"code":-2015,"msg":"Invalid API-key, IP, or permissions for action."}
         if (api == 'private') or (api == 'wapi'):
-            self.__options['hasAlreadyAuthenticatedSuccessfully'] = True
+            self._options['hasAlreadyAuthenticatedSuccessfully'] = True
         return response
 
     def get_order_book(self, refid, limit=None):

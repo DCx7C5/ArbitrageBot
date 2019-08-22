@@ -1,24 +1,25 @@
 import collections
+import contextlib
 import hashlib
 import hmac
 import json
 import base64
-
+import warnings
+from urllib import parse
 from requests import Session
-import urllib.parse
+from urllib3.exceptions import InsecureRequestWarning
+
+# SSL FIX
+old_merge_environment_settings = Session.merge_environment_settings
 
 
 class BaseClient:
 
     def __init__(self):
-        self._api_key = None
-        self._api_secret = None
-        self._rate_limit = None
-        self._last_call = None
-        self.__pub_session = Session()
-        self.__prv_session = Session()
-        self.__headers = dict()
-        self.__options = dict()
+        self._pub_session = Session()
+        self._prv_session = Session()
+        self._headers = dict()
+        self._options = dict()
 
     def api_call(self, endpoint, params, api):
         return self.__fetch_wrap(path=endpoint, params=params, api=api)
@@ -40,7 +41,7 @@ class BaseClient:
 
     def __prepare_request_headers(self, headers=None):
         headers = headers or {}
-        headers.update(self.__headers)
+        headers.update(self._headers)
         headers.update({'Accept-Encoding': 'gzip, deflate'})
         return headers
 
@@ -48,17 +49,22 @@ class BaseClient:
         request_headers = self.__prepare_request_headers(headers)
         if body:
             body = body.encode()
-        if api != 'public':
-            self.__prv_session.cookies.clear()
-            response = self.__prv_session.request(method, url, data=body, headers=request_headers)
-        else:
-            self.__pub_session.cookies.clear()
-            response = self.__pub_session.request(method, url, data=body, headers=request_headers)
+        with no_ssl_verification():
+            if api != 'public':
+                self._prv_session.cookies.clear()
+                response = self._prv_session.request(method=method, url=url, data=body,
+                                                     headers=request_headers,
+                                                     timeout=5)
+            else:
+                self._pub_session.cookies.clear()
+                response = self._pub_session.request(method=method, url=url, data=body,
+                                                     headers=request_headers,
+                                                     timeout=5)
         http_response = response.text
-        json_response = json.loads(http_response)
+        json_data = json.loads(http_response)
 
-        if json_response is not None:
-            return json_response
+        if json_data is not None:
+            return json_data
         return http_response
 
     @staticmethod
@@ -85,7 +91,7 @@ class BaseClient:
 
     @staticmethod
     def encode_uri_component(uri):
-        return urllib.parse.quote(uri, safe="~()*!.'")
+        return parse.quote(uri, safe="~()*!.'")
 
     @staticmethod
     def extend(*args):
@@ -119,7 +125,7 @@ class BaseClient:
         if params is None:
             params = {}
         if isinstance(params, dict) or isinstance(params, collections.OrderedDict):
-            return urllib.parse.urlencode(params)
+            return parse.urlencode(params)
         return params
 
     @staticmethod
@@ -130,3 +136,37 @@ class BaseClient:
         elif digest == 'base64':
             return base64.b64encode(h.digest())
         return h.digest()
+
+
+# noinspection PyBroadException
+@contextlib.contextmanager
+def no_ssl_verification():
+    """
+    Context wrapper function to catch and suppress SSL verification warnings
+    with a simple 'with' clause. This class also changes the default value of
+    requests.Session.verify_ssl and sets it to False
+    e.x.:
+
+    with no_ssl_verification():
+        pass
+
+    """
+    opened_adapters = set()
+
+    def merge_environment_settings(self, url, proxies, stream, verify, cert):
+        opened_adapters.add(self.get_adapter(url))
+        settings = old_merge_environment_settings(self, url, proxies, stream, verify, cert)
+        settings['verify'] = False
+        return settings
+    Session.merge_environment_settings = merge_environment_settings
+    try:
+        with warnings.catch_warnings():
+            warnings.simplefilter('ignore', InsecureRequestWarning)
+            yield
+    finally:
+        Session.merge_environment_settings = old_merge_environment_settings
+        for adapter in opened_adapters:
+            try:
+                adapter.close()
+            except:
+                pass
