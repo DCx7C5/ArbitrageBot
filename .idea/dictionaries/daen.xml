@@ -6,8 +6,12 @@
       <w>asyncbot</w>
       <w>asyncloop</w>
       <w>binance</w>
+      <w>botlib</w>
+      <w>botlogs</w>
+      <w>colorama</w>
       <w>creds</w>
       <w>crex</w>
+      <w>datefmt</w>
       <w>exas</w>
       <w>exma</w>
       <w>graviex</w>

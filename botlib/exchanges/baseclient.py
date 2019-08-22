@@ -49,17 +49,18 @@ class BaseClient:
         request_headers = self.__prepare_request_headers(headers)
         if body:
             body = body.encode()
-        with no_ssl_verification():
-            if api != 'public':
-                self._prv_session.cookies.clear()
+        if api != 'public':
+            self._prv_session.cookies.clear()
+            with no_ssl_verification():
                 response = self._prv_session.request(method=method, url=url, data=body,
                                                      headers=request_headers,
-                                                     timeout=5)
-            else:
-                self._pub_session.cookies.clear()
+                                                     timeout=6)
+        else:
+            self._pub_session.cookies.clear()
+            with no_ssl_verification():
                 response = self._pub_session.request(method=method, url=url, data=body,
                                                      headers=request_headers,
-                                                     timeout=5)
+                                                     timeout=6)
         http_response = response.text
         json_data = json.loads(http_response)
 
@@ -145,11 +146,6 @@ def no_ssl_verification():
     Context wrapper function to catch and suppress SSL verification warnings
     with a simple 'with' clause. This class also changes the default value of
     requests.Session.verify_ssl and sets it to False
-    e.x.:
-
-    with no_ssl_verification():
-        pass
-
     """
     opened_adapters = set()
 

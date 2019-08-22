@@ -1,7 +1,7 @@
 from botlib.exchanges.binance import BinanceClient
 from botlib.exchanges.crex import CrexClient
 from botlib.exchanges.graviex import GraviexClient
-from botlib.sqltabs.sql_functions import get_key_and_secret
+from botlib.sql_functions import get_key_and_secret
 
 
 class Exchange:
