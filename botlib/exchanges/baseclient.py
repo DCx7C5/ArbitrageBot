@@ -8,6 +8,7 @@ import warnings
 from urllib import parse
 from requests import Session
 from urllib3.exceptions import InsecureRequestWarning
+from botlib.botlogs.logger import root_logger
 
 # SSL FIX
 old_merge_environment_settings = Session.merge_environment_settings
@@ -61,12 +62,16 @@ class BaseClient:
                 response = self._pub_session.request(method=method, url=url, data=body,
                                                      headers=request_headers,
                                                      timeout=6)
-        http_response = response.text
-        json_data = json.loads(http_response)
+        try:
+            http_response = response.text
+            json_data = json.loads(http_response)
+            if json_data is not None:
+                return json_data
+            return http_response
 
-        if json_data is not None:
-            return json_data
-        return http_response
+        except Exception as e:
+            error_handler(e)
+
 
     @staticmethod
     def _generate_path_from_params(params, endpoint):
@@ -78,10 +83,6 @@ class BaseClient:
     def __getitem__(self, item):
         return self.__getattribute__(item)
     
-    @staticmethod
-    def base64_url_encode(s):
-        return base64.urlsafe_b64encode(s).decode().replace('=', '')
-
     @staticmethod
     def implode_params(string, params):
         if isinstance(params, dict):
@@ -166,3 +167,7 @@ def no_ssl_verification():
                 adapter.close()
             except:
                 pass
+
+
+def error_handler(error):
+    root_logger.exception(error)

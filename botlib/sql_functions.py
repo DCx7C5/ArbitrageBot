@@ -26,7 +26,6 @@ def get_enabled_bot_markets_sql(bot_ids):
         curs.execute(
             f'SELECT bot_id, name, refid FROM arbitrage.bot_markets '
             f'JOIN arbitrage.exchanges ON exchange_id = exchanges.id '
-            f'AND exchanges.enabled = 1 '
             f'AND bot_id IN {bot_ids}')
         return curs.fetchall()
 

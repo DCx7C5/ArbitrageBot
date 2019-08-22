@@ -1,7 +1,7 @@
 import time
 import random
 from queue import Queue
-from threading import RLock, Thread, Lock
+from threading import Thread, Lock, enumerate
 from botlib.sql_functions import get_enabled_bots_ids
 from botlib.sql_functions import get_enabled_bot_markets_sql
 from botlib.botlogs.logger import root_logger
@@ -24,14 +24,12 @@ class FetchOrderBook(Thread):
         # Calls Exchange API
         data = ex.get_order_book(self._exchange, self._refid)
         if not data:
-            self._logger.warning(f'API request failed with {self.__bot_id} | {self._exchange} | {self._refid}')
+            self._logger.error(f'API request failed with {self.__bot_id} | {self._exchange} | {self._refid}')
 
         # Stores OrderBook in OrderBook storage class
         success = ob.update_order_book(self._exchange, self._refid, data)
         if not success:
-            self._logger.warning(f'Saving OrderBook failed with {self.__bot_id} | {self._exchange} | {self._refid}')
-        if data and success:
-            self._logger.debug("API call successful")
+            self._logger.error(f'Saving OrderBook failed with {self.__bot_id} | {self._exchange} | {self._refid}')
 
 
 class OrderBookDaemon(Thread):
@@ -40,24 +38,32 @@ class OrderBookDaemon(Thread):
         Thread.__init__(self)
         self.daemon = True
         self.name = 'OrderBookDaemon'
-        self.__lock = RLock()
+        self.__lock = Lock()
         self.__queue = Queue()
         self._logger = root_logger
+        self._last_log = 0
 
-    def fill_queue(self):
+    def __fill_queue(self):
         if not bg_daemon.get_bot_markets():
             time.sleep(3)
         for bm in bg_daemon.get_bot_markets():
             self.__queue.put(bm)
 
+    @staticmethod
+    def __count_sub_threads():
+        return len([i for i in enumerate()if 'Bot' in i.getName()])
+
     def run(self) -> None:
         self._logger.debug('Daemon started!')
         while True:
             if self.__queue.empty():
-                self.fill_queue()
+                self.__fill_queue()
             args = self.__queue.get()
             t = FetchOrderBook(*args)
             t.start()
+            if time.time() > self._last_log + 15:
+                self._logger.info(f'Daemon running. Sub-threads active:{self.__count_sub_threads()}')
+                self._last_log = time.time()
             time.sleep(0.2)
 
 
@@ -69,6 +75,7 @@ class BackGroundDaemon(Thread):
         self.daemon = True
         self.__lock = Lock()
         self._logger = root_logger
+        self._last_log = 0
 
         # List of enabled bot ids
         self.enabled_bot_ids = []
@@ -96,12 +103,12 @@ class BackGroundDaemon(Thread):
             return
         with self.__lock:
             self.locked_bot_ids.remove(bot_id)
-        self._logger.debug(f'Bot released from execution lock: #{bot_id}')
+        self._logger.info(f'Bot released from execution lock: #{bot_id}')
 
     def add_to_locked_bot_ids(self, bot_id: int):
         with self.__lock:
             self.locked_bot_ids.append(bot_id)
-        self._logger.debug(f'Bot added to block list. No work for him: #{bot_id}')
+        self._logger.info(f'Bot added to block list. No work for him: #{bot_id}')
 
     def get_bot_markets(self):
         with self.__lock:
@@ -119,7 +126,11 @@ class BackGroundDaemon(Thread):
             self.__update_enabled_bot_ids(ids)
             with self.__lock:
                 self.bot_markets = get_enabled_bot_markets_sql(ids)
+                print(self.bot_markets)
             time.sleep(1.5)
+            if time.time() > self._last_log + 15:
+                self._logger.info(f'Daemon running.')
+                self._last_log = time.time()
 
 
 class TradeOptions(Thread):
@@ -151,6 +162,5 @@ if __name__ == '__main__':
     bg_daemon.start()
     obd.start()
     while True:
-        root_logger.info('Main Thread is active!')
+        root_logger.info('Main Thread is running!')
         time.sleep(10)
-
