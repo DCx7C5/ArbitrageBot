@@ -1,14 +1,12 @@
 import pymysql.cursors
 
-URI = 'mysql://backend:password@localhost:3306/arbitrage'
-
 # Connect to the database
 connection = pymysql.connect(host='localhost',
                              user='backend',
                              password='password',
                              db='arbitrage',
-                             charset='utf8mb4',
                              )
+connection.autocommit_mode = True
 
 
 def get_enabled_bots_ids():
