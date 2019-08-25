@@ -1,6 +1,4 @@
-import time
 from threading import Thread
-
 from botlib.exchanges.binance import BinanceClient
 from botlib.exchanges.crex import CrexClient
 from botlib.exchanges.graviex import GraviexClient
@@ -15,6 +13,7 @@ class Exchange:
         self.Graviex = GraviexClient(*get_key_and_secret_sql('Graviex'))
         self.Binance = BinanceClient(*get_key_and_secret_sql('Binance'))
         self.__extended_inits__()
+        self.__logger.setLevel('INFO')
         self.__logger.info('All exchanges initialized.')
 
     def get_order_book(self, exchange, ref_id, limit=None):

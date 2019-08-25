@@ -1,18 +1,20 @@
 import sys
 import time
 import logging
+from random import randint
+
 import coloredlogs
 from threading import Thread
 from botlib.exchanges import Exchange
 from botlib.botmarkets import BotsAndMarkets, BotsAndMarketsDaemon
 from botlib.orderbook import OrderBook, OrderBookDaemon
 
-log = logging.getLogger(__name__)
+logger = logging.getLogger(__name__)
 fh = logging.FileHandler('botlib/botlogs/debug.log')
-coloredlogs.install(level=logging.DEBUG, datefmt='%Y-%m-%d %H:%M:%S',
+coloredlogs.install(level=logging.INFO, datefmt='%Y-%m-%d %H:%M:%S',
                     fmt='[%(asctime)-20s-] %(threadName)-14s - %(levelname)-7s - %(message)s',
                     milliseconds=True,
-                    logger=log
+                    logger=logger
                     )
 
 
@@ -31,8 +33,8 @@ class TradeOptionsDaemon(Thread):
         self.__last_log = time.time()
         self.__bm_storage = bm_storage
         self.__ob_storage = ob_storage
-        self.__active_bots = list()
-        self.__jobs = list()
+        self.__active_bots = []
+        self.__jobs = []
         self.__ec = 0
 
     def find_arbitrage_options(self, bot):
@@ -110,32 +112,32 @@ class TradeOptionsDaemon(Thread):
             else:
                 self.__logger.warning('Markets not synced yet...')
             self.__update_active_bots()
-            if time.time() > self.__last_log + 10:
-                self.__logger.debug(f"Bots {self.__active_bots} are searching for arbitrage options...")
+            if time.time() > self.__last_log + randint(20, 30):
+                self.__logger.info(f"Bots {self.__active_bots} are searching for arbitrage options...")
                 self.__last_log = time.time()
             time.sleep(1)
 
 
 if __name__ == '__main__':
-    log.info("Preparing bot startup...")
+    logger.info("Preparing bot startup...")
     # Initialize exchange APIs
-    exch_clients = Exchange(logger=log)
+    exch_clients = Exchange(logger=logger)
 
     # Create order book storage
-    order_book_storage = OrderBook(logger=log)
+    order_book_storage = OrderBook(logger=logger)
 
     # Create bots_markets storage
-    bots_markets_storage = BotsAndMarkets(logger=log)
+    bots_markets_storage = BotsAndMarkets(logger=logger)
 
     # Init database sync daemon
     bots_markets_daemon = BotsAndMarketsDaemon(
         bm_storage=bots_markets_storage,
-        logger=log)
+        logger=logger)
 
     # Init order_book daemon
     order_book_daemon = OrderBookDaemon(
         clients=exch_clients,
-        logger=log,
+        logger=logger,
         ob_storage=order_book_storage,
         bm_storage=bots_markets_storage)
 
@@ -144,9 +146,9 @@ if __name__ == '__main__':
         clients=exch_clients,
         bm_storage=bots_markets_storage,
         ob_storage=order_book_storage,
-        logger=log)
+        logger=logger)
 
-    log.info("All modules initialized. Starting bot!")
+    logger.info("All modules initialized. Starting bot!")
 
     # Let the daemons run in background
     try:
@@ -156,6 +158,6 @@ if __name__ == '__main__':
         trade_finder.start()
         trade_finder.join()
     except KeyboardInterrupt:
-        log.info('Shutdown By User')
+        logger.info('Shutdown By User')
     finally:
         sys.exit()

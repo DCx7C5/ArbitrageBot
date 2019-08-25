@@ -1,8 +1,9 @@
 import random
 import time
 from threading import Lock, Thread
+from collections import Counter
 
-from botlib.sql_functions import get_enabled_bots_ids_sql, get_enabled_bot_markets_sql
+from botlib.sql_functions import get_enabled_bots_ids_sql, get_enabled_bot_markets_sql, disable_orphaned_bot_market_sql
 from botlib.storage import Storage
 
 
@@ -28,7 +29,7 @@ class BotsAndMarkets(Storage):
             for bot_id in bot_ids:
                 if bot_id not in self.__enabled_bot_ids:
                     self.__enabled_bot_ids.append(bot_id)
-                    self.__logger.debug(f'Bot activated! Id: {bot_id}')
+                    self.__logger.info(f'Bot activated! Id: {bot_id}')
 
                 if str(bot_id) not in self.__markets_per_bot.keys():
                     self.__markets_per_bot.update({str(bot_id): []})
@@ -37,7 +38,7 @@ class BotsAndMarkets(Storage):
             for bot_id in self.__enabled_bot_ids:
                 if bot_id not in bot_ids:
                     self.__enabled_bot_ids.remove(bot_id)
-                    self.__logger.debug(f'Bot deactivated! Id: {bot_id}')
+                    self.__logger.info(f'Bot deactivated! Id: {bot_id}')
                 if str(bot_id) not in self.__markets_per_bot.keys():
                     del self.__markets_per_bot[str(bot_id)]
 
@@ -47,13 +48,30 @@ class BotsAndMarkets(Storage):
                 if market not in self.__bot_markets:
                     self.__bot_markets.append(market)
                     self.__markets_per_bot[str(market[0])].append((market[1], market[2]))
-                    self.__logger.debug(f'Market activated! Id: {market}')
+                    self.__logger.info(f'Market activated! Id: {market}')
 
             for market in self.__bot_markets:
                 if market not in bot_markets:
                     self.__bot_markets.remove(market)
                     self.__markets_per_bot[str(market[0])].remove((market[1], market[2]))
-                    self.__logger.debug(f'Market deactivated! Id: {market}')
+                    self.__logger.info(f'Market deactivated! Id: {market}')
+        orphan = self.find_orphan_markets()
+        if orphan is not None and isinstance(orphan, tuple):
+            self.__logger.error('Found orphaned Bot Market. Deactivating...')
+            disable_orphaned_bot_market_sql(orphan[1])
+            self.__logger.info(f'Orphaned bot_market deactivated automatically. {orphan[1], orphan[2]}')
+
+    def find_orphan_markets(self):
+        with self.__lock:
+            c = Counter(elem[0] for elem in self.__bot_markets)
+            orphan = min(c, key=lambda x: c.get(x))
+            if not orphan:
+                return None
+            if c[orphan] != 1:
+                return None
+            for i in self.__bot_markets:
+                if i[0] == orphan:
+                    return orphan, i[0], i[2]
 
     def get_markets_per_bot(self) -> list:
         with self.__lock:
@@ -92,6 +110,6 @@ class BotsAndMarketsDaemon(Thread):
             markets = get_enabled_bot_markets_sql(ids)
             self.__bm_storage.update_enabled_bot_markets(markets)
             time.sleep(1.5)
-            if time.time() > self.__last_log_awake + 30:
-                self.__logger.debug(f'Database syncing to bot....')
+            if time.time() > self.__last_log_awake + 15:
+                self.__logger.info(f'Database syncing to bot....')
                 self.__last_log_awake = time.time()

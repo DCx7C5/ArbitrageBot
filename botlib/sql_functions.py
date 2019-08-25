@@ -5,9 +5,19 @@ connection = ConnectionPool(host='127.0.0.1',
                             user='backend',
                             password='password',
                             db='arbitrage',
-                            autocommit=True)
+                            autocommit=True,
+                            size=5)
 
-INSERTION_LOCK = threading.RLock()
+INSERTION_LOCK_BOT_MARKETS = threading.RLock()
+
+
+def disable_orphaned_bot_market_sql(bot_id: int):
+    with connection.get_connection() as curs:
+        with INSERTION_LOCK_BOT_MARKETS:
+            curs.execute(
+                f'UPDATE bots SET enabled = 0 WHERE bots.id = {int(bot_id)}'
+            )
+        return True
 
 
 def get_enabled_bots_ids_sql():

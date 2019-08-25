@@ -72,15 +72,19 @@ class CrexClient(BaseClient):
                [[round(float(x['price']), 10), round(float(x['volume']), 10)] for x in resp['sellLevels']]
 
     def update_balance(self) -> None:
-        response = self.api_call(endpoint=BALANCE, params={}, api='account')
-        exch_symbols = get_symbols_for_exchange_sql(self.name)
-        for a in exch_symbols:
-            for i in response:
-                if i['currency'] == a[0]:
-                    with self.lock:
-                        self.balances.update(
-                            {a[1]: (i['available'], i['reserved'])}
-                        )
+        try:
+            response = self.api_call(endpoint=BALANCE, params={}, api='account')
+            exch_symbols = get_symbols_for_exchange_sql(self.name)
+            for a in exch_symbols:
+                for i in response:
+                    if i['currency'] == a[0]:
+                        with self.lock:
+                            self.balances.update(
+                                {a[1]: (i['available'], i['reserved'])}
+                            )
+        except TypeError:
+            time.sleep(1)
+            self.update_balance()
 
     def update_min_order_vol(self) -> None:
         response = self.api_call(endpoint=INSTRUMENTS, params={}, api='public')
