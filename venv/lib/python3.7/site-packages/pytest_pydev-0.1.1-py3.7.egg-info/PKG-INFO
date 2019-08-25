@@ -1,0 +1,53 @@
+Metadata-Version: 1.1
+Name: pytest-pydev
+Version: 0.1.1
+Summary: py.test plugin to connect to a remote debug server with PyDev or PyCharm.
+Home-page: http://bitbucket.org/basti/pytest-pydev/
+Author: Sebastian Rahlf
+Author-email: basti@redtoad.de
+License: MIT License
+Download-URL: http://bitbucket.org/basti/pytest-pydev/downloads/
+Description: ============
+        pytest-pydev
+        ============
+        
+        With this plugin you can start a Python debug server on your local machine (say
+        on port 8042) and your unittests on another. ::
+        
+            py.test --pydevd=local-machine:8042
+        
+        Obviously, in this example, instead of ``local-machine`` you use the appropriate
+        IP address.
+        
+        A ``py.test --help`` will yield more information.
+        
+        
+        Download and Installation
+        =========================
+        
+        You can install the plugin by running
+        
+        pip install pytest-pydev
+        
+        Alternatively, get the latest stable version from PyPI or the latest
+        bleeding-edge archive from bitbucket.org.
+        
+        
+        License and Credits
+        ===================
+        
+        This plugin is released under the MIT license. You can find the full text of the
+        license in the ``LICENSE`` file.
+        
+        Copyright (C) 2012 Sebastian Rahlf <basti at redtoad dot de>
+Keywords: py.test,pytest,pydev,pycharm,python remote debugger
+Platform: UNKNOWN
+Classifier: Operating System :: OS Independent
+Classifier: Development Status :: 3 - Alpha
+Classifier: Intended Audience :: Developers
+Classifier: License :: OSI Approved :: MIT License
+Classifier: Programming Language :: Python :: 2.4
+Classifier: Programming Language :: Python :: 2.5
+Classifier: Programming Language :: Python :: 2.6
+Classifier: Programming Language :: Python :: 2.7
+Classifier: Topic :: Software Development :: Testing

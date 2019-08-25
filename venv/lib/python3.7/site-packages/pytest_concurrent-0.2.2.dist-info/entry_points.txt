@@ -1,0 +1,3 @@
+[pytest11]
+concurrent = pytest_concurrent.plugin
+

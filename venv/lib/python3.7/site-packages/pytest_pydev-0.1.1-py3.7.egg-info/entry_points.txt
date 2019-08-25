@@ -1,0 +1,3 @@
+[pytest11]
+pydev = pytest_pydev
+
