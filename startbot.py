@@ -117,6 +117,7 @@ if __name__ == '__main__':
         logger=log
     )
     log.info("Arbitrage Bot started")
+
     bots_markets_daemon.start()
     order_book_daemon.start()
     time.sleep(15)
