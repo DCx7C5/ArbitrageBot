@@ -11,7 +11,7 @@ from botlib.orderbook import OrderBook, OrderBookDaemon
 
 logger = logging.getLogger(__name__)
 fh = logging.FileHandler('botlib/botlogs/debug.log')
-coloredlogs.install(level=logging.INFO, datefmt='%Y-%m-%d %H:%M:%S',
+coloredlogs.install(level=logging.DEBUG, datefmt='%Y-%m-%d %H:%M:%S',
                     fmt='[%(asctime)-20s-] %(threadName)-14s - %(levelname)-7s - %(message)s',
                     milliseconds=True,
                     logger=logger
@@ -78,7 +78,6 @@ class TradeOptionsDaemon(Thread):
         print(options)
         best_rate = 0
         best_option = None
-
         # First find most profitable option
 
     def __get_order_books_for_bot(self, bot) -> list:
@@ -124,7 +123,7 @@ if __name__ == '__main__':
     exch_clients = Exchange(logger=logger)
 
     # Create order book storage
-    order_book_storage = OrderBook(logger=logger)
+    order_book_storage = OrderBook()
 
     # Create bots_markets storage
     bots_markets_storage = BotsAndMarkets(logger=logger)

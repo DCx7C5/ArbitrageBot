@@ -8,9 +8,8 @@ from queue import Queue
 
 class OrderBook(Storage):
 
-    def __init__(self, logger):
+    def __init__(self):
         self.__lock = Lock()
-        self.__logger = logger
 
     def update_order_book(self, exchange, pair, book):
         if not self[exchange]:
