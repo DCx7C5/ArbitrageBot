@@ -1,4 +1,7 @@
 import time
+
+from requests import Session
+
 from botlib.exchanges.baseclient import BaseClient
 import urllib.parse as _url_encode
 
@@ -80,9 +83,10 @@ class BinanceClient(BaseClient):
         return {'url': url, 'method': method, 'body': body, 'headers': headers}
 
     def get_order_book(self, refid, limit=None):
-        params = {"symbol": refid,
-                  'limit': limit if limit else 500}
+        params = {"symbol": refid, 'limit': limit if limit else 500}
         resp = self.api_call(endpoint=ORDER_BOOK, params=params, api='public')
+        if not resp:
+            self.error_handler()
         return [[round(float(x[0]), 10), round(float(x[1]), 10)] for x in resp['bids']],\
                [[round(float(x[0]), 10), round(float(x[1]), 10)] for x in resp['asks']]
 

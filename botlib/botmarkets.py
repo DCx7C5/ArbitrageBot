@@ -64,6 +64,10 @@ class BotsAndMarkets(Storage):
             random.shuffle(list(self.__bot_markets))
             return self.__bot_markets
 
+    def get_enabled_bot_ids(self):
+        with self.__lock:
+            return self.__enabled_bot_ids
+
     def count_enabled_bot_ids(self):
         with self.__lock:
             return len(self.__enabled_bot_ids)
@@ -89,5 +93,5 @@ class BotsAndMarketsDaemon(Thread):
             self.__bm_storage.update_enabled_bot_markets(markets)
             time.sleep(1.5)
             if time.time() > self.__last_log_awake + 10:
-                self.__logger.info(f'Daemon running.')
+                self.__logger.debug(f'Database syncing to bot....')
                 self.__last_log_awake = time.time()

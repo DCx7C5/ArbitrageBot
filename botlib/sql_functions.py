@@ -32,11 +32,9 @@ def get_enabled_bot_markets_sql(bot_ids):
     bot_ids = tuple(bot_ids)
     with connection.cursor() as curs:
         curs.execute(
-            'SELECT bot_id, name, refid FROM arbitrage.bot_markets '
-            'JOIN arbitrage.exchanges ON exchange_id = exchanges.id '
-            'AND exchanges.enabled = 1 '
-            'AND bot_markets.enabled = 1 '
-            f'AND bot_id IN {bot_ids}'
+            """SELECT bot_id, name, refid FROM arbitrage.bot_markets 
+            JOIN arbitrage.exchanges ON exchange_id = exchanges.id
+            AND exchanges.enabled = 1 AND bot_markets.enabled = 1 AND bot_id IN {0};""".format(bot_ids)
         )
         return curs.fetchall()
 

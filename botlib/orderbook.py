@@ -30,8 +30,8 @@ class OrderBook(Storage):
             with self.__lock:
                 return self[exchange][pair]
         except (AttributeError, KeyError):
-
-            raise Exception("OrderBook wasn't found in class OrderBooks(Storage)")
+            time.sleep(2)
+            self.get_order_book(exchange, pair)
 
     def get_highest_bid_position(self, exchange, pair):
         with self.__lock:
@@ -52,7 +52,7 @@ class FetchOrderBook(Thread):
         self._logger = logger
         self._clients = clients
         self._ob = ob_storage
-        self.name = f"BotID {self.__bot_id} | {exchange} | {refid}"
+        self.name = f"FetchOrderBook"
 
     def run(self):
         # Calls Exchange API
@@ -75,7 +75,7 @@ class OrderBookDaemon(Thread):
         self.__lock = Lock()
         self.__queue = Queue()
         self._logger = logger
-        self._last_log = 0
+        self._last_log = time.time()
         self._clients = clients
         self._order_book = ob_storage
         self._bot_markets = bm_storage
@@ -88,10 +88,10 @@ class OrderBookDaemon(Thread):
 
     @staticmethod
     def __count_sub_threads():
-        return len([i for i in enumerate() if 'Bot' in i.getName()])
+        return len([i for i in enumerate() if 'FetchOrderBook' in i.getName()])
 
     def run(self) -> None:
-        self._logger.debug('Daemon started!')
+        self._logger.info('Daemon started!')
         while True:
             if self.__queue.empty():
                 self.__fill_queue()
@@ -99,6 +99,6 @@ class OrderBookDaemon(Thread):
             t = FetchOrderBook(*args, clients=self._clients, ob_storage=self._order_book, logger=self._logger)
             t.start()
             if time.time() > self._last_log + 10:
-                self._logger.info(f'Daemon running. Sub-threads active:{self.__count_sub_threads()}')
+                self._logger.debug(f'Syncing OrderBooks to bot... Sub-threads active:{self.__count_sub_threads()}')
                 self._last_log = time.time()
             time.sleep(0.2)

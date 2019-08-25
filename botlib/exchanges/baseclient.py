@@ -8,11 +8,13 @@ import warnings
 from threading import Lock
 from urllib import parse
 from requests import Session
+from requests.exceptions import ConnectionError
 from urllib3.exceptions import InsecureRequestWarning
-
-# SSL FIX
+from urllib3 import disable_warnings
 from botlib.sql_functions import get_max_order_size_for_exchange_sql, get_min_profit_for_exchange_sql
 
+# SSL FIX
+disable_warnings()
 old_merge_environment_settings = Session.merge_environment_settings
 
 
@@ -35,6 +37,7 @@ class BaseClient:
         self.last_call_ms = 0
         self.last_call_moa = 0
         self.last_call_settings = 0
+        self.__error_counter = 0
         self.name = None
 
     def api_call(self, endpoint, params, api):
@@ -65,9 +68,13 @@ class BaseClient:
             body = body.encode()
         self.__session.cookies.clear()
         with no_ssl_verification():
-            response = self.__session.request(method=method, url=url, data=body,
-                                              headers=request_headers,
-                                              timeout=6)
+            try:
+                response = self.__session.request(method=method, url=url, data=body,
+                                                  headers=request_headers,
+                                                  timeout=6)
+            except ConnectionError:
+                pass
+
         try:
             http_response = response.text
             json_data = json.loads(http_response)
@@ -173,6 +180,11 @@ class BaseClient:
         with self.lock:
             return self.min_profit.get(refid)
 
+    def error_handler(self):
+        self.__error_counter += 1
+        if self.__error_counter > 3:
+            self.__session.close()
+            self.__session = Session()
 
 # noinspection PyBroadException
 @contextlib.contextmanager
