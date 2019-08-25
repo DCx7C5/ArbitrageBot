@@ -10,7 +10,7 @@ from botlib.orderbook import OrderBook, OrderBookDaemon
 log = logging.getLogger(__name__)
 fh = logging.FileHandler('botlib/botlogs/debug.log')
 coloredlogs.install(level=logging.DEBUG, datefmt='%Y-%m-%d %H:%M:%S',
-                    fmt='[%(asctime)-20s-] %(threadName)-14s - %(levelname)-6s > %(message)s',
+                    fmt='[%(asctime)-20s-] %(threadName)-14s - %(levelname)-7s > %(message)s',
                     milliseconds=True,
                     logger=log
                     )
@@ -26,7 +26,7 @@ class TradeOptionsDaemon(Thread):
         Thread.__init__(self)
         self.daemon = True
         self.name = f'TradeFinder'
-        self.cli = clients
+        self.__cli = clients
         self.__logger = logger
         self.__last_log = time.time()
         self.__bm_storage = bm_storage
@@ -39,9 +39,6 @@ class TradeOptionsDaemon(Thread):
         """Find arbitrage options for ALL market combinations"""
         options = []
         order_books = self.__get_order_books_for_bot(bot)
-        if not order_books:
-            self.__logger.warning("OrderBook wasn't fetched yet...")
-            return
         if not order_books or order_books is None:
             self.__logger.warning(order_books)
         for bids in order_books:
@@ -58,17 +55,17 @@ class TradeOptionsDaemon(Thread):
             self.__filter_arbitrage_options(options)
 
     def __check_min_profit(self, bids, asks):
-        if round((bids[2][0] - asks[3][0]) / bids[2][0] * 100, 2) >= float(self.cli.get_min_profit(bids[0], bids[1])):
+        if round((bids[2][0] - asks[3][0]) / bids[2][0] * 100, 2) >= float(self.__cli.get_min_profit(bids[0], bids[1])):
             return True
         return False
 
     def __check_quantity_against_min_order_amount(self, side):
-        if self.cli.get_minimum_order_amount(side[0], side[1]) < side[2][1]:
+        if self.__cli.get_minimum_order_amount(side[0], side[1]) < side[2][1]:
             return True
         return False
 
     def __check_quantity_against_max_order_size(self, side):
-        if self.cli.get_max_order_size(side[0], side[1]) > side[2][1]:
+        if self.__cli.get_max_order_size(side[0], side[1]) > side[2][1]:
             return True
         return False
 
@@ -85,8 +82,13 @@ class TradeOptionsDaemon(Thread):
     def __get_order_books_for_bot(self, bot) -> list:
         order_books = []
         for ob_rq in bot[1]:
-            book = self.__ob_storage.get_order_book(ob_rq[0], ob_rq[1])
-            order_books.append((ob_rq[0], ob_rq[1], book[0][0], book[1][0]))
+            try:
+                book = self.__ob_storage.get_order_book(ob_rq[0], ob_rq[1])
+                order_books.append((ob_rq[0], ob_rq[1], book[0][0], book[1][0]))
+            except TypeError:
+                time.sleep(3)
+                self.__logger.warning('Markets not synced yet...')
+                self.__get_order_books_for_bot(bot)
         return order_books
 
     def __update_active_bots(self):
@@ -115,35 +117,41 @@ class TradeOptionsDaemon(Thread):
 
 
 if __name__ == '__main__':
-    exch_clients = Exchange()
+    # Initialize exchange APIs
+    exch_clients = Exchange(logger=log)
 
-    order_book_storage = OrderBook(
-        logger=log
-    )
-    bots_markets_storage = BotsAndMarkets(
-        logger=log
-    )
+    # Create order book storage
+    order_book_storage = OrderBook(logger=log)
+
+    # Create bots_markets storage
+    bots_markets_storage = BotsAndMarkets(logger=log)
+
+    # Init database sync daemon
     bots_markets_daemon = BotsAndMarketsDaemon(
         bm_storage=bots_markets_storage,
-        logger=log
-    )
+        logger=log)
+
+    # Init order_book daemon
     order_book_daemon = OrderBookDaemon(
         clients=exch_clients,
         logger=log,
         ob_storage=order_book_storage,
-        bm_storage=bots_markets_storage
-    )
+        bm_storage=bots_markets_storage)
+
+    # Init trade-finder daemon (arbitrage, catch, etc..)
     trade_finder = TradeOptionsDaemon(
         clients=exch_clients,
         bm_storage=bots_markets_storage,
         ob_storage=order_book_storage,
-        logger=log
-    )
-    log.info("Arbitrage Bot started")
+        logger=log)
+
+    log.info("Arbitrage Bot initialized. Starting bot!")
+
+    # Let the daemons run in background
     try:
         bots_markets_daemon.start()
         order_book_daemon.start()
-        time.sleep(15)
+        time.sleep(5)
         trade_finder.start()
         trade_finder.join()
     except KeyboardInterrupt:

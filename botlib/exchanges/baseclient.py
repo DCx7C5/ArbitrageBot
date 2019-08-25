@@ -4,6 +4,7 @@ import hashlib
 import hmac
 import json
 import base64
+import time
 import warnings
 from threading import Lock
 from urllib import parse
@@ -23,32 +24,26 @@ class BaseClient:
     def __init__(self):
         self.lock = Lock()
         self.__session = Session()
-        self.__headers = dict()
-        self.__options = dict()
-        self.balances = dict()
-        self.min_profit = dict()
-        self.max_order_size = dict()
-        self.min_order_vol = dict()
-        self.deposit_address = dict()
-        self.withdrawal_fees = dict()
-        self.maker_fees = dict()
-        self.taker_fees = dict()
-        self.last_call_mp = 0
-        self.last_call_ms = 0
-        self.last_call_moa = 0
-        self.last_call_settings = 0
+        self.__headers = {}
+        self.__options = {}
+        self.balances = {}
+        self.min_profit = {}
+        self.max_order_size = {}
+        self.min_order_vol = {}
+        self.deposit_address = {}
+        self.withdrawal_fees = {}
+        self.maker_fees = {}
+        self.taker_fees = {}
+
+        self.last_call_mp = time.time()
+        self.last_call_ms = time.time()
+        self.last_call_moa = time.time()
+        self.last_call_settings = time.time()
         self.__error_counter = 0
         self.name = None
 
     def api_call(self, endpoint, params, api):
         return self.__fetch_wrap(path=endpoint, params=params, api=api)
-
-    def sign_data_for_prv_api(self, path, api='public', method='GET', params=None, headers=None, body=None):
-        if params is None:
-            pass
-
-    def update_balance(self):
-        pass
 
     def __fetch_wrap(self, path, api='public', method='GET', params=None, headers=None, body=None):
         if params is None:
@@ -150,7 +145,7 @@ class BaseClient:
             return base64.b64encode(h.digest())
         return h.digest()
 
-    def update_min_profit(self):
+    def update_min_profit(self) -> None:
         min_profits = get_min_profit_for_exchange_sql(self.name)
         for mp in min_profits:
             with self.lock:
@@ -159,7 +154,7 @@ class BaseClient:
                 else:
                     self.min_profit[mp[1]] = mp[0]
 
-    def update_max_order_size(self):
+    def update_max_order_size(self) -> None:
         max_orders = get_max_order_size_for_exchange_sql(self.name)
         for mo in max_orders:
             with self.lock:
@@ -168,23 +163,59 @@ class BaseClient:
                 else:
                     self.max_order_size[mo[1]] = mo[0]
 
-    def get_min_order_vol(self, refid):
+    def get_min_order_vol(self, refid: str) -> float:
         with self.lock:
-            return self.min_order_vol.get(refid)
+            mov = self.min_order_vol.get(refid)
+        if (not mov) or time.time() > self.last_call_moa + 3600:
+            self.update_min_order_vol()
+            self.last_call_moa = time.time()
+        with self.lock:
+            return self.min_order_vol[refid]
 
-    def get_max_order_size(self, refid):
+    def get_max_order_size(self, refid: str) -> float:
+        with self.lock:
+            max_size = self.max_order_size.get(refid)
+        if (not max_size) or time.time() > self.last_call_ms + 60:
+            self.update_max_order_size()
+            self.last_call_mp = time.time()
         with self.lock:
             return self.max_order_size.get(refid)
 
-    def get_min_profit(self, refid):
+    def get_min_profit(self, refid: str) -> float:
+        with self.lock:
+            min_profit = self.min_profit.get(refid)
+        if (not min_profit) or time.time() > self.last_call_mp + 60:
+            self.update_min_profit()
+            self.last_call_mp = time.time()
         with self.lock:
             return self.min_profit.get(refid)
+    
+    def get_available_balance(self, refid=None):
+        with self.lock:
+            balance = self.balances.get(refid if refid else None)
+        if not balance:
+            self.update_balance()
+        return self.balances.get(refid if refid else None)
+
+    def update_balance(self):
+        """Only here to be overwritten and be able to reference from here"""
+        pass
+
+    def update_min_order_vol(self):
+        """Only here to be overwritten and be able to reference from here"""
+        pass
+
+    def sign_data_for_prv_api(self, path, api='public', method='GET', params=None, headers=None, body=None):
+        """Only here to be overwritten and be able to reference from here"""
+        if params is None:
+            pass
 
     def error_handler(self):
         self.__error_counter += 1
         if self.__error_counter > 3:
             self.__session.close()
             self.__session = Session()
+
 
 # noinspection PyBroadException
 @contextlib.contextmanager

@@ -28,10 +28,11 @@ GET = "GET"
 PRIVATE = "PRIVATE"
 PUBLIC = "PUBLIC"
 
+IP = "104.20.166.21"
+BASE_URL = "https://api.crex24.com"
+
 
 class CrexClient(BaseClient):
-
-    BASE_URL = "https://api.crex24.com"
 
     def __init__(self, api_key, api_secret, calls_per_second=6):
         BaseClient.__init__(self)
@@ -48,7 +49,7 @@ class CrexClient(BaseClient):
         if method == 'GET':
             if query:
                 request += '?' + self.url_encode(query)
-        url = self.BASE_URL + request
+        url = BASE_URL + request
         if (api == 'trading') or (api == 'account'):
             nonce = round(time.time() * 1000000)
             secret = base64.b64decode(self._api_secret)
@@ -62,7 +63,7 @@ class CrexClient(BaseClient):
             headers['X-CREX24-API-SIGN'] = signature.decode()
         return {'url': url, 'method': method, 'body': body, 'headers': headers}
 
-    def get_order_book(self, refid, limit=None):
+    def get_order_book(self, refid, limit=None) -> tuple:
         params = {"instrument": refid}
         if limit:
             params['limit'] = limit
@@ -70,7 +71,7 @@ class CrexClient(BaseClient):
         return [[round(float(x['price']), 10), round(float(x['volume']), 10)] for x in resp['buyLevels']],\
                [[round(float(x['price']), 10), round(float(x['volume']), 10)] for x in resp['sellLevels']]
 
-    def update_balance(self):
+    def update_balance(self) -> None:
         response = self.api_call(endpoint=BALANCE, params={}, api='account')
         exch_symbols = get_symbols_for_exchange_sql(self.name)
         for a in exch_symbols:
@@ -81,7 +82,7 @@ class CrexClient(BaseClient):
                             {a[1]: (i['available'], i['reserved'])}
                         )
 
-    def update_min_order_vol(self):
+    def update_min_order_vol(self) -> None:
         response = self.api_call(endpoint=INSTRUMENTS, params={}, api='public')
         for i in response:
             if i['symbol'] in self.balances.keys():

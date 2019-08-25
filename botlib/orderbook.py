@@ -99,6 +99,6 @@ class OrderBookDaemon(Thread):
             t = FetchOrderBook(*args, clients=self._clients, ob_storage=self._order_book, logger=self._logger)
             t.start()
             if time.time() > self._last_log + 10:
-                self._logger.debug(f'Syncing OrderBooks to bot... Sub-threads active:{self.__count_sub_threads()}')
+                self._logger.debug(f'Exchanges syncing to bot... Sub-threads active:{self.__count_sub_threads()}')
                 self._last_log = time.time()
             time.sleep(0.2)

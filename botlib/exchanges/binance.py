@@ -1,12 +1,9 @@
 import time
-
-from requests import Session
-
-from botlib.exchanges.baseclient import BaseClient
 import urllib.parse as _url_encode
+from botlib.exchanges.baseclient import BaseClient
+from botlib.sql_functions import get_symbols_for_exchange_sql
 
 # API ENDPOINTS
-from botlib.sql_functions import get_symbols_for_exchange_sql
 
 ORDER_BOOK = 'depth'
 ACCOUNT = 'account'
@@ -23,25 +20,26 @@ X_MBX_APIKEY = 'X-MBX-APIKEY'
 APPL_JSON = 'application/json'
 BIN_PYTH = 'binance/python'
 
+IP = "143.204.206.178"  #
+PUBLIC_API = f'https://api.binance.com/api/v1'
+PRIVATE_API = f'https://api.binance.com/api/v3'
+WAPI = f'https://api.binance.com/api/v3'
+WITHDRAW_API_URL = f'https://api.binance.com/wapi'
+MARGIN_API_URL = f'https://api.binance.com/sapi'
+PUBLIC = {
+    'get': ['depth', 'trades', 'aggTrades', 'exchangeInfo'],
+    'put': ['userDataStream'],
+    'post': ['userDataStream'],
+    'delete': ['userDataStream']
+}
+PRIVATE = {
+    'get': ['order', 'openOrders', 'allOrders', 'account', 'myTrades'],
+    'post': ['order', 'order/test'],
+    'delete': ['order']
+}
+
 
 class BinanceClient(BaseClient):
-
-    PUBLIC_API = 'https://api.binance.com/api/v1'
-    PRIVATE_API = 'https://api.binance.com/api/v3'
-    WAPI = 'https://api.binance.com/api/v3'
-    WITHDRAW_API_URL = 'https://api.binance.com/wapi'
-    MARGIN_API_URL = 'https://api.binance.com/sapi'
-    PUBLIC = {
-        'get': ['depth', 'trades', 'aggTrades', 'exchangeInfo'],
-        'put': ['userDataStream'],
-        'post': ['userDataStream'],
-        'delete': ['userDataStream']
-    }
-    PRIVATE = {
-        'get': ['order', 'openOrders', 'allOrders', 'account', 'myTrades'],
-        'post': ['order', 'order/test'],
-        'delete': ['order']
-    }
 
     def __init__(self, api_key, api_secret, calls_per_second=15):
         BaseClient.__init__(self)
@@ -53,7 +51,7 @@ class BinanceClient(BaseClient):
     def sign_data_for_prv_api(self, path, api='public', method='GET', params=None, headers=None, body=None):
         if params is None:
             params = {}
-        url = self.PUBLIC_API
+        url = PUBLIC_API
         url += '/' + path
         if api == 'wapi':
             url += '.html'
