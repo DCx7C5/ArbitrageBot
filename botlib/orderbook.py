@@ -22,7 +22,6 @@ class OrderBook(Storage):
         else:
             with self.__lock:
                 self[exchange][pair] = book
-        # self.__logger.info("Updated")
         return True
 
     def get_order_book(self, exchange, pair):
@@ -98,7 +97,7 @@ class OrderBookDaemon(Thread):
             args = self.__queue.get()
             t = FetchOrderBook(*args, clients=self._clients, ob_storage=self._order_book, logger=self._logger)
             t.start()
-            if time.time() > self._last_log + 10:
+            if time.time() > self._last_log + 30:
                 self._logger.debug(f'Exchanges syncing to bot... Sub-threads active:{self.__count_sub_threads()}')
                 self._last_log = time.time()
             time.sleep(0.2)

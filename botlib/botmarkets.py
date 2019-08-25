@@ -28,7 +28,7 @@ class BotsAndMarkets(Storage):
             for bot_id in bot_ids:
                 if bot_id not in self.__enabled_bot_ids:
                     self.__enabled_bot_ids.append(bot_id)
-                    self.__logger.info(f'Bot activated! Id: {bot_id}')
+                    self.__logger.debug(f'Bot activated! Id: {bot_id}')
 
                 if str(bot_id) not in self.__markets_per_bot.keys():
                     self.__markets_per_bot.update({str(bot_id): []})
@@ -37,7 +37,7 @@ class BotsAndMarkets(Storage):
             for bot_id in self.__enabled_bot_ids:
                 if bot_id not in bot_ids:
                     self.__enabled_bot_ids.remove(bot_id)
-                    self.__logger.info(f'Bot deactivated! Id: {bot_id}')
+                    self.__logger.debug(f'Bot deactivated! Id: {bot_id}')
                 if str(bot_id) not in self.__markets_per_bot.keys():
                     del self.__markets_per_bot[str(bot_id)]
 
@@ -47,13 +47,13 @@ class BotsAndMarkets(Storage):
                 if market not in self.__bot_markets:
                     self.__bot_markets.append(market)
                     self.__markets_per_bot[str(market[0])].append((market[1], market[2]))
-                    self.__logger.info(f'Market activated! Id: {market}')
+                    self.__logger.debug(f'Market activated! Id: {market}')
 
             for market in self.__bot_markets:
                 if market not in bot_markets:
                     self.__bot_markets.remove(market)
                     self.__markets_per_bot[str(market[0])].remove((market[1], market[2]))
-                    self.__logger.info(f'Market deactivated! Id: {market}')
+                    self.__logger.debug(f'Market deactivated! Id: {market}')
 
     def get_markets_per_bot(self) -> list:
         with self.__lock:
@@ -92,6 +92,6 @@ class BotsAndMarketsDaemon(Thread):
             markets = get_enabled_bot_markets_sql(ids)
             self.__bm_storage.update_enabled_bot_markets(markets)
             time.sleep(1.5)
-            if time.time() > self.__last_log_awake + 10:
+            if time.time() > self.__last_log_awake + 30:
                 self.__logger.debug(f'Database syncing to bot....')
                 self.__last_log_awake = time.time()

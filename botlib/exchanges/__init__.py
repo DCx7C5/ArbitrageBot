@@ -46,11 +46,13 @@ class Exchange:
         return self[exchange].cancel_order(order_id)
 
     def __extended_inits__(self):
+        last_t = None
         threads = [Thread(target=self.get_available_balance, name='ClientSettings', args=("Crex24",)),
                    Thread(target=self.get_available_balance, name='ClientSettings', args=("Binance",))]
         for t in threads:
             t.start()
-            t.join()
+            last_t = t
+        last_t.join()
 
     def __getitem__(self, item):
         """Makes class subscribable"""

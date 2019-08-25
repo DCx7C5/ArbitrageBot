@@ -1,17 +1,17 @@
-import pymysql
 import threading
+from pymysqlpool import ConnectionPool
 
-connection = pymysql.connect(host='127.0.0.1',
-                             user='backend',
-                             password='password',
-                             db='arbitrage',
-                             autocommit=True)
+connection = ConnectionPool(host='127.0.0.1',
+                            user='backend',
+                            password='password',
+                            db='arbitrage',
+                            autocommit=True)
 
 INSERTION_LOCK = threading.RLock()
 
 
 def get_enabled_bots_ids_sql():
-    with connection.cursor() as curs:
+    with connection.get_connection() as curs:
         curs.execute(
             'SELECT bots.id FROM arbitrage.bots '
             'WHERE bots.enabled = 1'
@@ -20,7 +20,7 @@ def get_enabled_bots_ids_sql():
 
 
 def get_enabled_exchanges_sql():
-    with connection.cursor() as curs:
+    with connection.get_connection() as curs:
         curs.execute(
             'SELECT name FROM arbitrage.exchanges '
             'WHERE exchanges.enabled = 1'
@@ -30,7 +30,7 @@ def get_enabled_exchanges_sql():
 
 def get_enabled_bot_markets_sql(bot_ids):
     bot_ids = tuple(bot_ids)
-    with connection.cursor() as curs:
+    with connection.get_connection() as curs:
         curs.execute(
             """SELECT bot_id, name, refid FROM arbitrage.bot_markets 
             JOIN arbitrage.exchanges ON exchange_id = exchanges.id
@@ -40,7 +40,7 @@ def get_enabled_bot_markets_sql(bot_ids):
 
 
 def get_key_and_secret_sql(exchange: str):
-    with connection.cursor() as curs:
+    with connection.get_connection() as curs:
         curs.execute(
             "SELECT exchanges.key, exchanges.secret FROM exchanges "
             "WHERE exchanges.name = %s ", exchange
@@ -49,7 +49,7 @@ def get_key_and_secret_sql(exchange: str):
 
 
 def get_symbols_for_exchange_sql(exchange):
-    with connection.cursor() as curs:
+    with connection.get_connection() as curs:
         curs.execute(
             "SELECT symbol, refid From bot_markets WHERE exchange_id = (SELECT id FROM exchanges WHERE name = %s)", exchange
         )
@@ -57,7 +57,7 @@ def get_symbols_for_exchange_sql(exchange):
 
 
 def get_min_profit_for_exchange_sql(exchange):
-    with connection.cursor() as curs:
+    with connection.get_connection() as curs:
         curs.execute(
             "SELECT min_profit, refid From bot_markets WHERE exchange_id = (SELECT id FROM exchanges WHERE name = %s)", exchange
         )
@@ -65,12 +65,9 @@ def get_min_profit_for_exchange_sql(exchange):
 
 
 def get_max_order_size_for_exchange_sql(exchange):
-    with connection.cursor() as curs:
+    with connection.get_connection() as curs:
         curs.execute(
             "SELECT max_size, refid From bot_markets WHERE exchange_id = (SELECT id FROM exchanges WHERE name = %s)", exchange
         )
         return [(float(x), y) for x, y in curs.fetchall()]
 
-
-def get_open_orders():
-    pass

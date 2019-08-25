@@ -10,7 +10,7 @@ from botlib.orderbook import OrderBook, OrderBookDaemon
 log = logging.getLogger(__name__)
 fh = logging.FileHandler('botlib/botlogs/debug.log')
 coloredlogs.install(level=logging.DEBUG, datefmt='%Y-%m-%d %H:%M:%S',
-                    fmt='[%(asctime)-20s-] %(threadName)-14s - %(levelname)-7s > %(message)s',
+                    fmt='[%(asctime)-20s-] %(threadName)-14s - %(levelname)-7s - %(message)s',
                     milliseconds=True,
                     logger=log
                     )
@@ -117,6 +117,7 @@ class TradeOptionsDaemon(Thread):
 
 
 if __name__ == '__main__':
+    log.info("Preparing bot startup...")
     # Initialize exchange APIs
     exch_clients = Exchange(logger=log)
 
@@ -145,7 +146,7 @@ if __name__ == '__main__':
         ob_storage=order_book_storage,
         logger=log)
 
-    log.info("Arbitrage Bot initialized. Starting bot!")
+    log.info("All modules initialized. Starting bot!")
 
     # Let the daemons run in background
     try:
