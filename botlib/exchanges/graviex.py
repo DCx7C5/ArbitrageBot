@@ -1,8 +1,6 @@
-import base64
-import hashlib
 import json
+import re
 import time
-
 from botlib.exchanges.baseclient import BaseClient
 
 
@@ -39,6 +37,7 @@ class GraviexClient(BaseClient):
 
     def __init__(self, api_key, api_secret, calls_per_second=15):
         BaseClient.__init__(self)
+        self.name = 'Graviex'
         self._api_key = api_key
         self._api_secret = api_secret
         self._rate_limit = 1.0 / calls_per_second
@@ -53,7 +52,7 @@ class GraviexClient(BaseClient):
             nonce = round(time.time() * 1000)
             request = f'access_key={self._api_key}&tonce={nonce}'
             message = f'{method}|{path}|{request}'
-            query = self.omit(params, self.extract_params(path))
+            query = self.omit(params, re.findall(r'{([\w-]+)}', path))
             if method == 'GET':
                 if query:
                     request += '?' + self.url_encode(query)
@@ -63,7 +62,7 @@ class GraviexClient(BaseClient):
                 auth += body
             signature = self.hmac(message.encode(), self._api_secret)
 
-        return {'url': request, 'method': method, 'body': body, 'headers': headers}
+        return {'url': request, 'method': method, 'body': body, 'headers': {}}
 
     def get_order_book(self, ref_id, limit=None):
         was_seen = set()

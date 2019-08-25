@@ -12,12 +12,15 @@
       <w>creds</w>
       <w>crex</w>
       <w>datefmt</w>
+      <w>ethbtc</w>
       <w>exas</w>
+      <w>exch</w>
       <w>exma</w>
       <w>graviex</w>
       <w>orderbooks</w>
       <w>pyth</w>
       <w>refid</w>
+      <w>refids</w>
       <w>rvnbtc</w>
       <w>tablename</w>
       <w>whoami</w>

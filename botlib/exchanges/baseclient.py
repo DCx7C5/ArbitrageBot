@@ -5,22 +5,37 @@ import hmac
 import json
 import base64
 import warnings
+from threading import Lock
 from urllib import parse
 from requests import Session
 from urllib3.exceptions import InsecureRequestWarning
-from botlib.botlogs.logger import root_logger
 
 # SSL FIX
+from botlib.sql_functions import get_max_order_size_for_exchange_sql, get_min_profit_for_exchange_sql
+
 old_merge_environment_settings = Session.merge_environment_settings
 
 
 class BaseClient:
 
     def __init__(self):
-        self._pub_session = Session()
-        self._prv_session = Session()
-        self._headers = dict()
-        self._options = dict()
+        self.lock = Lock()
+        self.__session = Session()
+        self.__headers = dict()
+        self.__options = dict()
+        self.balances = dict()
+        self.min_profit = dict()
+        self.max_order_size = dict()
+        self.min_order_vol = dict()
+        self.deposit_address = dict()
+        self.withdrawal_fees = dict()
+        self.maker_fees = dict()
+        self.taker_fees = dict()
+        self.last_call_mp = 0
+        self.last_call_ms = 0
+        self.last_call_moa = 0
+        self.last_call_settings = 0
+        self.name = None
 
     def api_call(self, endpoint, params, api):
         return self.__fetch_wrap(path=endpoint, params=params, api=api)
@@ -29,49 +44,38 @@ class BaseClient:
         if params is None:
             pass
 
+    def update_balance(self):
+        pass
+
     def __fetch_wrap(self, path, api='public', method='GET', params=None, headers=None, body=None):
         if params is None:
             params = {}
         request = self.sign_data_for_prv_api(path, api, method, params, headers, body)
         return self.__fetch(request['url'], request['method'], request['headers'], request['body'])
 
-    def __request(self, path, api='public', method='GET', params=None, headers=None, body=None):
-        if params is None:
-            params = {}
-        return self.__fetch_wrap(path, api, method, params, headers, body)
-
     def __prepare_request_headers(self, headers=None):
         headers = headers or {}
-        headers.update(self._headers)
+        headers.update(self.__headers)
         headers.update({'Accept-Encoding': 'gzip, deflate'})
         return headers
 
-    def __fetch(self, url, method='GET', headers=None, body=None, api='public'):
+    def __fetch(self, url, method='GET', headers=None, body=None):
         request_headers = self.__prepare_request_headers(headers)
         if body:
             body = body.encode()
-        if api != 'public':
-            self._prv_session.cookies.clear()
-            with no_ssl_verification():
-                response = self._prv_session.request(method=method, url=url, data=body,
-                                                     headers=request_headers,
-                                                     timeout=6)
-        else:
-            self._pub_session.cookies.clear()
-            with no_ssl_verification():
-                response = self._pub_session.request(method=method, url=url, data=body,
-                                                     headers=request_headers,
-                                                     timeout=6)
+        self.__session.cookies.clear()
+        with no_ssl_verification():
+            response = self.__session.request(method=method, url=url, data=body,
+                                              headers=request_headers,
+                                              timeout=6)
         try:
             http_response = response.text
             json_data = json.loads(http_response)
             if json_data is not None:
                 return json_data
             return http_response
-
-        except Exception as e:
-            error_handler(e)
-
+        except InsecureRequestWarning:
+            pass
 
     @staticmethod
     def _generate_path_from_params(params, endpoint):
@@ -139,6 +143,36 @@ class BaseClient:
             return base64.b64encode(h.digest())
         return h.digest()
 
+    def update_min_profit(self):
+        min_profits = get_min_profit_for_exchange_sql(self.name)
+        for mp in min_profits:
+            with self.lock:
+                if mp not in self.min_profit:
+                    self.min_profit.update({mp[1]: mp[0]})
+                else:
+                    self.min_profit[mp[1]] = mp[0]
+
+    def update_max_order_size(self):
+        max_orders = get_max_order_size_for_exchange_sql(self.name)
+        for mo in max_orders:
+            with self.lock:
+                if mo not in self.max_order_size:
+                    self.max_order_size.update({mo[1]: mo[0]})
+                else:
+                    self.max_order_size[mo[1]] = mo[0]
+
+    def get_min_order_vol(self, refid):
+        with self.lock:
+            return self.min_order_vol.get(refid)
+
+    def get_max_order_size(self, refid):
+        with self.lock:
+            return self.max_order_size.get(refid)
+
+    def get_min_profit(self, refid):
+        with self.lock:
+            return self.min_profit.get(refid)
+
 
 # noinspection PyBroadException
 @contextlib.contextmanager
@@ -167,7 +201,3 @@ def no_ssl_verification():
                 adapter.close()
             except:
                 pass
-
-
-def error_handler(error):
-    root_logger.exception(error)

@@ -5,12 +5,14 @@ import re
 import time
 
 from botlib.exchanges.baseclient import BaseClient
+from botlib.sql_functions import get_symbols_for_exchange_sql
 
-# API ENDPOINTS
+
 BALANCE = "balance"
 PLACE_ORDER = "placeOrder"
 TICKERS = "tickers"
 ORDER_BOOK = "orderBook"
+INSTRUMENTS = 'instruments'
 
 # REQUEST HEADER VARIABLES
 X_API_SIGN = 'X-CREX24-API-SIGN'
@@ -33,10 +35,10 @@ class CrexClient(BaseClient):
 
     def __init__(self, api_key, api_secret, calls_per_second=6):
         BaseClient.__init__(self)
+        self.name = 'Crex24'
         self._api_key = api_key
         self._api_secret = api_secret
         self._rate_limit = 1.0 / calls_per_second
-        self._last_call = None
 
     def sign_data_for_prv_api(self, path, api='public', method='GET', params=None, headers=None, body=None):
         if params is None:
@@ -65,9 +67,22 @@ class CrexClient(BaseClient):
         if limit:
             params['limit'] = limit
         resp = self.api_call(endpoint=ORDER_BOOK, params=params, api='public')
-        return [[x['price'], round(float(x['volume']), 10)] for x in resp['buyLevels']],\
-               [[x['price'], round(float(x['volume']), 10)] for x in resp['sellLevels']]
+        return [[round(float(x['price']), 10), round(float(x['volume']), 10)] for x in resp['buyLevels']],\
+               [[round(float(x['price']), 10), round(float(x['volume']), 10)] for x in resp['sellLevels']]
 
-    def get_balance(self, symbol):
-        params = {"instrument": symbol}
-        print(self.api_call(endpoint=BALANCE, params=params, api='account'))
+    def update_balance(self):
+        response = self.api_call(endpoint=BALANCE, params={}, api='account')
+        exch_symbols = get_symbols_for_exchange_sql(self.name)
+        for a in exch_symbols:
+            for i in response:
+                if i['currency'] == a[0]:
+                    with self.lock:
+                        self.balances.update(
+                            {a[1]: (i['available'], i['reserved'])}
+                        )
+
+    def update_min_order_vol(self):
+        response = self.api_call(endpoint=INSTRUMENTS, params={}, api='public')
+        for i in response:
+            if i['symbol'] in self.balances.keys():
+                self.min_order_vol.update({i['symbol']: i['minVolume']})
