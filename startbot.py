@@ -1,18 +1,11 @@
 import sys
 import time
-import logging
-import coloredlogs
 from random import randint
 from threading import Thread
 from botlib.exchanges import Exchange
-from botlib.botmarkets import BotsAndMarkets, BotsAndMarketsDaemon
+from botlib.bot_markets import BotsAndMarkets, BotsAndMarketsDaemon
 from botlib.orderbook import OrderBook, OrderBookDaemon
-
-logger = logging.getLogger(__name__)
-fh = logging.FileHandler('botlib/botlogs/debug.log')
-coloredlogs.install(level=logging.INFO, datefmt='%Y-%m-%d %H:%M:%S',
-                    fmt='[%(asctime)-20s-] %(threadName)-14s - %(levelname)-7s - %(message)s',
-                    )
+from botlib.bot_log import root_logger
 
 
 class TradeOptionsDaemon(Thread):
@@ -26,7 +19,7 @@ class TradeOptionsDaemon(Thread):
         self.daemon = True
         self.name = f'TradeFinder'
         self.__cli = clients
-        self.__logger = _logger
+        self.__logger = _logger.getChild('Arbitrage')
         self.__last_log = time.time()
         self.__bm_storage = bm_storage
         self.__ob_storage = ob_storage
@@ -120,25 +113,25 @@ def safe_and_exit():
 
 
 if __name__ == '__main__':
-    logger.info("Preparing bot startup...")
+    root_logger.info("Preparing bot startup...")
     # Initialize exchange APIs
-    exch_clients = Exchange(logger=logger)
+    exch_clients = Exchange()
 
     # Create order book storage
     order_book_storage = OrderBook()
 
     # Create bots_markets storage
-    bots_markets_storage = BotsAndMarkets(logger=logger)
+    bots_markets_storage = BotsAndMarkets(logger=root_logger)
 
     # Init database sync daemon
     bots_markets_daemon = BotsAndMarketsDaemon(
         bm_storage=bots_markets_storage,
-        logger=logger)
+        logger=root_logger)
 
     # Init order_book daemon
     order_book_daemon = OrderBookDaemon(
         clients=exch_clients,
-        logger=logger,
+        logger=root_logger,
         ob_storage=order_book_storage,
         bm_storage=bots_markets_storage)
 
@@ -147,9 +140,9 @@ if __name__ == '__main__':
         clients=exch_clients,
         bm_storage=bots_markets_storage,
         ob_storage=order_book_storage,
-        _logger=logger)
+        _logger=root_logger)
 
-    logger.info("All modules initialized. Starting bot!")
+    root_logger.info("All modules initialized. Starting bot!")
 
     # Let the daemons run in background
     try:
@@ -159,7 +152,7 @@ if __name__ == '__main__':
         trade_finder.start()
         trade_finder.join()
     except KeyboardInterrupt:
-        logger.info('Shutdown By User')
+        root_logger.info('Shutdown By User')
         safe_and_exit()
     finally:
         sys.exit()

@@ -4,9 +4,11 @@ import hashlib
 import hmac
 import json
 import base64
+import logging
 import socket
 import time
 import warnings
+
 import urllib3
 from threading import Lock
 from urllib import parse
@@ -16,6 +18,10 @@ from urllib3.exceptions import InsecureRequestWarning
 from urllib3 import disable_warnings
 from botlib.sql_functions import get_max_order_size_for_exchange_sql
 from botlib.sql_functions import get_min_profit_for_exchange_sql
+from botlib.bot_log import root_logger
+
+logging.getLogger("requests").setLevel(logging.INFO)
+logging.getLogger("urllib3").setLevel(logging.INFO)
 
 
 # SSL FIX
@@ -27,6 +33,8 @@ class BaseClient:
 
     def __init__(self):
         self.lock = Lock()
+        self.name = None
+        self.logger = root_logger.getChild('ExchAPI')
         self.__session = Session()
         self.__headers = {}
         self.__options = {}
@@ -43,7 +51,7 @@ class BaseClient:
         self.last_call_moa = time.time()
         self.last_call_settings = time.time()
         self.__error_counter = 0
-        self.name = None
+        self.logger.d
 
     def api_call(self, endpoint, params, api):
         return self.fetch_wrap(path=endpoint, params=params, api=api)
@@ -66,30 +74,20 @@ class BaseClient:
             body = body.encode()
         self.__session.cookies.clear()
         with no_ssl_verification():
-            try:
-                response = self.__session.request(method=method, url=url, data=body,
-                                                  headers=request_headers,
-                                                  timeout=6)
-            except ConnectionError:
-                pass
+            response = self.__session.request(method=method, url=url, data=body,
+                                              headers=request_headers,
+                                              timeout=6)
+
         http_response = response.text
         json_data = json.loads(http_response)
 
+        # noinspection PyBroadException
         try:
             if json_data is not None:
                 return json_data
             return http_response
-        except socket.timeout as e:
-            self.error_handler(e)
-        except urllib3.exceptions.ReadTimeoutError as e:
-            self.error_handler(e)
-            pass
-        except json.decoder.JSONDecodeError as e:
-            self.error_handler(e)
-            pass
-        except InsecureRequestWarning as e:
-            self.error_handler(e)
-            pass
+        except Exception as error:
+            self.error_handler(error)
 
     @staticmethod
     def generate_path_from_params(params, endpoint):
@@ -215,10 +213,21 @@ class BaseClient:
 
     def sign_data_for_prv_api(self, path, api='public', method='GET', params=None, headers=None, body=None):
         """Only here to be overwritten and to get referenced from here"""
-        if params is None:
-            pass
+        pass
 
     def error_handler(self, error):
+        """Manage session errors"""
+        if isinstance(error, socket.timeout):
+            self.logger.critical('socket.timeout', error, exc_info=1)
+        if isinstance(error, ConnectionError):
+            self.logger.error('ConnectionError', error, exc_info=1)
+        if isinstance(error, urllib3.exceptions.ReadTimeoutError):
+            self.logger.error('ReadTimeoutError | Caused by owm session timeout values', error, exc_info=1)
+        if isinstance(error, json.decoder.JSONDecodeError):
+            self.logger.error('JSONDecodeError | Happens if response is NoneType', error, exc_info=1)
+        if isinstance(error, InsecureRequestWarning):
+            self.logger.warning('InsecureRequestWarning | Caused by SSL "hack"', error, exc_info=1)
+
         self.__error_counter += 1
         if self.__error_counter > 3:
             self.__session.close()

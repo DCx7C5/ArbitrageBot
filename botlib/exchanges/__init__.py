@@ -7,14 +7,11 @@ from botlib.sql_functions import get_key_and_secret_sql
 
 class Exchange:
 
-    def __init__(self, logger=None):
-        self.__logger = logger
+    def __init__(self):
         self.Crex24 = CrexClient(*get_key_and_secret_sql('Crex24'))
         self.Graviex = GraviexClient(*get_key_and_secret_sql('Graviex'))  # TODO Implement shitty private api :)
         self.Binance = BinanceClient(*get_key_and_secret_sql('Binance'))  # TODO Where is get deposit address endpoint?
         self.__extended_inits__()
-        if logger is not None:
-            self.__logger.info('All exchanges initialized.')
 
     def get_order_book(self, exchange, ref_id, limit=None):
         return self[exchange].get_order_book(ref_id, limit)

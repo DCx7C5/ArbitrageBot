@@ -1,7 +1,7 @@
 import time
 from threading import Lock, Thread, enumerate
 
-from botlib.botmarkets import BotsAndMarkets
+from botlib.bot_markets import BotsAndMarkets
 from botlib.storage import Storage
 from queue import Queue
 
