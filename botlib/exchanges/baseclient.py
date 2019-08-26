@@ -4,12 +4,12 @@ import hashlib
 import hmac
 import json
 import base64
+import socket
 import time
 import warnings
+import urllib3
 from threading import Lock
 from urllib import parse
-
-import requests
 from requests import Session
 from requests.exceptions import ConnectionError
 from urllib3.exceptions import InsecureRequestWarning
@@ -79,18 +79,16 @@ class BaseClient:
             if json_data is not None:
                 return json_data
             return http_response
+        except socket.timeout as e:
+            self.error_handler(e)
+        except urllib3.exceptions.ReadTimeoutError as e:
+            self.error_handler(e)
+            pass
         except json.decoder.JSONDecodeError as e:
             self.error_handler(e)
             pass
         except InsecureRequestWarning as e:
             self.error_handler(e)
-            pass
-        except TimeoutError as e:
-            self.error_handler(e)
-            pass
-        except requests.exceptions.ReadTimeout as e:
-            self.error_handler(e)
-        finally:
             pass
 
     @staticmethod
