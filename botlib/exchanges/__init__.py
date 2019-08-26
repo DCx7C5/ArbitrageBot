@@ -35,6 +35,10 @@ class Exchange:
         """Returns minimum order amount of a market (timer based updates)"""
         return self[exchange].get_min_order_vol(refid)
 
+    def get_deposit_address(self, exchange, refid):
+        """Returns deposit address for refid on exchange"""
+        return self[exchange].get_deposit_address(refid)
+
     def create_buy_order(self, exchange, ref_id, price, volume):
         return self[exchange].create_buy_order(ref_id, price)
 

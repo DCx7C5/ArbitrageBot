@@ -12,7 +12,9 @@ from requests import Session
 from requests.exceptions import ConnectionError
 from urllib3.exceptions import InsecureRequestWarning
 from urllib3 import disable_warnings
-from botlib.sql_functions import get_max_order_size_for_exchange_sql, get_min_profit_for_exchange_sql
+from botlib.sql_functions import get_max_order_size_for_exchange_sql
+from botlib.sql_functions import get_min_profit_for_exchange_sql
+
 
 # SSL FIX
 disable_warnings()
@@ -30,7 +32,6 @@ class BaseClient:
         self.min_profit = {}
         self.max_order_size = {}
         self.min_order_vol = {}
-        self.deposit_address = {}
         self.withdrawal_fees = {}
         self.maker_fees = {}
         self.taker_fees = {}
@@ -76,6 +77,8 @@ class BaseClient:
             if json_data is not None:
                 return json_data
             return http_response
+        except json.decoder.JSONDecodeError:
+            pass
         except InsecureRequestWarning:
             pass
 
@@ -96,7 +99,6 @@ class BaseClient:
                 if not isinstance(params[key], list):
                     string = string.replace('{' + key + '}', str(params[key]))
         return string
-
 
     @staticmethod
     def extend(*args):

@@ -79,9 +79,13 @@ class GraviexClient(BaseClient):
         bids = []
         asks = []
         params = {"market": ref_id,
-                  'bids_limit': limit if limit else 300,
-                  'asks_limit': limit if limit else 300}
+                  'bids_limit': limit if limit else 25,
+                  'asks_limit': limit if limit else 25}
         resp = self.api_call(endpoint=ORDER_BOOK, params=params, api='public')
+        while not resp:
+            time.sleep(1.4)
+            resp = self.api_call(endpoint=ORDER_BOOK, params=params, api='public')
+
         for p, v in [[float(x['price']), round(float(x['volume']), 10)] for x in resp['bids']]:
             if p not in was_seen:
                 was_seen.add(p)

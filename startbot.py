@@ -13,7 +13,6 @@ logger = logging.getLogger(__name__)
 fh = logging.FileHandler('botlib/botlogs/debug.log')
 coloredlogs.install(level=logging.INFO, datefmt='%Y-%m-%d %H:%M:%S',
                     fmt='[%(asctime)-20s-] %(threadName)-14s - %(levelname)-7s - %(message)s',
-                    logger=logger
                     )
 
 
@@ -23,12 +22,12 @@ class TradeOptionsDaemon(Thread):
     to find arbitrage, catch_order, or any other trading opportunities .
     """
 
-    def __init__(self, clients: Exchange, bm_storage: BotsAndMarkets, ob_storage: OrderBook, logger):
+    def __init__(self, clients: Exchange, bm_storage: BotsAndMarkets, ob_storage: OrderBook, _logger):
         Thread.__init__(self)
         self.daemon = True
         self.name = f'TradeFinder'
         self.__cli = clients
-        self.__logger = logger
+        self.__logger = _logger
         self.__last_log = time.time()
         self.__bm_storage = bm_storage
         self.__ob_storage = ob_storage
@@ -149,7 +148,7 @@ if __name__ == '__main__':
         clients=exch_clients,
         bm_storage=bots_markets_storage,
         ob_storage=order_book_storage,
-        logger=logger)
+        _logger=logger)
 
     logger.info("All modules initialized. Starting bot!")
 

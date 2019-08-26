@@ -1,13 +1,15 @@
 import time
 import urllib.parse as _url_encode
 from botlib.exchanges.baseclient import BaseClient
-from botlib.sql_functions import get_symbols_for_exchange_sql
+from botlib.sql_functions import get_symbols_for_exchange_sql, get_one_symbol_from_exchange_sql
 
 # API ENDPOINTS
 
 ORDER_BOOK = 'depth'
 ACCOUNT = 'account'
 INFO = 'exchangeInfo'
+GET_ADDRESS = 'depositAddress'
+SEND_TO_ADDRESS = ''
 
 # REQUEST METHODS
 POST = "POST"
@@ -23,9 +25,8 @@ BIN_PYTH = 'binance/python'
 IP = "143.204.206.178"  #
 PUBLIC_API = f'https://api.binance.com/api/v1'
 PRIVATE_API = f'https://api.binance.com/api/v3'
-WAPI = f'https://api.binance.com/api/v3'
-WITHDRAW_API_URL = f'https://api.binance.com/wapi'
-MARGIN_API_URL = f'https://api.binance.com/sapi'
+WAPI = f'https://api.binance.com/wapi/v3'
+MARGIN_API_URL = f'https://api.binance.com/sapi/v3'
 PUBLIC = {
     'get': ['depth', 'trades', 'aggTrades', 'exchangeInfo'],
     'put': ['userDataStream'],
@@ -33,7 +34,7 @@ PUBLIC = {
     'delete': ['userDataStream']
 }
 PRIVATE = {
-    'get': ['order', 'openOrders', 'allOrders', 'account', 'myTrades'],
+    'get': ['order', 'openOrders', 'allOrders', 'account', 'myTrades', 'depositAddress'],
     'post': ['order', 'order/test'],
     'delete': ['order']
 }
@@ -54,6 +55,8 @@ class BinanceClient(BaseClient):
         url = PUBLIC_API
         url += '/' + path
         if api == 'wapi':
+            url = WAPI
+            url += '/' + path
             url += '.html'
         user_data_stream = (path == 'userDataStream')
         if path == 'historicalTrades':
@@ -105,3 +108,12 @@ class BinanceClient(BaseClient):
             if i['symbol'] in self.balances.keys():
                 with self.lock:
                     self.min_order_vol.update({i['symbol']: [x for x in i['filters'] if x['filterType'] == 'LOT_SIZE'][0]['minQty']})
+
+    def get_deposit_address(self, refid=None):
+        if refid is None:
+            params = {'currency': 'BTC'}
+        else:
+            sym = get_one_symbol_from_exchange_sql(self.name, refid)
+            params = {'currency': sym}
+        resp = self.api_call(endpoint=GET_ADDRESS, params=params, api='wapi')
+        # TODO No deposit address, maybe create somewhere else?

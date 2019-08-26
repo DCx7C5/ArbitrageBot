@@ -58,6 +58,14 @@ def get_key_and_secret_sql(exchange: str):
         return curs.fetchone()
 
 
+def get_one_symbol_from_exchange_sql(exchange, refid):
+    with connection.get_connection() as curs:
+        curs.execute(
+            "SELECT symbol From bot_markets WHERE refid = %s AND exchange_id = (SELECT id FROM exchanges WHERE name = %s)", (refid, exchange, )
+        )
+        return curs.fetchall()
+
+
 def get_symbols_for_exchange_sql(exchange):
     with connection.get_connection() as curs:
         curs.execute(

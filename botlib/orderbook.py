@@ -6,6 +6,30 @@ from botlib.storage import Storage
 from queue import Queue
 
 
+class OrderBookTimer(Storage):
+
+    def __init__(self):
+        pass
+
+    def update_timer(self, exchange, pair):
+        t = time.time()
+        if not self[exchange]:
+            self[exchange] = {pair: t}
+
+        elif not self[exchange].get(pair):
+            self[exchange][pair] = t
+        return True
+
+    def check_bot_market_last_call(self, exchange, pair) -> bool:
+        """Checks if job can be executed or scheduled"""
+        try:
+            if time.time() > (self[exchange].get(pair) + 1.9):
+                self.update_timer(exchange, pair)
+            return True
+        except (KeyError, AttributeError, TypeError):
+            self.update_timer(exchange, pair)
+
+
 class OrderBook(Storage):
 
     def __init__(self):
@@ -42,7 +66,7 @@ class OrderBook(Storage):
 
 class FetchOrderBook(Thread):
 
-    def __init__(self, bot_id, exchange, refid, clients, ob_storage: OrderBook, logger):
+    def __init__(self, bot_id, exchange, refid, clients, ob_storage: OrderBook, queue: Queue, logger):
         Thread.__init__(self)
         self.__bot_id = bot_id
         self._refid = refid
@@ -51,6 +75,7 @@ class FetchOrderBook(Thread):
         self._clients = clients
         self._ob = ob_storage
         self.name = f"FetchOrderBook"
+        self.queue = queue
 
     def run(self):
         # Calls Exchange API
@@ -62,6 +87,7 @@ class FetchOrderBook(Thread):
         success = self._ob.update_order_book(self._exchange, self._refid, data)
         if not success:
             self._logger.error(f'Saving OrderBook failed with {self.__bot_id} | {self._exchange} | {self._refid}')
+        self.queue.task_done()
 
 
 class OrderBookDaemon(Thread):
@@ -70,33 +96,36 @@ class OrderBookDaemon(Thread):
         Thread.__init__(self)
         self.daemon = True
         self.name = 'OrderBookSync'
-        self.__lock = Lock()
-        self.__queue = Queue()
+        self.queue = Queue()
         self._logger = logger
-        self._last_log = time.time()
         self._clients = clients
+        self._last_log = time.time()
         self._order_book = ob_storage
         self._bot_markets = bm_storage
+        self._order_book_timer = OrderBookTimer()
 
     def __fill_queue(self):
         if not self._bot_markets.get_bot_markets():
             time.sleep(3)
         for bm in self._bot_markets.get_bot_markets():
-            self.__queue.put(bm)
-
-    @staticmethod
-    def __count_sub_threads():
-        return len([i for i in enumerate() if 'FetchOrderBook' in i.getName()])
+            self.queue.put(bm)
 
     def run(self) -> None:
         self._logger.info('Daemon started!')
         while True:
-            if self.__queue.empty():
+            if self.queue.empty():
                 self.__fill_queue()
-            args = self.__queue.get()
-            t = FetchOrderBook(*args, clients=self._clients, ob_storage=self._order_book, logger=self._logger)
-            t.start()
-            if time.time() > self._last_log + 20:
-                self._logger.info(f'Exchanges syncing to bot... Sub-threads active:{self.__count_sub_threads()}')
-                self._last_log = time.time()
-            time.sleep(0.2)
+            args = self.queue.get()
+            if not self._order_book_timer.check_bot_market_last_call(args[1], args[2]):
+                self.queue.task_done()
+                continue
+            else:
+                FetchOrderBook(*args, self._clients,  self._order_book, self.queue, self._logger).start()
+                if time.time() > self._last_log + 20:
+                    self._logger.info(f'Exchanges syncing to bot... Sub-threads active:{self.__count_sub_threads()}')
+                    self._last_log = time.time()
+            time.sleep(0.25)
+
+    @staticmethod
+    def __count_sub_threads():
+        return len([i for i in enumerate() if 'FetchOrderBook' in i.getName()])
