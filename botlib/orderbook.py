@@ -16,7 +16,6 @@ class OrderBookTimer(Storage):
     """Timer management class for order book jobs"""
 
     def __init__(self):
-        # prepare an empty class init for later called attributes
         pass
 
     def update_timer(self, exchange, pair):
@@ -82,7 +81,7 @@ class FetchOrderBook(Thread):
         self._logger = req_logger
         self._clients = clients
         self._ob = ob_storage
-        self.name = f"GetOrderBook"
+        self.name = "GetOrderBook"
         self.queue = queue
 
     def run(self):
@@ -132,8 +131,8 @@ class OrderBookDaemon(Thread):
                 if time.time() > self._last_log + 20:
                     self._logger.info(f'Exchanges syncing to bot... Sub-threads active:{self.__count_sub_threads()}')
                     self._last_log = time.time()
-            time.sleep(0.05)
+            time.sleep(.25)
 
     @staticmethod
     def __count_sub_threads():
-        return len([i for i in enumerate() if 'FetchOrderBook' in i.getName()])
+        return len([i for i in enumerate() if 'GetOrderBook' in i.getName()])

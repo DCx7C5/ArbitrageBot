@@ -64,12 +64,12 @@ class GraviexClient(BaseClient):
             for k in sorted(o):
                 params.update({k: o[k]})
             query = _url_encode.urlencode(params)
-            if method == 'GET':
-                message = f'{method}|{path}|access_key={self._api_key}&tonce={nonce}'
-            else:
-                message = f'{method}|{path}|{query}'
+
+            message = f'{method}|{path}|{query}'
+            print(message)
             signature = self.hmac(message.encode(), self._api_secret.encode(), hashlib.sha256)
             url += "?" + query + '&signature=' + signature
+            print(url)
         else:
             url = self.generate_path_from_params(params, url)
         return {'url': url, 'method': method, 'body': body, 'headers': {}}
@@ -107,3 +107,4 @@ class GraviexClient(BaseClient):
     def update_balance(self):
         response = self.api_call(endpoint=BALANCE, params={'currency': "btc"}, api='private')
         exch_symbols = get_symbols_for_exchange_sql(self.name)
+        print(response)
