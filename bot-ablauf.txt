@@ -1,0 +1,24 @@
+1. prüfen ob arbitrage option existiert
+2. abgleich der balances
+
+3. ist sell price > avg_buy_price (ist im bot hinterlegt)
+	1. sell order setzen - status ist wait
+	2. auf statusänderung der sell order warten
+		1. wait - order canceln, durchlauf beenden
+		2. partially - order canceln, ist executed qty groß genug um den arbitrage trade zu beenden, dann wie filled behandeln, sonst durchlauf beenden (wir haben zumindest einen kleinen profitablen trade gemacht)
+		3. filled
+			1. buy order setzen
+			2. auf statusänderung der buy order warten
+				1. wait - cancel  (wir haben zumindest einen kleinen profitablen trade gemacht)
+				2. partially - cancel  (wir haben zumindest einen kleinen profitablen trade gemacht)
+				3. filled - arbitrage job ist beenden
+				
+4. is sell price < avg_buy_price
+	1. buy order setzen
+	.... alles andere ist entsprechend gegensätzlich zum vorherigen vorgehen
+	
+	
+SONSTIGES
+- immer wenn der bot eine order gesetzt hat oder sich ein orderstatus geädnert hat, müssen die balances gesynct werden
+- diese ganzen kleinen trades die entstehen weil orders nicht immer gefillt werden können, müssen separat geloggt werden, bei buy muss netpsrechend der avg buy price neu berechnet werden,
+  das kann aber auch in nem zweiten schritt dann gemacht werden
