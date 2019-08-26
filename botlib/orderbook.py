@@ -23,7 +23,7 @@ class OrderBookTimer(Storage):
     def check_bot_market_last_call(self, exchange, pair) -> bool:
         """Checks if job can be executed or scheduled"""
         try:
-            if time.time() > (self[exchange].get(pair) + 1.9):
+            if time.time() > (self[exchange].get(pair) + .9):
                 self.update_timer(exchange, pair)
             return True
         except (KeyError, AttributeError, TypeError):
