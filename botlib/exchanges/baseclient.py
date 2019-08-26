@@ -43,9 +43,9 @@ class BaseClient:
         self.name = None
 
     def api_call(self, endpoint, params, api):
-        return self.__fetch_wrap(path=endpoint, params=params, api=api)
+        return self.fetch_wrap(path=endpoint, params=params, api=api)
 
-    def __fetch_wrap(self, path, api='public', method='GET', params=None, headers=None, body=None):
+    def fetch_wrap(self, path, api='public', method='GET', params=None, headers=None, body=None):
         if params is None:
             params = {}
         request = self.sign_data_for_prv_api(path, api, method, params, headers, body)
@@ -80,7 +80,7 @@ class BaseClient:
             pass
 
     @staticmethod
-    def _generate_path_from_params(params, endpoint):
+    def generate_path_from_params(params, endpoint):
         params_string = "?"
         for p in params:
             params_string += f'{p}={params[p]}' + "&"
@@ -97,9 +97,6 @@ class BaseClient:
                     string = string.replace('{' + key + '}', str(params[key]))
         return string
 
-    @staticmethod
-    def encode_uri_component(uri):
-        return parse.quote(uri, safe="~()*!.'")
 
     @staticmethod
     def extend(*args):

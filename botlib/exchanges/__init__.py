@@ -13,8 +13,8 @@ class Exchange:
         self.Graviex = GraviexClient(*get_key_and_secret_sql('Graviex'))
         self.Binance = BinanceClient(*get_key_and_secret_sql('Binance'))
         self.__extended_inits__()
-        self.__logger.setLevel('INFO')
-        self.__logger.info('All exchanges initialized.')
+        if logger is not None:
+            self.__logger.info('All exchanges initialized.')
 
     def get_order_book(self, exchange, ref_id, limit=None):
         return self[exchange].get_order_book(ref_id, limit)
@@ -46,8 +46,11 @@ class Exchange:
 
     def __extended_inits__(self):
         last_t = None
-        threads = [Thread(target=self.get_available_balance, name='ClientSettings', args=("Crex24",)),
-                   Thread(target=self.get_available_balance, name='ClientSettings', args=("Binance",))]
+        threads = [
+            Thread(target=self.get_available_balance, name='ClientSettings', args=("Crex24",)),
+            Thread(target=self.get_available_balance, name='ClientSettings', args=("Binance",)),
+            Thread(target=self.get_available_balance, name='ClientSettings', args=("Graviex",)),
+       ]
         for t in threads:
             t.start()
             last_t = t

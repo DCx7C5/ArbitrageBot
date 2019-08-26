@@ -24,7 +24,7 @@ class BotsAndMarkets(Storage):
         # Dict with List  bot_id: [ (exch_0, book_0), (exch_1, book_1) ] for TradeOptionsFinder
         self.__markets_per_bot = {}
 
-    def update_enabled_bot_ids(self, bot_ids: tuple or list):
+    def update_enabled_bot_ids(self, bot_ids: tuple or list) -> None:
         with self.__lock:
             for bot_id in bot_ids:
                 if bot_id not in self.__enabled_bot_ids:
@@ -42,7 +42,7 @@ class BotsAndMarkets(Storage):
                 if str(bot_id) not in self.__markets_per_bot.keys():
                     del self.__markets_per_bot[str(bot_id)]
 
-    def update_enabled_bot_markets(self, bot_markets: tuple or list):
+    def update_enabled_bot_markets(self, bot_markets: tuple or list) -> None:
         with self.__lock:
             for market in bot_markets:
                 if market not in self.__bot_markets:
@@ -57,11 +57,12 @@ class BotsAndMarkets(Storage):
                     self.__logger.info(f'Market deactivated! Id: {market}')
         orphan = self.find_orphan_markets()
         if orphan is not None and isinstance(orphan, tuple):
-            self.__logger.error('Found orphaned Bot Market. Deactivating...')
+            self.__logger.error(f'Found orphaned bot_market: {orphan[1], orphan[2]} Deactivating now...')
             disable_orphaned_bot_market_sql(orphan[1])
-            self.__logger.info(f'Orphaned bot_market deactivated automatically. {orphan[1], orphan[2]}')
+            self.__logger.warning(f'There must be at least two bot_markets activated for each bot!')
 
     def find_orphan_markets(self):
+        """This class checks for activated bots that have less than two bot_markets active"""
         with self.__lock:
             c = Counter(elem[0] for elem in self.__bot_markets)
             orphan = min(c, key=lambda x: c.get(x))
@@ -77,16 +78,16 @@ class BotsAndMarkets(Storage):
         with self.__lock:
             return [(bot, self.__markets_per_bot[bot]) for bot in self.__markets_per_bot.keys() if len(self.__markets_per_bot[bot]) > 1]
 
-    def get_bot_markets(self):
+    def get_bot_markets(self) -> list:
         with self.__lock:
             random.shuffle(list(self.__bot_markets))
             return self.__bot_markets
 
-    def get_enabled_bot_ids(self):
+    def get_enabled_bot_ids(self) -> list:
         with self.__lock:
             return self.__enabled_bot_ids
 
-    def count_enabled_bot_ids(self):
+    def count_enabled_bot_ids(self) -> int:
         with self.__lock:
             return len(self.__enabled_bot_ids)
 
@@ -102,7 +103,7 @@ class BotsAndMarketsDaemon(Thread):
         self.__last_log_settings = 0
         self.__bm_storage = bm_storage
 
-    def run(self):
+    def run(self) -> None:
         self.__logger.info('Daemon started!')
         while True:
             ids = get_enabled_bots_ids_sql()

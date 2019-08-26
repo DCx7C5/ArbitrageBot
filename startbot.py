@@ -11,9 +11,8 @@ from botlib.orderbook import OrderBook, OrderBookDaemon
 
 logger = logging.getLogger(__name__)
 fh = logging.FileHandler('botlib/botlogs/debug.log')
-coloredlogs.install(level=logging.DEBUG, datefmt='%Y-%m-%d %H:%M:%S',
+coloredlogs.install(level=logging.INFO, datefmt='%Y-%m-%d %H:%M:%S',
                     fmt='[%(asctime)-20s-] %(threadName)-14s - %(levelname)-7s - %(message)s',
-                    milliseconds=True,
                     logger=logger
                     )
 
@@ -117,6 +116,11 @@ class TradeOptionsDaemon(Thread):
             time.sleep(1)
 
 
+def safe_and_exit():
+    # TODO Implement save and backup function on user exit
+    pass
+
+
 if __name__ == '__main__':
     logger.info("Preparing bot startup...")
     # Initialize exchange APIs
@@ -158,5 +162,6 @@ if __name__ == '__main__':
         trade_finder.join()
     except KeyboardInterrupt:
         logger.info('Shutdown By User')
+        safe_and_exit()
     finally:
         sys.exit()
