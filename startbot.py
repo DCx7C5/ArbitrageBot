@@ -1,9 +1,8 @@
 import sys
 import time
 import logging
-from random import randint
-
 import coloredlogs
+from random import randint
 from threading import Thread
 from botlib.exchanges import Exchange
 from botlib.botmarkets import BotsAndMarkets, BotsAndMarketsDaemon
