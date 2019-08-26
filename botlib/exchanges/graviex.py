@@ -108,3 +108,4 @@ class GraviexClient(BaseClient):
         response = self.api_call(endpoint=BALANCE, params={'currency': "btc"}, api='private')
         exch_symbols = get_symbols_for_exchange_sql(self.name)
         print(response)
+
