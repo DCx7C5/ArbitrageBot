@@ -132,7 +132,7 @@ class OrderBookDaemon(Thread):
                 if time.time() > self._last_log + 20:
                     self._logger.info(f'Exchanges syncing to bot... Sub-threads active:{self.__count_sub_threads()}')
                     self._last_log = time.time()
-            time.sleep(0.25)
+            time.sleep(0.05)
 
     @staticmethod
     def __count_sub_threads():

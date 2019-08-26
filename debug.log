@@ -2263,3 +2263,76 @@ Database syncing to bot....
 Daemon started!
 Markets not synced yet...
 Shutdown By User
+Preparing bot startup...
+ExchangeClients initializing
+ExchangeClients initializing
+ExchangeClients initializing
+All modules initialized. Starting bot!
+Daemon started!
+Daemon started!
+Bot activated! Id: 1
+Bot activated! Id: 3
+Bot activated! Id: 4
+Market activated! Id: (1, 'Crex24', 'DOGE-BTC')
+Market activated! Id: (3, 'Crex24', 'LTC-BTC')
+Market activated! Id: (4, 'Crex24', 'ETH-BTC')
+Market activated! Id: (1, 'Binance', 'DOGEBTC')
+Market activated! Id: (3, 'Binance', 'LTCBTC')
+Market activated! Id: (4, 'Binance', 'ETHBTC')
+Database syncing to bot....
+Daemon started!
+Markets not synced yet...
+Shutdown By User
+Preparing bot startup...
+ExchangeClients initializing
+ExchangeClients initializing
+ExchangeClients initializing
+All modules initialized. Starting bot!
+Daemon started!
+Daemon started!
+Bot activated! Id: 1
+Bot activated! Id: 3
+Bot activated! Id: 4
+Market activated! Id: (1, 'Crex24', 'DOGE-BTC')
+Market activated! Id: (3, 'Crex24', 'LTC-BTC')
+Market activated! Id: (4, 'Crex24', 'ETH-BTC')
+Market activated! Id: (1, 'Binance', 'DOGEBTC')
+Market activated! Id: (3, 'Binance', 'LTCBTC')
+Market activated! Id: (4, 'Binance', 'ETHBTC')
+Shutdown By User
+Database syncing to bot....
+Preparing bot startup...
+ExchangeClients initializing
+ExchangeClients initializing
+ExchangeClients initializing
+All modules initialized. Starting bot!
+Daemon started!
+Daemon started!
+Bot activated! Id: 1
+Bot activated! Id: 3
+Bot activated! Id: 4
+Market activated! Id: (1, 'Crex24', 'DOGE-BTC')
+Market activated! Id: (3, 'Crex24', 'LTC-BTC')
+Market activated! Id: (4, 'Crex24', 'ETH-BTC')
+Market activated! Id: (1, 'Binance', 'DOGEBTC')
+Market activated! Id: (3, 'Binance', 'LTCBTC')
+Market activated! Id: (4, 'Binance', 'ETHBTC')
+Shutdown By User
+Preparing bot startup...
+ExchangeClients initializing
+ExchangeClients initializing
+ExchangeClients initializing
+All modules initialized. Starting bot!
+Daemon started!
+Daemon started!
+Bot activated! Id: 1
+Bot activated! Id: 3
+Bot activated! Id: 4
+Market activated! Id: (1, 'Crex24', 'DOGE-BTC')
+Market activated! Id: (3, 'Crex24', 'LTC-BTC')
+Market activated! Id: (4, 'Crex24', 'ETH-BTC')
+Market activated! Id: (1, 'Binance', 'DOGEBTC')
+Market activated! Id: (3, 'Binance', 'LTCBTC')
+Market activated! Id: (4, 'Binance', 'ETHBTC')
+Shutdown By User
+Database syncing to bot....
