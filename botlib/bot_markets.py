@@ -5,15 +5,20 @@ from collections import Counter
 
 from botlib.sql_functions import get_enabled_bots_ids_sql, get_enabled_bot_markets_sql, disable_orphaned_bot_market_sql
 from botlib.storage import Storage
+from botlib.bot_log import daemon_logger
+
+bad_logger = daemon_logger.getChild('BotMarkets')
+
+bas_logger = bad_logger.getChild('Storage')
 
 
 class BotsAndMarkets(Storage):
     """
     Storage class to store active Database values
     """
-    def __init__(self, logger):
+    def __init__(self):
         self.__lock = Lock()
-        self.__logger = logger
+        self.__logger = bas_logger
 
         # List of enabled bot ids
         self.__enabled_bot_ids = []
@@ -94,11 +99,11 @@ class BotsAndMarkets(Storage):
 
 class BotsAndMarketsDaemon(Thread):
 
-    def __init__(self, bm_storage, logger):
+    def __init__(self, bm_storage):
         Thread.__init__(self)
         self.name = 'BackGroundSync'
         self.daemon = True
-        self.__logger = logger
+        self.__logger = bad_logger
         self.__last_log_awake = 0
         self.__last_log_settings = 0
         self.__bm_storage = bm_storage

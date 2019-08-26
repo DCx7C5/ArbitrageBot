@@ -18,11 +18,12 @@ from urllib3.exceptions import InsecureRequestWarning
 from urllib3 import disable_warnings
 from botlib.sql_functions import get_max_order_size_for_exchange_sql
 from botlib.sql_functions import get_min_profit_for_exchange_sql
-from botlib.bot_log import root_logger
+from botlib.bot_log import daemon_logger
 
 logging.getLogger("requests").setLevel(logging.INFO)
 logging.getLogger("urllib3").setLevel(logging.INFO)
 
+logger_api = daemon_logger.getChild('Cli')
 
 # SSL FIX
 disable_warnings()
@@ -34,7 +35,8 @@ class BaseClient:
     def __init__(self):
         self.lock = Lock()
         self.name = None
-        self.logger = root_logger.getChild('ExchAPI')
+        self.logger = logger_api
+        self.logger.setLevel(logging.DEBUG)
         self.__session = Session()
         self.__headers = {}
         self.__options = {}
@@ -51,7 +53,7 @@ class BaseClient:
         self.last_call_moa = time.time()
         self.last_call_settings = time.time()
         self.__error_counter = 0
-        self.logger.d
+        self.logger.debug("ExchangeClients initializing")
 
     def api_call(self, endpoint, params, api):
         return self.fetch_wrap(path=endpoint, params=params, api=api)

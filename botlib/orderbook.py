@@ -1,14 +1,22 @@
 import time
 from threading import Lock, Thread, enumerate
-
 from botlib.bot_markets import BotsAndMarkets
 from botlib.storage import Storage
+from botlib.bot_log import daemon_logger
 from queue import Queue
+
+# Create child from root logger for OrderBook Daemon
+od_logger = daemon_logger.getChild('OrderBook')
+
+# Create child from or-bo daemon for 'FireAndForget-Threads'
+req_logger = od_logger.getChild('Req')
 
 
 class OrderBookTimer(Storage):
+    """Timer management class for order book jobs"""
 
     def __init__(self):
+        # prepare an empty class init for later called attributes
         pass
 
     def update_timer(self, exchange, pair):
@@ -66,15 +74,15 @@ class OrderBook(Storage):
 
 class FetchOrderBook(Thread):
 
-    def __init__(self, bot_id, exchange, refid, clients, ob_storage: OrderBook, queue: Queue, logger):
+    def __init__(self, bot_id, exchange, refid, clients, ob_storage: OrderBook, queue: Queue):
         Thread.__init__(self)
         self.__bot_id = bot_id
         self._refid = refid
         self._exchange = exchange
-        self._logger = logger
+        self._logger = req_logger
         self._clients = clients
         self._ob = ob_storage
-        self.name = f"FetchOrderBook"
+        self.name = f"GetOrderBook"
         self.queue = queue
 
     def run(self):
@@ -92,17 +100,17 @@ class FetchOrderBook(Thread):
 
 class OrderBookDaemon(Thread):
 
-    def __init__(self, clients, bm_storage: BotsAndMarkets, ob_storage: OrderBook, logger):
+    def __init__(self, clients, bm_storage: BotsAndMarkets, ob_storage: OrderBook):
         Thread.__init__(self)
         self.daemon = True
-        self.name = 'OrderBookSync'
+        self.name = 'OrderBook'
         self.queue = Queue()
-        self._logger = logger
         self._clients = clients
         self._last_log = time.time()
         self._order_book = ob_storage
         self._bot_markets = bm_storage
         self._order_book_timer = OrderBookTimer()
+        self._logger = od_logger
 
     def __fill_queue(self):
         if not self._bot_markets.get_bot_markets():
@@ -120,7 +128,7 @@ class OrderBookDaemon(Thread):
                 self.queue.task_done()
                 continue
             else:
-                FetchOrderBook(*args, self._clients,  self._order_book, self.queue, self._logger).start()
+                FetchOrderBook(*args, self._clients,  self._order_book, self.queue).start()
                 if time.time() > self._last_log + 20:
                     self._logger.info(f'Exchanges syncing to bot... Sub-threads active:{self.__count_sub_threads()}')
                     self._last_log = time.time()
