@@ -110,7 +110,7 @@ class BotsAndMarketsDaemon(Thread):
             self.__bm_storage.update_enabled_bot_ids(ids)
             markets = get_enabled_bot_markets_sql(ids)
             self.__bm_storage.update_enabled_bot_markets(markets)
-            time.sleep(1.5)
+            time.sleep(1)
             if time.time() > self.__last_log_awake + 15:
                 self.__logger.info(f'Database syncing to bot....')
                 self.__last_log_awake = time.time()

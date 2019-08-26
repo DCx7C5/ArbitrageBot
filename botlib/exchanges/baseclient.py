@@ -8,6 +8,8 @@ import time
 import warnings
 from threading import Lock
 from urllib import parse
+
+import requests
 from requests import Session
 from requests.exceptions import ConnectionError
 from urllib3.exceptions import InsecureRequestWarning
@@ -70,16 +72,25 @@ class BaseClient:
                                                   timeout=6)
             except ConnectionError:
                 pass
+        http_response = response.text
+        json_data = json.loads(http_response)
 
         try:
-            http_response = response.text
-            json_data = json.loads(http_response)
             if json_data is not None:
                 return json_data
             return http_response
-        except json.decoder.JSONDecodeError:
+        except json.decoder.JSONDecodeError as e:
+            self.error_handler(e)
             pass
-        except InsecureRequestWarning:
+        except InsecureRequestWarning as e:
+            self.error_handler(e)
+            pass
+        except TimeoutError as e:
+            self.error_handler(e)
+            pass
+        except requests.exceptions.ReadTimeout as e:
+            self.error_handler(e)
+        finally:
             pass
 
     @staticmethod
@@ -197,19 +208,19 @@ class BaseClient:
         return self.balances.get(refid if refid else None)
 
     def update_balance(self):
-        """Only here to be overwritten and be able to reference from here"""
+        """Only here to be overwritten and to get referenced from here"""
         pass
 
     def update_min_order_vol(self):
-        """Only here to be overwritten and be able to reference from here"""
+        """Only here to be overwritten and to get referenced from here"""
         pass
 
     def sign_data_for_prv_api(self, path, api='public', method='GET', params=None, headers=None, body=None):
-        """Only here to be overwritten and be able to reference from here"""
+        """Only here to be overwritten and to get referenced from here"""
         if params is None:
             pass
 
-    def error_handler(self):
+    def error_handler(self, error):
         self.__error_counter += 1
         if self.__error_counter > 3:
             self.__session.close()
