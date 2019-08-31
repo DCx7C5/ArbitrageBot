@@ -107,7 +107,7 @@ class TradeOptionsDaemon(Thread):
             time.sleep(1)
 
 
-def safe_and_exit():
+def save_and_exit():
     # TODO Implement save and backup function on user exit
     pass
 
@@ -120,7 +120,7 @@ if __name__ == '__main__':
     # Create order book storage
     order_book_storage = OrderBook()
 
-    # Create bots_markets storage
+    # Create bot_markets storage
     bots_markets_storage = BotsAndMarkets()
 
     # Init database sync daemon
@@ -149,6 +149,6 @@ if __name__ == '__main__':
         trade_finder.join()
     except KeyboardInterrupt:
         daemon_logger.info('Shutdown By User')
-        safe_and_exit()
+        save_and_exit()
     finally:
         sys.exit()
