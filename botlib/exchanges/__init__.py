@@ -3,21 +3,22 @@ from botlib.exchanges.binance import BinanceClient
 from botlib.exchanges.crex import CrexClient
 from botlib.exchanges.graviex import GraviexClient
 from botlib.sql_functions import get_key_and_secret_sql
+from botlib.bot_utils import repeat_call
 
 
 class Exchange:
 
     def __init__(self):
         self.Crex24 = CrexClient(*get_key_and_secret_sql('Crex24'))
-        self.Graviex = GraviexClient(*get_key_and_secret_sql('Graviex'))  # TODO Implement shitty private api :)
-        self.Binance = BinanceClient(*get_key_and_secret_sql('Binance'))  # TODO Where is get deposit address endpoint?
+        self.Graviex = GraviexClient(*get_key_and_secret_sql('Graviex'))
+        self.Binance = BinanceClient(*get_key_and_secret_sql('Binance'))
         self.__extended_inits__()
 
     def get_order_book(self, exchange, ref_id, limit=None):
         return self[exchange].get_order_book(ref_id, limit)
 
-    def get_available_balance(self, exchange, refid=None):
-        """Loads balance from exchange dictionary"""
+    def get_balance(self, exchange, refid=None):
+        """Returns available Balance for refid"""
         return self[exchange].get_available_balance(refid)
 
     def get_min_profit(self, exchange, refid):
@@ -36,22 +37,25 @@ class Exchange:
         """Returns deposit address for refid on exchange"""
         return self[exchange].get_deposit_address(refid)
 
+    @repeat_call(3)
     def create_buy_order(self, exchange, ref_id, price, volume):
-        return self[exchange].create_buy_order(ref_id, price)
+        return self[exchange].create_buy_order(ref_id, price, volume)
 
+    @repeat_call(3)
     def create_sell_order(self, exchange, ref_id, price, volume):
-        return self[exchange].create_buy_order(ref_id, price)
+        return self[exchange].create_buy_order(ref_id, price, volume)
 
+    @repeat_call(10)
     def cancel_order(self, exchange, order_id):
         return self[exchange].cancel_order(order_id)
 
     def __extended_inits__(self):
         last_t = None
         threads = [
-            Thread(target=self.get_available_balance, name='ClientSettings', args=("Crex24",)),
-            Thread(target=self.get_available_balance, name='ClientSettings', args=("Binance",)),
-            Thread(target=self.get_available_balance, name='ClientSettings', args=("Graviex",)),
-       ]
+            Thread(target=self.get_balance, name='ClientSettings', args=("Crex24",)),
+            Thread(target=self.get_balance, name='ClientSettings', args=("Binance",)),
+            Thread(target=self.get_balance, name='ClientSettings', args=("Graviex",)),
+        ]
         for t in threads:
             t.start()
             last_t = t

@@ -53,7 +53,7 @@ class BaseClient:
         self.last_call_moa = time.time()
         self.last_call_settings = time.time()
         self.__error_counter = 0
-        self.logger.debug("ExchangeClients initializing")
+        self.logger.debug("ExchangeClients initialized")
 
     def api_call(self, endpoint, params, api):
         return self.fetch_wrap(path=endpoint, params=params, api=api)
@@ -202,10 +202,10 @@ class BaseClient:
         with self.lock:
             balance = self.balances.get(refid if refid else None)
         if not balance:
-            self.update_balance()
+            self.get_balance()
         return self.balances.get(refid if refid else None)
 
-    def update_balance(self):
+    def get_balance(self):
         """Only here to be overwritten and to get referenced from here"""
         pass
 

@@ -2,24 +2,21 @@ import hashlib
 import time
 import urllib.parse as _url_encode
 from collections import OrderedDict
+from botlib.sql_functions import get_symbols_for_exchange_sql
 
 from botlib.exchanges.baseclient import BaseClient
 
 
 # API ENDPOINTS
-from botlib.sql_functions import get_symbols_for_exchange_sql
 
-MARKETS = '/markets'
-TICKERS = '/tickers'
-ORDERS = '/orders'
-DEPOSIT_ADDR = '/deposit_address'
-GEN_DEPOSIT = '/gen_deposit_address'
-MEMBERS = '/api/v3/members/me'
-CANCEL = '/order/delete'
-ORDER = '/order'
+ORDERS = '/api/v3/orders'
+DEPOSIT_ADDR = '/api/v3/deposit_address'
+GEN_DEPOSIT = '/api/v3/gen_deposit_address'
+BALANCE = '/api/v3/members/me'
+CANCEL = '/api/v3/order/delete'
+ORDER = '/api/v3/order'
 ORDER_BOOK = '/api/v3/order_book'
 DEP_WIT_HISTORY = '/api/v3/account/history'
-BALANCE = '/api/v3/fund_sources'
 
 # REQUEST METHODS
 POST = "POST"
@@ -27,7 +24,7 @@ GET = "GET"
 
 BASE_URL = 'https://graviex.net'
 
-PUBLIC = {'get': ['/api/v3/order_book', ]}
+PUBLIC = {'get': ['/order_book']}
 
 PRIVATE = {
     'get': ['/account/history', '/orders', '/order'],
@@ -64,7 +61,7 @@ class GraviexClient(BaseClient):
             for k in sorted(o):
                 params.update({k: o[k]})
             query = _url_encode.urlencode(params)
-
+            print(params)
             message = f'{method}|{path}|{query}'
             print(message)
             signature = self.hmac(message.encode(), self._api_secret.encode(), hashlib.sha256)
@@ -104,8 +101,13 @@ class GraviexClient(BaseClient):
                         t[1] += round(float(v), 10)
         return bids, asks
 
-    def update_balance(self):
+    def get_balance(self):
         response = self.api_call(endpoint=BALANCE, params={'currency': "btc"}, api='private')
-        exch_symbols = get_symbols_for_exchange_sql(self.name)
-        print(response)
-
+        exch_symbols = [get_symbols_for_exchange_sql(self.name)] + [('btc', 'btc')]
+        for x in exch_symbols:
+            for r in response['accounts_filtered']:
+                if x[0] == response[r]['currency']:
+                    with self.lock:
+                        self.balances.update(
+                            {x[1]: (r['balance'], r['locked'])}
+                        )

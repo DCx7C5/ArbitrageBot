@@ -86,14 +86,12 @@ class BinanceClient(BaseClient):
     def get_order_book(self, refid, limit=None):
         params = {"symbol": refid, 'limit': limit if limit else 500}
         resp = self.api_call(endpoint=ORDER_BOOK, params=params, api='public')
-        if not resp:
-            self.error_handler()
         return [[round(float(x[0]), 10), round(float(x[1]), 10)] for x in resp['bids']],\
                [[round(float(x[0]), 10), round(float(x[1]), 10)] for x in resp['asks']]
 
-    def update_balance(self):
+    def get_balance(self):
         response = self.api_call(endpoint=ACCOUNT, params={}, api='private')
-        exch_symbols = get_symbols_for_exchange_sql(self.name)
+        exch_symbols = [s for s in get_symbols_for_exchange_sql(self.name)] + [('BTC', "BTC")]
         for a in exch_symbols:
             for i in response['balances']:
                 if i['asset'] == a[0]:
@@ -116,4 +114,3 @@ class BinanceClient(BaseClient):
             sym = get_one_symbol_from_exchange_sql(self.name, refid)
             params = {'currency': sym}
         resp = self.api_call(endpoint=GET_ADDRESS, params=params, api='wapi')
-        # TODO No deposit address, maybe create somewhere else?
