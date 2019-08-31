@@ -7,7 +7,7 @@ from botlib.bot_utils import repeat_call
 
 
 class Exchange:
-
+    """API client wrapper"""
     def __init__(self):
         self.Crex24 = CrexClient(*get_key_and_secret_sql('Crex24'))
         self.Graviex = GraviexClient(*get_key_and_secret_sql('Graviex'))
@@ -39,6 +39,7 @@ class Exchange:
 
     @repeat_call(3)
     def create_buy_order(self, exchange, ref_id, price, volume):
+        """"""
         return self[exchange].create_buy_order(ref_id, price, volume)
 
     @repeat_call(3)
