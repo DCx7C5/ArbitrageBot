@@ -17,7 +17,7 @@ class TradeOptionsDaemon(Thread):
     def __init__(self, clients: Exchange, bm_storage: BotsAndMarkets, ob_storage: OrderBook):
         Thread.__init__(self)
         self.daemon = True
-        self.name = f'TradeDaemon'
+        self.name = f'TradeOptions'
         self.__cli = clients
         self.__logger = daemon_logger.getChild('Arbitrage')
         self.__last_log = time.time()

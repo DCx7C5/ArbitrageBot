@@ -75,16 +75,13 @@ class BaseClient:
         if body:
             body = body.encode()
         self.__session.cookies.clear()
-        with no_ssl_verification():
-            response = self.__session.request(method=method, url=url, data=body,
-                                              headers=request_headers,
-                                              timeout=6)
-
-        http_response = response.text
-        json_data = json.loads(http_response)
-
-        # noinspection PyBroadException
         try:
+            with no_ssl_verification():
+                response = self.__session.request(method=method, url=url, data=body,
+                                                  headers=request_headers,
+                                                  timeout=6)
+            http_response = response.text
+            json_data = json.loads(http_response)
             if json_data is not None:
                 return json_data
             return http_response
@@ -220,15 +217,15 @@ class BaseClient:
     def error_handler(self, error):
         """Manage session errors"""
         if isinstance(error, socket.timeout):
-            self.logger.critical('socket.timeout', error, exc_info=1)
+            self.logger.critical('socket.timeout')
         if isinstance(error, ConnectionError):
-            self.logger.error('ConnectionError', error, exc_info=1)
+            self.logger.error('ConnectionError')
         if isinstance(error, urllib3.exceptions.ReadTimeoutError):
-            self.logger.error('ReadTimeoutError | Caused by owm session timeout values', error, exc_info=1)
+            self.logger.error('ReadTimeoutError | Caused by owm session timeout values')
         if isinstance(error, json.decoder.JSONDecodeError):
-            self.logger.error('JSONDecodeError | Happens if response is NoneType', error, exc_info=1)
+            self.logger.error('JSONDecodeError | Happens if response is NoneType')
         if isinstance(error, InsecureRequestWarning):
-            self.logger.warning('InsecureRequestWarning | Caused by SSL "hack"', error, exc_info=1)
+            self.logger.warning('InsecureRequestWarning | Caused by SSL "hack"')
 
         self.__error_counter += 1
         if self.__error_counter > 3:
