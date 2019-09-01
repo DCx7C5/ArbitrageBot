@@ -3,7 +3,7 @@ import time
 import urllib.parse as _url_encode
 from collections import OrderedDict
 from botlib.sql_functions import get_symbols_for_exchange_sql
-
+from botlib.bot_utils import repeat_call
 from botlib.exchanges.baseclient import BaseClient
 
 
@@ -73,8 +73,8 @@ class GraviexClient(BaseClient):
         bids = []
         asks = []
         params = {"market": ref_id,
-                  'bids_limit': limit if limit else 25,
-                  'asks_limit': limit if limit else 25}
+                  'bids_limit': limit if limit else 50,
+                  'asks_limit': limit if limit else 50}
         resp = self.api_call(endpoint=ORDER_BOOK, params=params, api='public')
         while not resp:
             time.sleep(1.4)
@@ -98,6 +98,7 @@ class GraviexClient(BaseClient):
                         t[1] += round(float(v), 10)
         return bids, asks
 
+    @repeat_call(2)
     def get_balance(self):
         response = self.api_call(endpoint=BALANCE, params={'currency': "btc"}, api='private')
         exch_symbols = [s for s in get_symbols_for_exchange_sql(self.name)] + [('btc', 'btc')]
@@ -108,3 +109,8 @@ class GraviexClient(BaseClient):
                         self.balances.update(
                             {x[1]: (r['balance'], r['locked'])}
                         )
+
+    def update_min_order_vol(self) -> None:
+        # TODO FIND RIGHT API CALL FOR MIN ORDER VOLUME
+        for i in self.balances.keys():
+            self.min_order_vol.update({i: float(0)})
