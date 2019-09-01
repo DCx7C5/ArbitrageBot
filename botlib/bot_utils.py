@@ -13,7 +13,10 @@ def repeat_call(num_repeats):
         def __wrapper(*args):
             counter = 0
             exchange = args[0]
-            refid = args[1]
+            try:
+                refid = args[1]
+            except:
+                refid = None
             while counter < num_repeats + 1:
                 try:
                     return function(*args)
