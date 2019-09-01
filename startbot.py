@@ -5,7 +5,7 @@ from threading import Thread
 from botlib.exchanges import Exchange
 from botlib.bot_log import daemon_logger
 from botlib.blocked_markets import BlockedMarkets
-from botlib.orderbook import OrderBook, OrderBookDaemon
+from botlib.order_book import OrderBook, OrderBookDaemon
 from botlib.bot_markets import BotsAndMarkets, BotsAndMarketsDaemon
 
 
@@ -105,13 +105,12 @@ class TradeOptionsDaemon(Thread):
         """Defines the amount of coins to buy, based on """
         for opt in options:
             for side in opt:
-                if isinstance(side, list):
-                    max_order_size = float(self.__cli.get_max_order_size(side[0], side[1]))
-                    if side[2] * side[3] < max_order_size:
-                        order_size_max = round(side[3], 8)
-                    else:
-                        order_size_max = round(max_order_size / side[2], 8)
-                    side.append(order_size_max)
+                max_order_size = float(self.__cli.get_max_order_size(side[0], side[1]))
+                if side[2] * side[3] < max_order_size:
+                    order_size_max = round(side[3], 8)
+                else:
+                    order_size_max = round(max_order_size / side[2], 8)
+                side.append(order_size_max)
             possible = min(opt[0][4], opt[1][4])
             opt[0][4] = possible
             opt[1][4] = possible
@@ -121,7 +120,7 @@ class TradeOptionsDaemon(Thread):
         # TODO Implement balance check function incl eventual balance update
         # [['Graviex', 'zocbtc', 2.18e-07, 5000.0, 458.71559633], ['Crex24', 'ZOC-BTC', 2.1e-07, 1365.42404963, 458.71559633]]
         for opt in options:
-            print(opt)
+            pass
         return options
 
     @staticmethod

@@ -16,26 +16,25 @@ class CreateOrder(Thread):
         Thread.__init__(self)
 
 
-
 class OrderManagerDaemon(Thread):
 
     def __init__(self):
         Thread.__init__(self)
+        self.daemon = True
+        self.name = 'JobsOrdersSync'
         self.__lock = Lock()
         self.__job_queue = Queue()
-
+        self.__logger = od_logger
+        self.__last_log = time.time()
 
     def run(self) -> None:
-        self._logger.info('Daemon started!')
+        self.__logger.info('Daemon started!')
         while True:
             if self.__job_queue.empty():
-                self.__fill_queue()
-            args = self.queue.get()
-            if not self._order_book_timer.check_bot_market_last_call(args[1], args[2]):
-                self.queue.task_done()
+                time.sleep(.5)
                 continue
-            else:
-                if time.time() > self._last_log + 20:
-                    self._logger.debug(f'Exchanges syncing to bot... Sub-threads active:{self.__count_sub_threads()}')
-                    self._last_log = time.time()
+            args = self.__job_queue.get()
+            if time.time() > self.__last_log + 20:
+                self.__logger.debug(f'Waiting for orders...')
+                self.__last_log = time.time()
             time.sleep(.25)

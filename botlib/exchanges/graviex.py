@@ -107,7 +107,7 @@ class GraviexClient(BaseClient):
                 if x[0] == r['currency']:
                     with self.lock:
                         self.balances.update(
-                            {x[1]: (r['balance'], r['locked'])}
+                            {x[1]: r['balance']}
                         )
 
     def update_min_order_vol(self) -> None:

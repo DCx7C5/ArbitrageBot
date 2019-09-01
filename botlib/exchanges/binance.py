@@ -97,7 +97,7 @@ class BinanceClient(BaseClient):
                 if i['asset'] == a[0]:
                     with self.lock:
                         self.balances.update(
-                            {a[1]: (i['free'], i['locked'])}
+                            {a[1]: i['free']}
                         )
 
     def update_min_order_vol(self):

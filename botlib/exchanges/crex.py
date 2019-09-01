@@ -79,7 +79,7 @@ class CrexClient(BaseClient):
                 if i['currency'] == a[0]:
                     with self.lock:
                         self.balances.update(
-                            {a[1]: (i['available'], i['reserved'])}
+                            {a[1]: i['available']}
                         )
 
     def update_min_order_vol(self) -> None:
