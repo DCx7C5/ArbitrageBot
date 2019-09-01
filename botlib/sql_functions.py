@@ -88,3 +88,11 @@ def get_max_order_size_for_exchange_sql(exchange):
             "SELECT max_size, refid From bot_markets WHERE exchange_id = (SELECT id FROM exchanges WHERE name = %s)", exchange
         )
         return [(float(x), y) for x, y in curs.fetchall()]
+
+
+def get_refid_from_order_id(order_id):
+    with connection.get_connection() as curs:
+        curs.execute(
+            "SELECT refid From orders WHERE order_id = %s ", order_id
+        )
+        return curs.fetchone()[0]

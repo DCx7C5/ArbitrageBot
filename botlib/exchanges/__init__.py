@@ -1,8 +1,10 @@
 from threading import Thread
+
 from botlib.exchanges.binance import BinanceClient
 from botlib.exchanges.crex import CrexClient
 from botlib.exchanges.graviex import GraviexClient
 from botlib.sql_functions import get_key_and_secret_sql
+from botlib.bot_utils import repeat_call
 
 
 class Exchange:
@@ -16,6 +18,7 @@ class Exchange:
     def get_order_book(self, exchange, ref_id, limit=None):
         return self[exchange].get_order_book(ref_id, limit)
 
+    @repeat_call(3)
     def get_balance(self, exchange, refid=None):
         """Returns available Balance for refid"""
         return self[exchange].get_available_balance(refid)
@@ -36,18 +39,17 @@ class Exchange:
         """Returns deposit address for refid on exchange"""
         return self[exchange].get_deposit_address(refid)
 
-    def create_sell_order(self, exchange, ref_id, price, volume):
-        return self[exchange].create_sell_order(ref_id, price, volume)
-
-    def create_buy_order(self, exchange, ref_id, price, volume):
-        """"""
-        return self[exchange].create_buy_order(ref_id, price, volume)
+    def create_order(self, exchange, ref_id, side, price, volume):
+        return self[exchange].create_order(ref_id, side, price, volume)
 
     def cancel_order(self, exchange, order_id):
         return self[exchange].cancel_order(order_id)
 
-    def check_order(self, exchange, order_id):
-        return self[exchange].check_order(order_id)
+    def get_order(self, exchange, order_id):
+        return self[exchange].get_order(order_id)
+
+    def get_order_status(self, exchange, order_id):
+        return self[exchange].get_order_status(order_id)
 
     def __extended_inits__(self):
         last_t = None

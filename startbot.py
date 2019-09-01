@@ -119,7 +119,6 @@ class TradeOptionsDaemon(Thread):
         return options
 
     def __check_balances_per_option(self, options):
-
         for opts in options:
 
             # Check balance sell_market
@@ -181,18 +180,29 @@ class TradeOptionsDaemon(Thread):
     def run(self) -> None:
         self.__logger.info('Daemon started!')
         while True:
+            # Get list with bots and their bot_markets
             bots_mpb = self.__bm_storage.get_markets_per_bot()
+
+            # Check if items are in bots_mpb
             if bots_mpb:
+                # Remove bot markets from bot, that are in block-list (processed in a job right now)
                 excl_bots_mpb = self.__exclude_blocked_markets(bots_mpb)
                 for bot in excl_bots_mpb:
+                    # Also exclude bots that have only one bot_market left
                     if len(bot[1]) > 1:
                         self.__find_arbitrage_options(bot)
             else:
                 self.__logger.warning('Markets not synced yet...')
+
+            # Update the bot_ids
             self.__update_active_bots()
+
+            # After condition is true, print to log self is still alive
             if time.time() > self.__last_log + randint(20, 30):
                 self.__logger.debug(f"Bots {self.__active_bots} are searching for arbitrage options...")
                 self.__last_log = time.time()
+
+            # Sleep, to reduce cpu usage
             time.sleep(1)
 
 

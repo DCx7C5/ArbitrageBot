@@ -1,7 +1,8 @@
 import time
 import urllib.parse as _url_encode
+
 from botlib.exchanges.baseclient import BaseClient
-from botlib.sql_functions import get_symbols_for_exchange_sql, get_one_symbol_from_exchange_sql
+from botlib.sql_functions import get_symbols_for_exchange_sql, get_refid_from_order_id
 
 # API ENDPOINTS
 
@@ -10,6 +11,8 @@ ACCOUNT = 'account'
 INFO = 'exchangeInfo'
 GET_ADDRESS = 'depositAddress'
 SEND_TO_ADDRESS = ''
+CREATE_ORDER = 'order'
+STATUS_ORDER = 'order'
 
 # REQUEST METHODS
 POST = "POST"
@@ -27,6 +30,7 @@ PUBLIC_API = f'https://api.binance.com/api/v1'
 PRIVATE_API = f'https://api.binance.com/api/v3'
 WAPI = f'https://api.binance.com/wapi/v3'
 MARGIN_API_URL = f'https://api.binance.com/sapi/v3'
+
 PUBLIC = {
     'get': ['depth', 'trades', 'aggTrades', 'exchangeInfo'],
     'put': ['userDataStream'],
@@ -48,6 +52,8 @@ class BinanceClient(BaseClient):
         self._api_key = api_key
         self._api_secret = api_secret
         self._rate_limit = 1.0 / calls_per_second
+        self.lot_size = {}
+        self.logger.debug(f'{self.name} initialized')
 
     def sign_data_for_prv_api(self, path, api='public', method='GET', params=None, headers=None, body=None):
         if params is None:
@@ -107,10 +113,31 @@ class BinanceClient(BaseClient):
                 with self.lock:
                     self.min_order_vol.update({i['symbol']: [x for x in i['filters'] if x['filterType'] == 'LOT_SIZE'][0]['minQty']})
 
-    def get_deposit_address(self, refid=None):
-        if refid is None:
-            params = {'currency': 'BTC'}
+    def create_order(self, refid, side, price, volume):
+        counter = 0
+        if side == "buy":
+            side = "BUY"
+        elif side == "sell":
+            side = "SELL"
+        mov = str(self.get_min_order_vol(refid))
+        before_comma = int(mov.split(".")[0])
+        after_comma = mov.split(".")[1]
+        for i in after_comma:
+            counter += 1
+            if int(i) == 1:
+                break
+        if before_comma == 1:
+            _volume = round(volume, 0)
         else:
-            sym = get_one_symbol_from_exchange_sql(self.name, refid)
-            params = {'currency': sym}
-        resp = self.api_call(endpoint=GET_ADDRESS, params=params, api='wapi')
+            _volume = round(volume, counter)
+        params = {'symbol': refid, 'side': side, "timeInForce": "GTC", 'type': "LIMIT", 'price': price, 'quantity': _volume}
+        response = self.api_call(endpoint=CREATE_ORDER, params=params, api='private', method="POST")
+        return response["orderId"]
+
+    def get_order_status(self, order_id):
+        symbol = get_refid_from_order_id(order_id)
+        return self.api_call(endpoint=STATUS_ORDER, params={'symbol': symbol, 'orderId': order_id}, api='private')
+
+    def cancel_order(self, order_id):
+        symbol = get_refid_from_order_id(order_id)
+        return self.api_call(endpoint=STATUS_ORDER, params={'symbol': symbol, 'orderId': order_id}, api='private')

@@ -13,6 +13,8 @@ PLACE_ORDER = "placeOrder"
 TICKERS = "tickers"
 ORDER_BOOK = "orderBook"
 INSTRUMENTS = 'instruments'
+STATUS_ORDER = "orderStatus"
+DELETE_ORDER = "cancelOrdersById"
 
 # REQUEST HEADER VARIABLES
 X_API_SIGN = 'X-CREX24-API-SIGN'
@@ -20,15 +22,10 @@ X_API_KEY = 'X-CREX24-API-KEY'
 X_API_NONCE = 'X-CREX24-API-NONCE'
 CONTENT_LENGTH = "Content-Length"
 
-# REQUEST METHODS
-POST = "POST"
-GET = "GET"
-
 # API TYPE
 PRIVATE = "PRIVATE"
 PUBLIC = "PUBLIC"
 
-IP = "104.20.166.21"
 BASE_URL = "https://api.crex24.com"
 
 
@@ -40,6 +37,7 @@ class CrexClient(BaseClient):
         self._api_key = api_key
         self._api_secret = api_secret
         self._rate_limit = 1.0 / calls_per_second
+        self.logger.debug(f'{self.name} initialized')
 
     def sign_data_for_prv_api(self, path, api='public', method='GET', params=None, headers=None, body=None):
         if params is None:
@@ -87,3 +85,14 @@ class CrexClient(BaseClient):
         for i in response:
             if i['symbol'] in self.balances.keys():
                 self.min_order_vol.update({i['symbol']: float(i['minVolume'])})
+
+    def create_order(self, refid, side, price, volume):
+        params = {'instrument': refid, 'side': side, 'price': price, 'volume': volume}
+        response = self.api_call(endpoint=PLACE_ORDER, params=params, api='trading', method="POST")
+        return response['id']
+
+    def get_order_status(self, order_id):
+        return self.api_call(endpoint=STATUS_ORDER, params={'id': order_id}, api='trading')[0]
+
+    def cancel_order(self, order_id):
+        return self.api_call(endpoint=DELETE_ORDER, params={'id': order_id}, api='trading', method="POST")[0]

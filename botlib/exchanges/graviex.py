@@ -3,20 +3,20 @@ import time
 import urllib.parse as _url_encode
 from collections import OrderedDict
 from botlib.sql_functions import get_symbols_for_exchange_sql
-from botlib.bot_utils import repeat_call
 from botlib.exchanges.baseclient import BaseClient
 
 
 # API ENDPOINTS
 
-ORDERS = '/api/v3/orders'
 DEPOSIT_ADDR = '/api/v3/deposit_address'
 GEN_DEPOSIT = '/api/v3/gen_deposit_address'
 BALANCE = '/api/v3/members/me'
-CANCEL = '/api/v3/order/delete'
 ORDER = '/api/v3/order'
 ORDER_BOOK = '/api/v3/order_book'
 DEP_WIT_HISTORY = '/api/v3/account/history'
+CREATE_ORDER = '/api/v3/orders'
+STATUS_ORDER = '/api/v3/order'
+DELETE_ORDER = '/api/v3/order/delete'
 
 # REQUEST METHODS
 POST = "POST"
@@ -37,9 +37,10 @@ class GraviexClient(BaseClient):
     def __init__(self, api_key, api_secret, calls_per_second=15):
         BaseClient.__init__(self)
         self.name = 'Graviex'
-        self._api_key = api_key
-        self._api_secret = api_secret
-        self._rate_limit = 1.0 / calls_per_second
+        self.__api_key = api_key
+        self.__api_secret = api_secret
+        self.rate_limit = 1.0 / calls_per_second
+        self.logger.debug(f'{self.name} initialized')
 
     def sign_data_for_prv_api(self, path, api='public', method='GET', params=None, headers=None, body=None):
         if params is None:
@@ -48,21 +49,14 @@ class GraviexClient(BaseClient):
         if api == 'private':
             nonce = round(time.time() * 1000)
             params.update({'tonce': nonce})
-            params.update({'access_key': self.url_encode(self._api_key)})
-
-            for i in PUBLIC.get('get') + PRIVATE.get('get'):
-                if i in path:
-                    method = "GET"
-            for i in PRIVATE.get('post'):
-                if i in path:
-                    method = "POST"
+            params.update({'access_key': self.url_encode(self.__api_key)})
             o = OrderedDict(sorted(params.items()))
             params = {}
             for k in sorted(o):
                 params.update({k: o[k]})
             query = _url_encode.urlencode(params)
             message = f'{method}|{path}|{query}'
-            signature = self.hmac(message.encode(), self._api_secret.encode(), hashlib.sha256)
+            signature = self.hmac(message.encode(), self.__api_secret.encode(), hashlib.sha256)
             url += "?" + query + '&signature=' + signature
         else:
             url = self.generate_path_from_params(params, url)
@@ -98,10 +92,9 @@ class GraviexClient(BaseClient):
                         t[1] += round(float(v), 10)
         return bids, asks
 
-    @repeat_call(2)
     def update_balance(self):
-        response = self.api_call(endpoint=BALANCE, params={'currency': "btc"}, api='private')
-        exch_symbols = [s for s in get_symbols_for_exchange_sql(self.name)] + [('BTC', 'BTC')]
+        response = self.api_call(endpoint=BALANCE, params={}, api='private')
+        exch_symbols = [s for s in get_symbols_for_exchange_sql(self.name)] + [('btc', 'BTC')]
         for x in exch_symbols:
             for r in response['accounts_filtered']:
                 if x[0] == r['currency']:
@@ -114,3 +107,14 @@ class GraviexClient(BaseClient):
         # TODO FIND RIGHT API CALL FOR MIN ORDER VOLUME
         for i in self.balances.keys():
             self.min_order_vol.update({i: float(0.000001)})
+
+    def create_order(self, refid, side, price, volume) -> int:
+        params = {'market': refid, 'side': side, 'price': price, 'volume': volume}
+        response = self.api_call(endpoint=CREATE_ORDER, params=params, api='private', method="POST")
+        return response['id']
+
+    def get_order_status(self, order_id) -> dict:
+        return self.api_call(endpoint=STATUS_ORDER, params={'id': order_id}, api='private', method="GET")
+
+    def cancel_order(self, order_id):
+        return self.api_call(endpoint=DELETE_ORDER, params={'id': order_id}, api='private', method="POST")

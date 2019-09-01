@@ -1,7 +1,7 @@
 import time
 import threading
 from botlib.storage import Storage
-from botlib.bot_log import daemon_logger
+from botlib.bot_log import api_logger
 
 
 def repeat_call(num_repeats):
@@ -22,7 +22,7 @@ def repeat_call(num_repeats):
                     return function(*args)
                 except:
                     counter += 1
-                    daemon_logger.critical(f"Failed to call {function.__name__} on {exchange} for {refid} {counter} times")
+                    api_logger.critical(f"Failed to call {function.__name__} on {exchange} for {refid} {counter} times")
                     if counter < num_repeats:
                         time.sleep(counter)
         return __wrapper

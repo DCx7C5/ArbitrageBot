@@ -16,6 +16,7 @@ from requests import Session
 from requests.exceptions import ConnectionError
 from urllib3.exceptions import InsecureRequestWarning
 from urllib3 import disable_warnings
+
 from botlib.sql_functions import get_max_order_size_for_exchange_sql
 from botlib.sql_functions import get_min_profit_for_exchange_sql
 from botlib.bot_log import daemon_logger
@@ -53,11 +54,10 @@ class BaseClient:
         self.last_call_moa = time.time()
         self.last_call_settings = time.time()
         self.__error_counter = 0
-        self.logger.debug("ExchangeClients initialized")
 
-    def api_call(self, endpoint, params, api):
+    def api_call(self, endpoint, params, api, method="GET"):
         """Api call entry function for exchange api calls"""
-        return self.__fetch_wrap(path=endpoint, params=params, api=api)
+        return self.__fetch_wrap(path=endpoint, params=params, api=api, method=method)
 
     def __fetch_wrap(self, path, api='public', method='GET', params=None, headers=None, body=None):
         """Wrapper function for base api request function"""
@@ -179,7 +179,7 @@ class BaseClient:
             self.update_min_order_vol()
             self.last_call_moa = time.time()
         with self.lock:
-            return self.min_order_vol[refid]
+            return float(self.min_order_vol[refid])
 
     def get_max_order_size(self, refid: str) -> float:
         with self.lock:
@@ -198,7 +198,7 @@ class BaseClient:
             self.last_call_mp = time.time()
         with self.lock:
             return self.min_profit.get(refid)
-    
+
     def get_available_balance(self, refid=None):
         with self.lock:
             balance = self.balances.get(refid)
@@ -206,6 +206,18 @@ class BaseClient:
             self.update_balance()
         with self.lock:
             return self.balances.get(refid)
+
+    def create_order(self, ref_id, side, price, volume):
+        """Only here to be overwritten and to get referenced from here"""
+        pass
+
+    def get_order(self, order_id):
+        """Only here to be overwritten and to get referenced from here"""
+        pass
+
+    def cancel_order(self, order_id):
+        """Only here to be overwritten and to get referenced from here"""
+        pass
 
     def update_balance(self):
         """
