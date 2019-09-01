@@ -57,37 +57,36 @@ class TradeOptionsDaemon(Thread):
             return True
         return False
 
-    @staticmethod
-    def __check_quantity_against_min_order_amount(options: list) -> list:
-        for opt in options:
-            for side in opt:
-                if not float(0) < side[3]:
-                    options.remove(opt)
-        return options
-
     def __filter_arbitrage_options(self, options):
         """
         Filters the found arbitrage options
         """
         # Check against min order amount on exchange
         options = self.__check_quantity_against_min_order_amount(options)
-        self.__logger.warning(f'Options Stage0: {options}')
 
         # Define max amount on exchange
         options = self.__define_max_order_size_per_option(options)
-        self.__logger.warning(f'Options Stage1: {options}')
 
         # Check balances for each option
         options = self.__check_balances_per_option(options)
-        self.__logger.warning(f'Options Stage2: {options}')
 
         # Calculate profit per option
         options = self.__calculate_profit_per_option(options)
-        self.__logger.warning(f'Options Stage3: {options}')
 
-        # Find most profitable option and lock job markets
+        # Find most profitable option, set as job, and lock job markets
         job = self.__filter_based_on_most_profitable(options)
         self.__logger.warning(f'Job found! {job}')
+
+    def __check_quantity_against_min_order_amount(self, options: list) -> list:
+        """
+        First filter on arbitrage options
+            -removes arbitrage option, if
+        """
+        for opt in options:
+            for side in opt:
+                if not float(self.__cli.get_minimum_order_amount(side[0], side[1])) < side[3]:
+                    options.remove(opt)
+        return options
 
     def __get_order_books_for_bot(self, bot) -> list:
         order_books = []
@@ -102,11 +101,14 @@ class TradeOptionsDaemon(Thread):
         return order_books
 
     def __define_max_order_size_per_option(self, options):
-        """Defines the amount of coins to buy, based on """
+        """
+        Second Filter on arbitrage options
+            -defines the amount of coins to buy, based on max order size
+        """
         for opt in options:
             for side in opt:
                 max_order_size = float(self.__cli.get_max_order_size(side[0], side[1]))
-                if side[2] * side[3] < max_order_size:
+                if (side[2] * side[3]) < max_order_size:
                     order_size_max = round(side[3], 8)
                 else:
                     order_size_max = round(max_order_size / side[2], 8)
@@ -117,10 +119,26 @@ class TradeOptionsDaemon(Thread):
         return options
 
     def __check_balances_per_option(self, options):
-        # TODO Implement balance check function incl eventual balance update
-        # [['Graviex', 'zocbtc', 2.18e-07, 5000.0, 458.71559633], ['Crex24', 'ZOC-BTC', 2.1e-07, 1365.42404963, 458.71559633]]
-        for opt in options:
-            pass
+
+        for opts in options:
+
+            # Check balance sell_market
+            sell_amount = opts[0][-1]
+            balance_coin = float(self.__cli.get_balance(opts[0][0], opts[0][1]))
+            if balance_coin < sell_amount:
+                opts[0][-1] = balance_coin
+                opts[1][-1] = balance_coin
+
+            # Check balance btc on buy market
+            buy_amount = opts[1][-1]
+            buy_price = opts[1][2]
+            buy_amount_in_btc = round(buy_amount * buy_price, 8)
+            balance_btc = float(self.__cli.get_balance(opts[1][0], 'BTC'))
+
+            if balance_btc < buy_amount_in_btc:
+                opts[0][-1] = round(float(balance_btc / buy_price), 8)
+                opts[1][-1] = round(float(balance_btc / buy_price), 8)
+
         return options
 
     @staticmethod
