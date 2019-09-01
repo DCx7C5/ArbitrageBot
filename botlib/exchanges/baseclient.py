@@ -56,21 +56,18 @@ class BaseClient:
         self.logger.debug("ExchangeClients initialized")
 
     def api_call(self, endpoint, params, api):
+        """Api call entry function for exchange api calls"""
         return self.fetch_wrap(path=endpoint, params=params, api=api)
 
     def fetch_wrap(self, path, api='public', method='GET', params=None, headers=None, body=None):
+        """Wrapper function for base api request function"""
         if params is None:
             params = {}
         request = self.sign_data_for_prv_api(path, api, method, params, headers, body)
         return self.__fetch(request['url'], request['method'], request['headers'], request['body'])
 
-    def __prepare_request_headers(self, headers=None):
-        headers = headers or {}
-        headers.update(self.__headers)
-        headers.update({'Accept-Encoding': 'gzip, deflate'})
-        return headers
-
     def __fetch(self, url, method='GET', headers=None, body=None):
+        """Base api request function"""
         request_headers = self.__prepare_request_headers(headers)
         if body:
             body = body.encode()
@@ -87,6 +84,13 @@ class BaseClient:
             return http_response
         except Exception as error:
             self.error_handler(error)
+
+    def __prepare_request_headers(self, headers=None):
+        """"""
+        headers = headers or {}
+        headers.update(self.__headers)
+        headers.update({'Accept-Encoding': 'gzip, deflate'})
+        return headers
 
     @staticmethod
     def generate_path_from_params(params, endpoint):
@@ -150,7 +154,7 @@ class BaseClient:
             return base64.b64encode(h.digest())
         return h.digest()
 
-    def update_min_profit(self) -> None:
+    def __update_min_profit(self) -> None:
         min_profits = get_min_profit_for_exchange_sql(self.name)
         for mp in min_profits:
             with self.lock:
@@ -159,7 +163,7 @@ class BaseClient:
                 else:
                     self.min_profit[mp[1]] = mp[0]
 
-    def update_max_order_size(self) -> None:
+    def __update_max_order_size(self) -> None:
         max_orders = get_max_order_size_for_exchange_sql(self.name)
         for mo in max_orders:
             with self.lock:
@@ -181,7 +185,7 @@ class BaseClient:
         with self.lock:
             max_size = self.max_order_size.get(refid)
         if (not max_size) or time.time() > self.last_call_ms + 60:
-            self.update_max_order_size()
+            self.__update_max_order_size()
             self.last_call_mp = time.time()
         with self.lock:
             return self.max_order_size.get(refid)
@@ -190,20 +194,23 @@ class BaseClient:
         with self.lock:
             min_profit = self.min_profit.get(refid)
         if (not min_profit) or time.time() > self.last_call_mp + 60:
-            self.update_min_profit()
+            self.__update_min_profit()
             self.last_call_mp = time.time()
         with self.lock:
             return self.min_profit.get(refid)
     
     def get_available_balance(self, refid=None):
         with self.lock:
-            balance = self.balances.get(refid if refid else None)
+            balance = self.balances.get(refid)
         if not balance:
-            self.get_balance()
+            self.update_balance()
         return self.balances.get(refid if refid else None)
 
-    def get_balance(self):
-        """Only here to be overwritten and to get referenced from here"""
+    def update_balance(self):
+        """
+        Updates all coin balances for all symbols
+            (Only here to be overwritten and to get referenced from here)
+        """
         pass
 
     def update_min_order_vol(self):
@@ -226,6 +233,8 @@ class BaseClient:
         #     self.logger.error('JSONDecodeError | Happens if response is NoneType')
         if isinstance(error, InsecureRequestWarning):
             self.logger.warning('InsecureRequestWarning | Caused by SSL "hack"')
+        if isinstance(error, TypeError):
+            self.logger.warning('TypeError | Still unknown')
 
         self.__error_counter += 1
         if self.__error_counter > 3:

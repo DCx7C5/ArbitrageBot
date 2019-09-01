@@ -99,7 +99,7 @@ class GraviexClient(BaseClient):
         return bids, asks
 
     @repeat_call(2)
-    def get_balance(self):
+    def update_balance(self):
         response = self.api_call(endpoint=BALANCE, params={'currency': "btc"}, api='private')
         exch_symbols = [s for s in get_symbols_for_exchange_sql(self.name)] + [('btc', 'btc')]
         for x in exch_symbols:

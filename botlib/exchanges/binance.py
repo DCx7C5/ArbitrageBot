@@ -89,7 +89,7 @@ class BinanceClient(BaseClient):
         return [[round(float(x[0]), 10), round(float(x[1]), 10)] for x in resp['bids']],\
                [[round(float(x[0]), 10), round(float(x[1]), 10)] for x in resp['asks']]
 
-    def get_balance(self):
+    def update_balance(self):
         response = self.api_call(endpoint=ACCOUNT, params={}, api='private')
         exch_symbols = [s for s in get_symbols_for_exchange_sql(self.name)] + [('BTC', "BTC")]
         for a in exch_symbols:

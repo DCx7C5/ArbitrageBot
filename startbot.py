@@ -30,12 +30,11 @@ class TradeOptionsDaemon(Thread):
         self.__last_run = time.time()
 
     def __find_arbitrage_options(self, bot):
-        """Find arbitrage options for ALL market combinations"""
+        """Find arbitrage options for ALL market combinations then filters"""
         options = []
         order_books = self.__get_order_books_for_bot(bot)
         if not order_books or order_books is None:
             self.__logger.warning(order_books)
-
         # Create options with checking min profit rate
         for bids in order_books:
             for asks in order_books:
@@ -72,19 +71,23 @@ class TradeOptionsDaemon(Thread):
         """
         # Check against min order amount on exchange
         options = self.__check_quantity_against_min_order_amount(options)
+        self.__logger.warning(f'Options Stage0: {options}')
 
         # Define max amount on exchange
         options = self.__define_max_order_size_per_option(options)
+        self.__logger.warning(f'Options Stage1: {options}')
 
         # Check balances for each option
         options = self.__check_balances_per_option(options)
+        self.__logger.warning(f'Options Stage2: {options}')
 
         # Calculate profit per option
         options = self.__calculate_profit_per_option(options)
+        self.__logger.warning(f'Options Stage3: {options}')
 
-        # Find most profitable option
+        # Find most profitable option and lock job markets
         job = self.__filter_based_on_most_profitable(options)
-        print(job)
+        self.__logger.warning(f'Job found! {job}')
 
     def __get_order_books_for_bot(self, bot) -> list:
         order_books = []
@@ -99,6 +102,7 @@ class TradeOptionsDaemon(Thread):
         return order_books
 
     def __define_max_order_size_per_option(self, options):
+        """Defines the amount of coins to buy, based on """
         for opt in options:
             for side in opt:
                 if isinstance(side, list):
@@ -114,6 +118,10 @@ class TradeOptionsDaemon(Thread):
         return options
 
     def __check_balances_per_option(self, options):
+        # TODO Implement balance check function incl eventual balance update
+        # [['Graviex', 'zocbtc', 2.18e-07, 5000.0, 458.71559633], ['Crex24', 'ZOC-BTC', 2.1e-07, 1365.42404963, 458.71559633]]
+        for opt in options:
+            print(opt)
         return options
 
     @staticmethod
@@ -146,7 +154,7 @@ class TradeOptionsDaemon(Thread):
                 self.__active_bots.remove(bot_id)
 
     def __exclude_blocked_markets(self, bots_mpb):
-        """If """
+        """If exchange + market is locked it gets removed from bots bot-market-list"""
         for i in bots_mpb:
             for x in i[1]:
                 if x in self.__market_locker.get_blocked_list():
@@ -160,12 +168,13 @@ class TradeOptionsDaemon(Thread):
             if bots_mpb:
                 excl_bots_mpb = self.__exclude_blocked_markets(bots_mpb)
                 for bot in excl_bots_mpb:
-                    self.__find_arbitrage_options(bot)
+                    if len(bot[1]) > 1:
+                        self.__find_arbitrage_options(bot)
             else:
                 self.__logger.warning('Markets not synced yet...')
             self.__update_active_bots()
             if time.time() > self.__last_log + randint(20, 30):
-                self.__logger.info(f"Bots {self.__active_bots} are searching for arbitrage options...")
+                self.__logger.debug(f"Bots {self.__active_bots} are searching for arbitrage options...")
                 self.__last_log = time.time()
             time.sleep(1)
 

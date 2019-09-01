@@ -71,10 +71,12 @@ class CrexClient(BaseClient):
         return [[round(float(x['price']), 10), round(float(x['volume']), 10)] for x in resp['buyLevels']],\
                [[round(float(x['price']), 10), round(float(x['volume']), 10)] for x in resp['sellLevels']]
 
-    def get_balance(self) -> None:
+    def update_balance(self) -> None:
         response = self.api_call(endpoint=BALANCE, params={}, api='account')
         exch_symbols = [s for s in get_symbols_for_exchange_sql(self.name)] + [("BTC", "BTC")]
         for a in exch_symbols:
+            print(exch_symbols)
+
             for i in response:
                 if i['currency'] == a[0]:
                     with self.lock:
