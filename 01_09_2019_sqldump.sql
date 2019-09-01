@@ -45,7 +45,7 @@ CREATE TABLE `bot_markets` (
 
 LOCK TABLES `bot_markets` WRITE;
 /*!40000 ALTER TABLE `bot_markets` DISABLE KEYS */;
-INSERT INTO `bot_markets` VALUES (1,1,1,1,'dogebtc','doge','0.0001','0.80'),(2,1,2,1,'DOGE-BTC','DOGE','0.0001','0.80'),(3,2,1,1,'zocbtc','gio','0.0001','0.80'),(4,3,1,1,'ltcbtc','ltc','0.0001','0.80'),(5,4,1,1,'ethbtc','eth','0.0001','0.80'),(6,2,2,1,'ZOC-BTC','ZOC','0.0001','0.80'),(7,3,2,1,'LTC-BTC','LTC','0.0001','0.80'),(8,4,2,1,'ETH-BTC','ETH','0.0001','0.80'),(9,5,1,1,'rvnbtc','rvn','0.0001','0.80'),(10,5,3,1,'RVNBTC','RVN','0.0001','0.80'),(11,1,3,1,'DOGEBTC','DOGE','0.0001','0.80'),(12,3,3,1,'LTCBTC','LTC','0.0001','0.80'),(13,4,3,1,'ETHBTC','ETH','0.0001','0.80'),(17,6,2,1,'SATC-BTC','SATC','0.0001','0.80'),(18,6,1,1,'satcbtc','satc','0.0001','0.80'),(19,7,2,1,'XVG-BTC','XVG','0.00020','0.80'),(20,7,1,1,'xvgbtc','xvg','0.00020','0.80');
+INSERT INTO `bot_markets` VALUES (1,1,1,1,'dogebtc','doge','0.0001','0.80'),(2,1,2,1,'DOGE-BTC','DOGE','0.0001','0.80'),(3,2,1,1,'zocbtc','gio','0.0001','0.80'),(4,3,1,1,'ltcbtc','ltc','0.0001','0.80'),(5,4,1,1,'ethbtc','eth','0.0001','0.80'),(6,2,2,1,'ZOC-BTC','ZOC','0.0001','0.80'),(7,3,2,1,'LTC-BTC','LTC','0.0001','0.80'),(8,4,2,1,'ETH-BTC','ETH','0.0001','0.80'),(9,5,1,1,'rvnbtc','rvn','0.0001','0.80'),(10,5,3,1,'RVNBTC','RVN','0.0001','0.80'),(11,1,3,1,'DOGEBTC','DOGE','0.0001','0.80'),(12,3,3,1,'LTCBTC','LTC','0.0001','0.80'),(13,4,3,1,'ETHBTC','ETH','0.0001','0.80'),(17,6,2,1,'SATC-BTC','SATC','0.0001','0.80'),(18,6,1,1,'satcbtc','satc','0.0001','0.80'),(19,7,2,1,'XVG-BTC','XVG','0.0001','0.80'),(20,7,1,1,'xvgbtc','xvg','0.0001','0.80');
 /*!40000 ALTER TABLE `bot_markets` ENABLE KEYS */;
 UNLOCK TABLES;
 
@@ -71,7 +71,7 @@ CREATE TABLE `bots` (
 
 LOCK TABLES `bots` WRITE;
 /*!40000 ALTER TABLE `bots` DISABLE KEYS */;
-INSERT INTO `bots` VALUES (1,'DOGE/BTC',1),(2,'ZOC/BTC',1),(3,'LTC/BTC',1),(4,'ETH/BTC',1),(5,'RVN/BTC',1),(6,'SATC/BTC',1),(7,'XVG/BTC',1);
+INSERT INTO `bots` VALUES (1,'DOGE/BTC',1),(2,'ZOC/BTC',0),(3,'LTC/BTC',0),(4,'ETH/BTC',1),(5,'RVN/BTC',0),(6,'SATC/BTC',0),(7,'XVG/BTC',0);
 /*!40000 ALTER TABLE `bots` ENABLE KEYS */;
 UNLOCK TABLES;
 
@@ -182,4 +182,4 @@ UNLOCK TABLES;
 /*!40101 SET COLLATION_CONNECTION=@OLD_COLLATION_CONNECTION */;
 /*!40111 SET SQL_NOTES=@OLD_SQL_NOTES */;
 
--- Dump completed on 2019-09-01  8:56:01
+-- Dump completed on 2019-09-01 11:43:05
