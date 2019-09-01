@@ -75,8 +75,6 @@ class CrexClient(BaseClient):
         response = self.api_call(endpoint=BALANCE, params={}, api='account')
         exch_symbols = [s for s in get_symbols_for_exchange_sql(self.name)] + [("BTC", "BTC")]
         for a in exch_symbols:
-            print(exch_symbols)
-
             for i in response:
                 if i['currency'] == a[0]:
                     with self.lock:

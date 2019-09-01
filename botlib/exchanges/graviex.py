@@ -113,4 +113,4 @@ class GraviexClient(BaseClient):
     def update_min_order_vol(self) -> None:
         # TODO FIND RIGHT API CALL FOR MIN ORDER VOLUME
         for i in self.balances.keys():
-            self.min_order_vol.update({i: float(0)})
+            self.min_order_vol.update({i: float(0.000001)})

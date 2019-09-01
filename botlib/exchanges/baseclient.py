@@ -57,9 +57,9 @@ class BaseClient:
 
     def api_call(self, endpoint, params, api):
         """Api call entry function for exchange api calls"""
-        return self.fetch_wrap(path=endpoint, params=params, api=api)
+        return self.__fetch_wrap(path=endpoint, params=params, api=api)
 
-    def fetch_wrap(self, path, api='public', method='GET', params=None, headers=None, body=None):
+    def __fetch_wrap(self, path, api='public', method='GET', params=None, headers=None, body=None):
         """Wrapper function for base api request function"""
         if params is None:
             params = {}
@@ -204,11 +204,12 @@ class BaseClient:
             balance = self.balances.get(refid)
         if not balance:
             self.update_balance()
-        return self.balances.get(refid if refid else None)
+        with self.lock:
+            return self.balances.get(refid)
 
     def update_balance(self):
         """
-        Updates all coin balances for all symbols
+        Updates all coin balances for all active coins on exchange
             (Only here to be overwritten and to get referenced from here)
         """
         pass
@@ -235,11 +236,6 @@ class BaseClient:
             self.logger.warning('InsecureRequestWarning | Caused by SSL "hack"')
         if isinstance(error, TypeError):
             self.logger.warning('TypeError | Still unknown')
-
-        self.__error_counter += 1
-        if self.__error_counter > 3:
-            self.__session.close()
-            self.__session = Session()
 
 
 # noinspection PyBroadException
