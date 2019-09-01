@@ -3,9 +3,10 @@ import time
 from random import randint
 from threading import Thread
 from botlib.exchanges import Exchange
-from botlib.bot_markets import BotsAndMarkets, BotsAndMarketsDaemon
-from botlib.orderbook import OrderBook, OrderBookDaemon
 from botlib.bot_log import daemon_logger
+from botlib.blocked_markets import BlockedMarkets
+from botlib.orderbook import OrderBook, OrderBookDaemon
+from botlib.bot_markets import BotsAndMarkets, BotsAndMarketsDaemon
 
 
 class TradeOptionsDaemon(Thread):
@@ -14,7 +15,7 @@ class TradeOptionsDaemon(Thread):
     to find arbitrage, catch_order, or any other trading opportunities .
     """
 
-    def __init__(self, clients: Exchange, bm_storage: BotsAndMarkets, ob_storage: OrderBook):
+    def __init__(self, clients: Exchange, bm_storage: BotsAndMarkets, ob_storage: OrderBook, blocked_markets: BlockedMarkets):
         Thread.__init__(self)
         self.daemon = True
         self.name = f'TradeOptions'
@@ -23,52 +24,67 @@ class TradeOptionsDaemon(Thread):
         self.__last_log = time.time()
         self.__bm_storage = bm_storage
         self.__ob_storage = ob_storage
+        self.__market_locker = blocked_markets
         self.__active_bots = []
-        self.__jobs = []
         self.__ec = 0
+        self.__last_run = time.time()
 
-    def find_arbitrage_options(self, bot):
+    def __find_arbitrage_options(self, bot):
         """Find arbitrage options for ALL market combinations"""
         options = []
         order_books = self.__get_order_books_for_bot(bot)
         if not order_books or order_books is None:
             self.__logger.warning(order_books)
+
+        # Create options with checking min profit rate
         for bids in order_books:
             for asks in order_books:
                 if bids is not asks:
-                    if not self.__check_min_profit(bids, asks):
-                        continue
-                    if not self.__check_quantity_against_min_order_amount(bids):
-                        continue
-                    if not self.__check_quantity_against_max_order_size(bids):
-                        continue
-                    options.append(((bids[0], bids[1], bids[2][0], bids[2][1]), (asks[0], asks[1], asks[3][0], asks[3][1])))
+                    if self.__check_min_profit(bids, asks):
+                        options += [
+                            [
+                                [bids[0], bids[1], bids[2][0], bids[2][1]],
+                                [asks[0], asks[1], asks[3][0], asks[3][1]]
+                            ]
+                        ]
+
+        # More filters on arbitrage options
         if options:
             self.__filter_arbitrage_options(options)
 
     def __check_min_profit(self, bids, asks):
-        if round((bids[2][0] - asks[3][0]) / bids[2][0] * 100, 2) >= float(self.__cli.get_min_profit(bids[0], bids[1])):
+        rate = round((bids[2][0] - asks[3][0]) / bids[2][0] * 100, 2)
+        if rate >= float(self.__cli.get_min_profit(bids[0], bids[1])):
             return True
         return False
 
-    def __check_quantity_against_min_order_amount(self, side):
-        if self.__cli.get_minimum_order_amount(side[0], side[1]) < side[2][1]:
-            return True
-        return False
-
-    def __check_quantity_against_max_order_size(self, side):
-        if self.__cli.get_max_order_size(side[0], side[1]) > side[2][1]:
-            return True
-        return False
+    @staticmethod
+    def __check_quantity_against_min_order_amount(options: list) -> list:
+        for opt in options:
+            for side in opt:
+                if not float(0) < side[3]:
+                    options.remove(opt)
+        return options
 
     def __filter_arbitrage_options(self, options):
         """
         Filters the found arbitrage options
         """
-        print(options)
-        best_rate = 0
-        best_option = None
-        # First find most profitable option
+        # Check against min order amount on exchange
+        options = self.__check_quantity_against_min_order_amount(options)
+
+        # Define max amount on exchange
+        options = self.__define_max_order_size_per_option(options)
+
+        # Check balances for each option
+        options = self.__check_balances_per_option(options)
+
+        # Calculate profit per option
+        options = self.__calculate_profit_per_option(options)
+
+        # Find most profitable option
+        job = self.__filter_based_on_most_profitable(options)
+        print(job)
 
     def __get_order_books_for_bot(self, bot) -> list:
         order_books = []
@@ -82,6 +98,44 @@ class TradeOptionsDaemon(Thread):
                 self.__get_order_books_for_bot(bot)
         return order_books
 
+    def __define_max_order_size_per_option(self, options):
+        for opt in options:
+            for side in opt:
+                if isinstance(side, list):
+                    max_order_size = float(self.__cli.get_max_order_size(side[0], side[1]))
+                    if side[2] * side[3] < max_order_size:
+                        order_size_max = round(side[3], 8)
+                    else:
+                        order_size_max = round(max_order_size / side[2], 8)
+                    side.append(order_size_max)
+            possible = min(opt[0][4], opt[1][4])
+            opt[0][4] = possible
+            opt[1][4] = possible
+        return options
+
+    def __check_balances_per_option(self, options):
+        return options
+
+    @staticmethod
+    def __calculate_profit_per_option(options):
+        for opt in options:
+            sell_market = opt[0][4] * opt[0][2]
+            buy_market = opt[1][4] * opt[1][2]
+            profit = round(float(sell_market - buy_market), 8)
+            opt.append(profit)
+        return options
+
+    def __filter_based_on_most_profitable(self, options):
+        _opt = None
+        _val = 0
+        for opts in options:
+            if opts[-1] > _val:
+                _opt = opts
+                _val = opts[-1]
+        self.__market_locker.add_to_blocked_list(_opt[0][0], _opt[0][1])
+        self.__market_locker.add_to_blocked_list(_opt[1][0], _opt[1][1])
+        return _opt
+
     def __update_active_bots(self):
         bots = self.__bm_storage.get_enabled_bot_ids()
         for bot_id in bots:
@@ -91,13 +145,22 @@ class TradeOptionsDaemon(Thread):
             if bot_id not in bots:
                 self.__active_bots.remove(bot_id)
 
+    def __exclude_blocked_markets(self, bots_mpb):
+        """If """
+        for i in bots_mpb:
+            for x in i[1]:
+                if x in self.__market_locker.get_blocked_list():
+                    i[1].remove(x)
+        return bots_mpb
+
     def run(self) -> None:
         self.__logger.info('Daemon started!')
         while True:
             bots_mpb = self.__bm_storage.get_markets_per_bot()
             if bots_mpb:
-                for bot in bots_mpb:
-                    self.find_arbitrage_options(bot)
+                excl_bots_mpb = self.__exclude_blocked_markets(bots_mpb)
+                for bot in excl_bots_mpb:
+                    self.__find_arbitrage_options(bot)
             else:
                 self.__logger.warning('Markets not synced yet...')
             self.__update_active_bots()
@@ -114,6 +177,10 @@ def save_and_exit():
 
 if __name__ == '__main__':
     daemon_logger.info("Preparing bot startup...")
+
+    # Initialize market locker
+    market_locker = BlockedMarkets()
+
     # Initialize exchange APIs
     exch_clients = Exchange()
 
@@ -136,7 +203,8 @@ if __name__ == '__main__':
     trade_finder = TradeOptionsDaemon(
         clients=exch_clients,
         bm_storage=bots_markets_storage,
-        ob_storage=order_book_storage)
+        ob_storage=order_book_storage,
+        blocked_markets=market_locker)
 
     daemon_logger.info("All modules initialized. Starting bot!")
 
