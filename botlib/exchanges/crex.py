@@ -86,4 +86,4 @@ class CrexClient(BaseClient):
         response = self.api_call(endpoint=INSTRUMENTS, params={}, api='public')
         for i in response:
             if i['symbol'] in self.balances.keys():
-                self.min_order_vol.update({i['symbol']: i['minVolume']})
+                self.min_order_vol.update({i['symbol']: float(i['minVolume'])})
