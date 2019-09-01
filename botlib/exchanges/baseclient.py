@@ -222,8 +222,8 @@ class BaseClient:
             self.logger.error('ConnectionError')
         if isinstance(error, urllib3.exceptions.ReadTimeoutError):
             self.logger.error('ReadTimeoutError | Caused by owm session timeout values')
-        if isinstance(error, json.decoder.JSONDecodeError):
-            self.logger.error('JSONDecodeError | Happens if response is NoneType')
+        # if isinstance(error, json.decoder.JSONDecodeError):
+        #     self.logger.error('JSONDecodeError | Happens if response is NoneType')
         if isinstance(error, InsecureRequestWarning):
             self.logger.warning('InsecureRequestWarning | Caused by SSL "hack"')
 
