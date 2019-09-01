@@ -129,7 +129,7 @@ class OrderBookDaemon(Thread):
             else:
                 FetchOrderBook(*args, self._clients,  self._order_book, self.queue).start()
                 if time.time() > self._last_log + 20:
-                    self._logger.info(f'Exchanges syncing to bot... Sub-threads active:{self.__count_sub_threads()}')
+                    self._logger.debug(f'Exchanges syncing to bot... Sub-threads active:{self.__count_sub_threads()}')
                     self._last_log = time.time()
             time.sleep(.25)
 
