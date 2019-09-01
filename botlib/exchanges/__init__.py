@@ -3,7 +3,6 @@ from botlib.exchanges.binance import BinanceClient
 from botlib.exchanges.crex import CrexClient
 from botlib.exchanges.graviex import GraviexClient
 from botlib.sql_functions import get_key_and_secret_sql
-from botlib.bot_utils import repeat_call
 
 
 class Exchange:
@@ -37,18 +36,18 @@ class Exchange:
         """Returns deposit address for refid on exchange"""
         return self[exchange].get_deposit_address(refid)
 
-    @repeat_call(3)
+    def create_sell_order(self, exchange, ref_id, price, volume):
+        return self[exchange].create_sell_order(ref_id, price, volume)
+
     def create_buy_order(self, exchange, ref_id, price, volume):
         """"""
         return self[exchange].create_buy_order(ref_id, price, volume)
 
-    @repeat_call(3)
-    def create_sell_order(self, exchange, ref_id, price, volume):
-        return self[exchange].create_buy_order(ref_id, price, volume)
-
-    @repeat_call(10)
     def cancel_order(self, exchange, order_id):
         return self[exchange].cancel_order(order_id)
+
+    def check_order(self, exchange, order_id):
+        return self[exchange].check_order(order_id)
 
     def __extended_inits__(self):
         last_t = None
