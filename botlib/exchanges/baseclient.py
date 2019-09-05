@@ -77,7 +77,6 @@ class BaseClient:
                 response = self.__session.request(method=method, url=url, data=body,
                                                   headers=request_headers,
                                                   timeout=6)
-            print(url)
             http_response = response.text
             json_data = json.loads(http_response)
             if json_data is not None:
