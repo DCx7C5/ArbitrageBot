@@ -134,7 +134,7 @@ class BinanceClient(BaseClient):
             if int(i) == 1:
                 break
         if before_comma == 1:
-            _volume = round(volume, 0)
+            _volume = int(volume)
         else:
             _volume = round(volume, counter)
         params = {'symbol': refid, 'side': side, "timeInForce": "GTC", 'type': "LIMIT", 'price': price, 'quantity': _volume}
