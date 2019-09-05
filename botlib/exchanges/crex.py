@@ -91,8 +91,8 @@ class CrexClient(BaseClient):
         min_order_volume = str(self.get_min_order_vol(refid))
         before_comma = int(min_order_volume.split(".")[0])
         after_comma = min_order_volume.split(".")[1]
-        if 1 in before_comma:
-            _volume = int(before_comma)
+        if "1" in before_comma:
+            _volume = int(round(volume / before_comma))
         else:
             _volume = round(float(min_order_volume), len(after_comma))
         params = {'instrument': refid, 'side': side, 'price': price, 'volume': volume}

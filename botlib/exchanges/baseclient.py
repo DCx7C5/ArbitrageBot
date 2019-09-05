@@ -55,11 +55,11 @@ class BaseClient:
         self.last_call_settings = time.time()
         self.__error_counter = 0
 
-    def api_call(self, endpoint, params, api, method="GET"):
+    def api_call(self, endpoint, params, api="public", method="GET"):
         """Api call entry function for exchange api calls"""
         return self.__fetch_wrap(path=endpoint, params=params, api=api, method=method)
 
-    def __fetch_wrap(self, path, api='public', method='GET', params=None, headers=None, body=None):
+    def __fetch_wrap(self, path, api, method, params=None, headers=None, body=None):
         """Wrapper function for base api request function"""
         if params is None:
             params = {}

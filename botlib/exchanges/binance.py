@@ -121,7 +121,6 @@ class BinanceClient(BaseClient):
                     self.min_order_vol.update({i['symbol']: [x for x in i['filters'] if x['filterType'] == 'LOT_SIZE'][0]['minQty']})
 
     def create_order(self, refid, side, price, volume):
-        counter = 0
         if side == "buy":
             side = "BUY"
         elif side == "sell":
@@ -129,13 +128,14 @@ class BinanceClient(BaseClient):
         mov = str(self.get_min_order_vol(refid))
         before_comma = int(mov.split(".")[0])
         after_comma = mov.split(".")[1]
-        for i in after_comma:
-            counter += 1
-            if int(i) == 1:
-                break
-        if before_comma == 1:
-            _volume = int(volume)
+        if "1" in before_comma:
+            _volume = int(round(volume / before_comma))
         else:
+            counter = 0
+            for i in after_comma:
+                counter += 1
+                if int(i) == 1:
+                    break
             _volume = round(volume, counter)
         params = {'symbol': refid, 'side': side, "timeInForce": "GTC", 'type': "LIMIT", 'price': price, 'quantity': _volume}
         response = self.api_call(endpoint=CREATE_ORDER, params=params, api='private', method="POST")
