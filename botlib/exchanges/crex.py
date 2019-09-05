@@ -30,6 +30,7 @@ BASE_URL = "https://api.crex24.com"
 
 
 class CrexClient(BaseClient):
+    """Crex24 Exchange API Client"""
 
     def __init__(self, api_key, api_secret, calls_per_second=6):
         BaseClient.__init__(self)

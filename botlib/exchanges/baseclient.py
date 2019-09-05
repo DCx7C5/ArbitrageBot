@@ -32,7 +32,7 @@ old_merge_environment_settings = Session.merge_environment_settings
 
 
 class BaseClient:
-
+    """Client Main Class"""
     def __init__(self):
         self.lock = Lock()
         self.name = None

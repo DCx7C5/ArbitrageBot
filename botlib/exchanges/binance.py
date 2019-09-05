@@ -46,6 +46,7 @@ PRIVATE = {
 
 
 class BinanceClient(BaseClient):
+    """Binance Exchange API Client"""
 
     def __init__(self, api_key, api_secret, calls_per_second=15):
         BaseClient.__init__(self)
@@ -61,14 +62,14 @@ class BinanceClient(BaseClient):
             params = {}
         url = BASE_URL
         url += '/' + path
-        if api == 'wapi':
-            url = WAPI
-            url += '/' + path
-        if api == 'private':
-            url = PRIVATE_API
-            url += '/' + path
         if api == 'public':
             url = PUBLIC_API
+            url += '/' + path
+        elif api == 'private':
+            url = PRIVATE_API
+            url += '/' + path
+        elif api == 'wapi':
+            url = WAPI
             url += '/' + path
         user_data_stream = (path == 'userDataStream')
         if path == 'historicalTrades':

@@ -119,6 +119,10 @@ class TradeOptionsDaemon(Thread):
         return options
 
     def __check_balances_per_option(self, options):
+        """
+        Third filter on arbitrage options
+            - checks sell-market and buy-market balances
+        """
         for opts in options:
 
             # Check balance sell_market
@@ -142,6 +146,10 @@ class TradeOptionsDaemon(Thread):
 
     @staticmethod
     def __calculate_profit_per_option(options):
+        """
+        Fourth filter on arbitrage options
+            - calculates most profitable arbitrage option
+        """
         for opt in options:
             sell_market = opt[0][4] * opt[0][2]
             buy_market = opt[1][4] * opt[1][2]

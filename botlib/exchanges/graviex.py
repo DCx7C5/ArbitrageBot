@@ -33,7 +33,7 @@ PRIVATE = {
 
 
 class GraviexClient(BaseClient):
-
+    """Graviex Exchange API Client"""
     def __init__(self, api_key, api_secret, calls_per_second=15):
         BaseClient.__init__(self)
         self.name = 'Graviex'
