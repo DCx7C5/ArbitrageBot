@@ -67,6 +67,9 @@ class BinanceClient(BaseClient):
         if api == 'private':
             url = PRIVATE_API
             url += '/' + path
+        if api == 'public':
+            url = PUBLIC_API
+            url += '/' + path
         user_data_stream = (path == 'userDataStream')
         if path == 'historicalTrades':
             headers = {'X-MBX-APIKEY': self._api_key}
