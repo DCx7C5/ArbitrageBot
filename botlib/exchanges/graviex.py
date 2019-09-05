@@ -42,7 +42,7 @@ class GraviexClient(BaseClient):
         self.rate_limit = 1.0 / calls_per_second
         self.logger.debug(f'{self.name} initialized')
 
-    def sign_data_for_prv_api(self, path, api='public', method='GET', params=None, headers=None, body=None):
+    def sign_request(self, path, api='public', method='GET', params=None, headers=None, body=None):
         if params is None:
             params = {}
         url = BASE_URL + path

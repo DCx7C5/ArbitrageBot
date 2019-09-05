@@ -39,7 +39,7 @@ class CrexClient(BaseClient):
         self._rate_limit = 1.0 / calls_per_second
         self.logger.debug(f'{self.name} initialized')
 
-    def sign_data_for_prv_api(self, path, api='public', method='GET', params=None, headers=None, body=None):
+    def sign_request(self, path, api='public', method='GET', params=None, headers=None, body=None):
         if params is None:
             params = {}
         request = '/v2/' + api + '/' + self.implode_params(path, params)

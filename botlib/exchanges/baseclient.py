@@ -63,7 +63,7 @@ class BaseClient:
         """Wrapper function for base api request function"""
         if params is None:
             params = {}
-        request = self.sign_data_for_prv_api(path, api, method, params, headers, body)
+        request = self.sign_request(path, api, method, params, headers, body)
         return self.__fetch(request['url'], request['method'], request['headers'], request['body'])
 
     def __fetch(self, url, method='GET', headers=None, body=None):
@@ -77,6 +77,7 @@ class BaseClient:
                 response = self.__session.request(method=method, url=url, data=body,
                                                   headers=request_headers,
                                                   timeout=6)
+            print(url)
             http_response = response.text
             json_data = json.loads(http_response)
             if json_data is not None:
@@ -230,7 +231,7 @@ class BaseClient:
         """Only here to be overwritten and to get referenced from here"""
         pass
 
-    def sign_data_for_prv_api(self, path, api='public', method='GET', params=None, headers=None, body=None):
+    def sign_request(self, path, api='public', method='GET', params=None, headers=None, body=None):
         """Only here to be overwritten and to get referenced from here"""
         pass
 

@@ -30,6 +30,7 @@ PUBLIC_API = f'https://api.binance.com/api/v1'
 PRIVATE_API = f'https://api.binance.com/api/v3'
 WAPI = f'https://api.binance.com/wapi/v3'
 MARGIN_API_URL = f'https://api.binance.com/sapi/v3'
+BASE_URL = "https://api.binance.com"
 
 PUBLIC = {
     'get': ['depth', 'trades', 'aggTrades', 'exchangeInfo'],
@@ -55,15 +56,17 @@ class BinanceClient(BaseClient):
         self.lot_size = {}
         self.logger.debug(f'{self.name} initialized')
 
-    def sign_data_for_prv_api(self, path, api='public', method='GET', params=None, headers=None, body=None):
+    def sign_request(self, path, api='public', method='GET', params=None, headers=None, body=None):
         if params is None:
             params = {}
-        url = PUBLIC_API
+        url = BASE_URL
         url += '/' + path
         if api == 'wapi':
             url = WAPI
             url += '/' + path
-            url += '.html'
+        if api == 'private':
+            url = PRIVATE_API
+            url += '/' + path
         user_data_stream = (path == 'userDataStream')
         if path == 'historicalTrades':
             headers = {'X-MBX-APIKEY': self._api_key}
