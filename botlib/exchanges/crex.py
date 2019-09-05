@@ -88,6 +88,13 @@ class CrexClient(BaseClient):
                 self.min_order_vol.update({i['symbol']: float(i['minVolume'])})
 
     def create_order(self, refid, side, price, volume):
+        min_order_volume = str(self.get_min_order_vol(refid))
+        before_comma = int(min_order_volume.split(".")[0])
+        after_comma = min_order_volume.split(".")[1]
+        if 1 in before_comma:
+            _volume = int(before_comma)
+        else:
+            _volume = round(float(min_order_volume), len(after_comma))
         params = {'instrument': refid, 'side': side, 'price': price, 'volume': volume}
         response = self.api_call(endpoint=PLACE_ORDER, params=params, api='trading', method="POST")
         return response['id']
