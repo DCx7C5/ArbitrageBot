@@ -96,3 +96,42 @@ def get_refid_from_order_id(order_id):
             "SELECT refid From orders WHERE order_id = %s ", order_id
         )
         return curs.fetchone()[0]
+
+
+def create_order(bm_id, order_id, refid, status, side, price, volume, exec_vol):
+    with connection.get_connection() as curs:
+        curs.execute(
+            "INSERT INTO arbitrage.orders(bot_id, order_id, refid, status, side, price, volume, executed_volume)"
+            " VALUES (%s, %s, %s, %s, %s, %s, %s, %s)", (bm_id, order_id, refid, status, side, price, volume, exec_vol,)
+        )
+    return True
+
+
+def update_order(bm_id):
+    with connection.get_connection() as curs:
+        curs.execute(
+            "UPDATE arbitrage.orders SET modified = CURTIME(), status = %s WHERE order_id = %d", (bm_id,)
+        )
+    return True
+
+
+def create_job():
+    with connection.get_connection() as curs:
+        curs.execute(
+            ""
+        )
+
+
+def get_all_prices_from_bot_id(refid, side):
+    with connection.get_connection() as curs:
+        curs.execute(
+            """SELECT price from orders
+                JOIN bot_markets bm on orders.bot_id = bm.bot_id
+                JOIN bots b on bm.bot_id = b.id
+                JOIN exchanges e on bm.exchange_id = e.id
+                WHERE bm.refid = %s AND side = %s;""", (refid, side,)
+        )
+    prices = [i[0] for i in curs.fetchall()]
+    if not prices:
+        return None
+    return prices
