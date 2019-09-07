@@ -2,14 +2,8 @@ import time
 from threading import Lock, Thread, enumerate
 from botlib.bot_markets import BotsAndMarkets
 from botlib.storage import Storage
-from botlib.bot_log import daemon_logger
+from botlib.bot_log import ob_logger, req_logger
 from queue import Queue
-
-# Create child from root logger for OrderBook Daemon
-od_logger = daemon_logger.getChild('OrderBook')
-
-# Create child from or-bo daemon for 'FireAndForget-Threads'
-req_logger = od_logger.getChild('Req')
 
 
 class OrderBookTimer(Storage):
@@ -109,7 +103,7 @@ class OrderBookDaemon(Thread):
         self._order_book = ob_storage
         self._bot_markets = bm_storage
         self._order_book_timer = OrderBookTimer()
-        self._logger = od_logger
+        self._logger = ob_logger
 
     def __fill_queue(self):
         if not self._bot_markets.get_bot_markets():
@@ -131,7 +125,7 @@ class OrderBookDaemon(Thread):
                 if time.time() > self._last_log + 20:
                     self._logger.debug(f'Exchanges syncing to bot... Sub-threads active:{self.__count_sub_threads()}')
                     self._last_log = time.time()
-            time.sleep(.25)
+            time.sleep(.2)
 
     @staticmethod
     def __count_sub_threads():

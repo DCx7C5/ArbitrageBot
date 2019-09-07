@@ -98,19 +98,20 @@ def get_refid_from_order_id(order_id):
         return curs.fetchone()[0]
 
 
-def create_order(bm_id, order_id, refid, status, side, price, volume, exec_vol):
+def create_order_sql(bot_id, order_id, status, side, refid, price, volume, executed_volume):
     with connection.get_connection() as curs:
         curs.execute(
-            "INSERT INTO arbitrage.orders(bot_id, order_id, refid, status, side, price, volume, executed_volume)"
-            " VALUES (%s, %s, %s, %s, %s, %s, %s, %s)", (bm_id, order_id, refid, status, side, price, volume, exec_vol,)
+            "INSERT INTO arbitrage.orders(bot_id, order_id, status, side, refid, price, volume, executed_volume)"
+            " VALUES (%d, %d, %s, %s, %s, %s, %s, %s)", (int(bot_id), int(order_id), status, side, refid, price, volume, executed_volume,)
         )
     return True
 
 
-def update_order(bm_id):
+def update_order_sql(status, executed_volume, order_id):
     with connection.get_connection() as curs:
         curs.execute(
-            "UPDATE arbitrage.orders SET modified = CURTIME(), status = %s WHERE order_id = %d", (bm_id,)
+            "UPDATE arbitrage.orders "
+            "SET modified = CURTIME(), status = %s, executed_volume = %s WHERE order_id = %d", (status, executed_volume, order_id,)
         )
     return True
 
@@ -122,7 +123,7 @@ def create_job():
         )
 
 
-def get_all_prices_from_bot_id(refid, side):
+def get_all_prices_from_refid(refid, side):
     with connection.get_connection() as curs:
         curs.execute(
             """SELECT price from orders
@@ -135,3 +136,24 @@ def get_all_prices_from_bot_id(refid, side):
     if not prices:
         return None
     return prices
+
+
+def get_bot_id_from_refid(refid):
+    with connection.get_connection() as curs:
+        curs.execute(
+            """SELECT bot_id from bot_markets
+                JOIN exchanges e on bot_markets.exchange_id = e.id
+                JOIN bots b on bot_markets.bot_id = b.id
+                WHERE refid = %s;""", (refid,)
+        )
+    return curs.fetchone()[0]
+
+
+def get_deposit_address(exchange, refid):
+    with connection.get_connection() as curs:
+        curs.execute(
+            "SELECT deposit_address FROM bot_markets "
+            "JOIN exchanges e on bot_markets.exchange_id = e.id "
+            "WHERE refid = %s AND e.name = %s", (refid, exchange,)
+        )
+    return curs.fetchone()[0]

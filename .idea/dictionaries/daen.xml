@@ -9,6 +9,7 @@
       <w>binance</w>
       <w>botlib</w>
       <w>botlogs</w>
+      <w>ccxt</w>
       <w>colorama</w>
       <w>creds</w>
       <w>crex</w>
@@ -26,6 +27,7 @@
       <w>tablename</w>
       <w>tonce</w>
       <w>wapi</w>
+      <w>wasn</w>
       <w>whoami</w>
     </words>
   </dictionary>

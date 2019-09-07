@@ -54,7 +54,7 @@ class BotsAndMarkets(Storage):
                     self.__bot_markets.append(market)
                     self.__markets_per_bot[str(market[0])].append((market[1], market[2]))
                     self.__logger.debug(f'Market activated! Id: {market}')
-
+        with self.__lock:
             for market in self.__bot_markets:
                 if market not in bot_markets:
                     self.__bot_markets.remove(market)

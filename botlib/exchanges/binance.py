@@ -1,8 +1,9 @@
 import time
 import urllib.parse as _url_encode
 
+from botlib.bot_utils import extend, hmac_val, url_encode
 from botlib.exchanges.baseclient import BaseClient
-from botlib.sql_functions import get_symbols_for_exchange_sql, get_refid_from_order_id
+from botlib.sql_functions import get_refid_from_order_id, get_deposit_address
 
 # API ENDPOINTS
 
@@ -48,14 +49,14 @@ PRIVATE = {
 class BinanceClient(BaseClient):
     """Binance Exchange API Client"""
 
-    def __init__(self, api_key, api_secret, calls_per_second=15):
-        BaseClient.__init__(self)
+    def __init__(self, api_key, api_secret):
+        self.api_key = api_key
+        self.api_secret = api_secret
+
+        super().__init__()
         self.name = 'Binance'
-        self._api_key = api_key
-        self._api_secret = api_secret
-        self._rate_limit = 1.0 / calls_per_second
-        self.lot_size = {}
-        self.logger.debug(f'{self.name} initialized')
+        self.rate_limit = 1.0 / 15
+        self.balances_keys = 'symbol'
 
     def sign_request(self, path, api='public', method='GET', params=None, headers=None, body=None):
         if params is None:
@@ -73,18 +74,18 @@ class BinanceClient(BaseClient):
             url += '/' + path
         user_data_stream = (path == 'userDataStream')
         if path == 'historicalTrades':
-            headers = {'X-MBX-APIKEY': self._api_key}
+            headers = {'X-MBX-APIKEY': self.api_key}
         elif user_data_stream:
             body = _url_encode.urlencode(params)
-            headers = {'X-MBX-APIKEY': self._api_key, 'Content-Type': 'application/x-www-form-urlencoded'}
+            headers = {'X-MBX-APIKEY': self.api_key, 'Content-Type': 'application/x-www-form-urlencoded'}
         if (api == 'private') or (api == 'wapi' and path != 'systemStatus'):
             nonce = int(time.time() * 1000)
-            query = _url_encode.urlencode(self.extend({
+            query = _url_encode.urlencode(extend({
                 'timestamp': nonce,
                 'recvWindow': 5000}, params))
-            signature = self.hmac(query.encode(), self._api_secret.encode())
+            signature = hmac_val(query.encode(), self.api_secret.encode())
             query += '&' + 'signature=' + signature
-            headers = {'X-MBX-APIKEY': self._api_key}
+            headers = {'X-MBX-APIKEY': self.api_key}
             if (method == 'GET') or (method == 'DELETE') or (api == 'wapi'):
                 url += '?' + query
             else:
@@ -93,7 +94,7 @@ class BinanceClient(BaseClient):
         else:
             if not user_data_stream:
                 if params:
-                    url += '?' + self.url_encode(params)
+                    url += '?' + url_encode(params)
         return {'url': url, 'method': method, 'body': body, 'headers': headers}
 
     def get_order_book(self, refid, limit=None):
@@ -102,16 +103,16 @@ class BinanceClient(BaseClient):
         return [[round(float(x[0]), 10), round(float(x[1]), 10)] for x in resp['bids']],\
                [[round(float(x[0]), 10), round(float(x[1]), 10)] for x in resp['asks']]
 
-    def update_balance(self):
+    def update_all_markets(self):
+        response = self.api_call(endpoint=INFO, params={}, api='public')
+        for setting in self.markets.keys():
+            for i in response['symbols']:
+                self.markets[setting].update({i['symbol']: {}})
+
+    def update_all_balances(self):
         response = self.api_call(endpoint=ACCOUNT, params={}, api='private')
-        exch_symbols = [s for s in get_symbols_for_exchange_sql(self.name)] + [('BTC', "BTC")]
-        for a in exch_symbols:
-            for i in response['balances']:
-                if i['asset'] == a[0]:
-                    with self.lock:
-                        self.balances.update(
-                            {a[1]: i['free']}
-                        )
+        for bal in response['balances']:
+            self.balances.update({bal['asset']: {'available': bal['free'], 'locked': bal['locked']}})
 
     def update_min_order_vol(self):
         response = self.api_call(endpoint=INFO, params={}, api='public')
@@ -120,13 +121,13 @@ class BinanceClient(BaseClient):
                 with self.lock:
                     self.min_order_vol.update({i['symbol']: [x for x in i['filters'] if x['filterType'] == 'LOT_SIZE'][0]['minQty']})
 
-    def create_order(self, refid, side, price, volume):
+    def create_order(self, refid, side, price, volume) -> dict:
         if side == "buy":
             side = "BUY"
         elif side == "sell":
             side = "SELL"
         mov = str(self.get_min_order_vol(refid))
-        before_comma = int(mov.split(".")[0])
+        before_comma = mov.split(".")[0]
         after_comma = mov.split(".")[1]
         if "1" in before_comma:
             _volume = int(round(volume / before_comma))
@@ -136,15 +137,42 @@ class BinanceClient(BaseClient):
                 counter += 1
                 if int(i) == 1:
                     break
-            _volume = round(volume, counter)
+            _volume = round(float(volume), counter)
         params = {'symbol': refid, 'side': side, "timeInForce": "GTC", 'type': "LIMIT", 'price': price, 'quantity': _volume}
         response = self.api_call(endpoint=CREATE_ORDER, params=params, api='private', method="POST")
-        return response["orderId"]
+        status_resp = response['status']
+        if status_resp == 'FILLED':
+            status = "done"
+        elif status_resp == 'PARTIALLY_FILLED':
+            status = "partially"
+        else:
+            status = status_resp
+        return {
+            'order_id': response['orderId'],
+            'refid': refid,
+            'status': status,
+            'side': side,
+            'price': response['price'],
+            'volume': response['origQty'],
+            'executed_volume': response['executedQty']
+        }
 
     def get_order_status(self, order_id):
         symbol = get_refid_from_order_id(order_id)
-        return self.api_call(endpoint=STATUS_ORDER, params={'symbol': symbol, 'orderId': order_id}, api='private')
+        response = self.api_call(endpoint=STATUS_ORDER, params={'symbol': symbol, 'orderId': order_id}, api='private')
+
+        return {
+            'status': response['status'],
+            'executed_volume': response["executedQty"]
+        }
 
     def cancel_order(self, order_id):
         symbol = get_refid_from_order_id(order_id)
-        return self.api_call(endpoint=STATUS_ORDER, params={'symbol': symbol, 'orderId': order_id}, api='private')
+        response = self.api_call(endpoint=STATUS_ORDER, params={'symbol': symbol, 'orderId': order_id}, api='private')
+        if response["status"] == "CANCELED":
+            return True
+        return False
+
+    def update_deposit_address(self, refid):
+        # Workaround for Binance deposit addresses
+        return get_deposit_address(self.name, refid)
