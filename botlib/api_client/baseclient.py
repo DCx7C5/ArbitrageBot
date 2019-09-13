@@ -12,7 +12,7 @@ from requests.exceptions import ConnectionError
 from urllib3.exceptions import InsecureRequestWarning
 from urllib3 import disable_warnings
 
-from botlib.bot_log import daemon_logger
+from botlib.bot_log import api_logger
 from botlib.api_client.client_utils import MarketManager
 from botlib.sql_functions import get_one_symbol_from_exchange_sql, get_market_data_sql
 
@@ -43,7 +43,7 @@ class BaseClient:
         self.withdrawal_fees = self._withdrawal_fees if self._withdrawal_fees is not None else 0.1
 
         self.__lock = Lock()
-        self.logger = daemon_logger
+        self.logger = api_logger
         self.logger.setLevel(logging.DEBUG)
         self.session = Session()
         self.headers = {}

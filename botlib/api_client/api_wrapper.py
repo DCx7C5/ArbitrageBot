@@ -3,6 +3,7 @@ from threading import Thread
 from botlib.api_client.exchanges.binance import BinanceClient
 from botlib.api_client.exchanges.crex import CrexClient
 from botlib.api_client.exchanges.graviex import GraviexClient
+from botlib.bot_log import api_logger
 
 
 class Exchange:
@@ -12,6 +13,7 @@ class Exchange:
         self.Graviex = GraviexClient()
         self.Binance = BinanceClient()
         self.__extended_init()
+        api_logger.debug("All exchanges initialized")
 
     def get_order_book(self, exchange: str, ref_id: str, limit=None) -> tuple:
         """Function call to fetch order book from exchange"""
