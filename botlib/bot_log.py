@@ -11,14 +11,13 @@ fh_error.setLevel(level=logging.ERROR)
 fh_debug.setFormatter(fmt=formatter)
 fh_error.setFormatter(fmt=formatter)
 
-root_logger = logging.getLogger(__name__)
 
-daemon_logger = root_logger.getChild('SYNC')
+daemon_logger = logging.getLogger('SYNC')
 daemon_logger.addHandler(fh_debug)
 daemon_logger.addHandler(fh_error)
 daemon_logger.setLevel(level=logging.DEBUG)
 
-api_logger = root_logger.getChild('API')
+api_logger = logging.getLogger('API')
 api_logger.addHandler(fh_debug)
 api_logger.addHandler(fh_error)
 daemon_logger.setLevel(level=logging.DEBUG)

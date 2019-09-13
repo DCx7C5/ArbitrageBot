@@ -65,11 +65,11 @@ class Exchange:
     def get_order_volume_limits(self, exchange: str, refid: str):
         return self[exchange].get_order_volume_limits(refid)
 
-    def get_order_price_limits(self, exchange: str, refid: str):
-        return self[exchange].get_order_price_limits(refid)
-
     def get_order_cost_limits(self, exchange: str, refid: str):
         return self[exchange].get_order_cost_limits(refid)
+
+    def get_precisions_and_step_sizes(self, exchange: str, refid: str):
+        return self[exchange].get_precisions_and_step_sizes(refid)
 
     def get_transaction_limits(self, exchange: str, refid: str):
         return

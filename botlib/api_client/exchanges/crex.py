@@ -6,7 +6,7 @@ import time
 
 from botlib.api_client.client_utils import implode_params, omit, url_encode, hmac_val, precision_from_string, \
     to_database_time
-from botlib.api_client.baseclient import BaseClient, private, no_errors
+from botlib.api_client.baseclient import BaseClient, private, no_errors, force_result
 from botlib.sql_functions import get_key_and_secret_sql, get_one_symbol_from_exchange_sql
 
 BALANCE = "balance"
@@ -48,6 +48,7 @@ class CrexClient(BaseClient):
     _taker_fees = 0.001
     __api_key, __api_secret = get_key_and_secret_sql(_name)
 
+    @force_result
     def parse_all_market_information(self):
         return [
             {
@@ -55,14 +56,16 @@ class CrexClient(BaseClient):
                 'base_asset': i['baseCurrency'],
                 'quote_asset': i['quoteCurrency'],
                 'minimum_order_volume': i['minVolume'],
+                'price_precision': precision_from_string(str(i['tickSize'])),
                 'order_volume_precision': precision_from_string(str(i['minVolume'])),
-                'order_volume_step_size': i['minVolume'],
-                'minimum_order_cost': None
+                'order_volume_step_size': round(float(i['minVolume']), precision_from_string(str(i['minVolume']))),
+                'minimum_order_cost': 0.0000001
 
             } for i in self._api_call(endpoint=INSTRUMENTS, params={}, api=PUBLIC)
         ]
 
     @private
+    @force_result
     def fetch_all_balances(self):
         response = self._api_call(endpoint=BALANCE, params={'nonZeroOnly': 'false'}, api='account')
         return [{'available': i['available'], 'locked': i['reserved'], 'symbol': i['currency']} for i in response]
@@ -99,6 +102,7 @@ class CrexClient(BaseClient):
                [[round(float(x['price']), 10), round(float(x['volume']), 10)] for x in resp['sellLevels']]
 
     @private
+    @force_result
     def create_order(self, refid: str, side: str, price: float, volume: float):
         params = {
             'instrument': refid,
@@ -112,7 +116,7 @@ class CrexClient(BaseClient):
 
     def parse_created_order(self, raw_created_order):
         created = to_database_time(raw_created_order['timestamp'])
-        if raw_created_order['lastUpdate'] not in ['null', "Null", None, "NULL"]:
+        if raw_created_order['lastUpdate'] is not None:
             last_update = to_database_time(raw_created_order['lastUpdate'])
         else:
             last_update = created
@@ -129,6 +133,7 @@ class CrexClient(BaseClient):
         }
 
     @private
+    @force_result
     def cancel_order(self, order_id):
         params = {
             'ids': [int(order_id)]
@@ -141,6 +146,7 @@ class CrexClient(BaseClient):
         return False
 
     @private
+    @force_result
     def fetch_order_status(self, refid, order_id):
         params = {
             'id': int(order_id)
@@ -149,7 +155,7 @@ class CrexClient(BaseClient):
 
     def parse_order_status(self, raw_order_status):
         created = to_database_time(raw_order_status['timestamp'])
-        if raw_order_status['lastUpdate'] not in ['null', "Null", None, "NULL"]:
+        if raw_order_status['lastUpdate'] is not None:
             last_update = to_database_time(raw_order_status['lastUpdate'])
         else:
             last_update = created
@@ -165,6 +171,7 @@ class CrexClient(BaseClient):
         }
 
     @private
+    @force_result
     def fetch_deposit_address(self, refid) -> dict:
         symbol = get_one_symbol_from_exchange_sql(self._name, refid)
         params = {
@@ -176,6 +183,7 @@ class CrexClient(BaseClient):
         return raw_response['address']
 
     @private
+    @force_result
     def create_withdrawal(self, refid, amount, address):
         symbol = get_one_symbol_from_exchange_sql(self._name, refid)
         params = {
@@ -191,9 +199,9 @@ class CrexClient(BaseClient):
             'asset': raw_response['currency'],
             'send_to': raw_response['address'],
             'amount': raw_response['amount'],
-            'fee': raw_response['fee'] if raw_response['fee'] not in ["null", None, "Null", 'Null'] else None,
-            'tx_id': raw_response['txId'] if raw_response['txId'] not in ["null", None, "Null", 'Null'] else None,
+            'fee': raw_response['fee'] if raw_response['fee'] is not None else None,
+            'tx_id': raw_response['txId'] if raw_response['txId'] is not None else None,
             'created': to_database_time(raw_response['createdAt']),
-            'processed': to_database_time(raw_response['processedAt']) if raw_response['processedAt'] not in ["null", None, "Null", 'Null'] else None,
+            'processed': to_database_time(raw_response['processedAt']) if raw_response['processedAt'] is not None else None,
             'status': raw_response['status']
         }

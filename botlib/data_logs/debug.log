@@ -10,3 +10,60 @@
 [2019-09-13 17:37:11 ] MainThread     - DEBUG - __main__.SYNC - debtesting 2321232133321
 [2019-09-13 17:37:18 ] MainThread     - DEBUG - __main__.SYNC - debtesting 2321232133321shittiy
 [2019-09-13 17:37:39 ] MainThread     - ERROR - __main__.SYNC - debtesting 2321232133321shittiy
+[2019-09-13 17:59:09 ] MainThread     - INFO  - botlib.bot_log.SYNC - Preparing bot startup...
+[2019-09-13 17:59:09 ] MainThread     - DEBUG - botlib.bot_log.API - All exchanges initialized
+[2019-09-13 17:59:09 ] MainThread     - INFO  - botlib.bot_log.SYNC - All modules initialized. Starting bot!
+[2019-09-13 17:59:09 ] BackGroundSync - INFO  - botlib.bot_log.SYNC - Daemon started!
+[2019-09-13 17:59:09 ] OrderBook      - INFO  - botlib.bot_log.SYNC - Daemon started!
+[2019-09-13 17:59:09 ] BackGroundSync - DEBUG - botlib.bot_log.SYNC - Bot activated! Id: 1
+[2019-09-13 17:59:09 ] BackGroundSync - DEBUG - botlib.bot_log.SYNC - Bot activated! Id: 3
+[2019-09-13 17:59:09 ] BackGroundSync - DEBUG - botlib.bot_log.SYNC - Bot activated! Id: 4
+[2019-09-13 17:59:09 ] BackGroundSync - DEBUG - botlib.bot_log.SYNC - Bot activated! Id: 7
+[2019-09-13 17:59:09 ] BackGroundSync - DEBUG - botlib.bot_log.SYNC - Bot activated! Id: 8
+[2019-09-13 17:59:09 ] BackGroundSync - DEBUG - botlib.bot_log.SYNC - Bot activated! Id: 9
+[2019-09-13 17:59:09 ] BackGroundSync - DEBUG - botlib.bot_log.SYNC - Bot activated! Id: 10
+[2019-09-13 17:59:09 ] BackGroundSync - DEBUG - botlib.bot_log.SYNC - Market activated! Id: (1, 'Graviex', 'dogebtc') botlib.bot_log.SYNC
+[2019-09-13 17:59:09 ] BackGroundSync - DEBUG - botlib.bot_log.SYNC - Market activated! Id: (3, 'Graviex', 'ltcbtc') botlib.bot_log.SYNC
+[2019-09-13 17:59:09 ] BackGroundSync - DEBUG - botlib.bot_log.SYNC - Market activated! Id: (4, 'Graviex', 'ethbtc') botlib.bot_log.SYNC
+[2019-09-13 17:59:09 ] BackGroundSync - DEBUG - botlib.bot_log.SYNC - Market activated! Id: (7, 'Graviex', 'xvgbtc') botlib.bot_log.SYNC
+[2019-09-13 17:59:09 ] BackGroundSync - DEBUG - botlib.bot_log.SYNC - Market activated! Id: (8, 'Graviex', 'npxsbtc') botlib.bot_log.SYNC
+[2019-09-13 17:59:09 ] BackGroundSync - DEBUG - botlib.bot_log.SYNC - Market activated! Id: (9, 'Graviex', 'pivxbtc') botlib.bot_log.SYNC
+[2019-09-13 17:59:09 ] BackGroundSync - DEBUG - botlib.bot_log.SYNC - Market activated! Id: (10, 'Graviex', 'wavesbtc') botlib.bot_log.SYNC
+[2019-09-13 17:59:09 ] BackGroundSync - DEBUG - botlib.bot_log.SYNC - Market activated! Id: (1, 'Crex24', 'DOGE-BTC') botlib.bot_log.SYNC
+[2019-09-13 17:59:09 ] BackGroundSync - DEBUG - botlib.bot_log.SYNC - Market activated! Id: (3, 'Crex24', 'LTC-BTC') botlib.bot_log.SYNC
+[2019-09-13 17:59:09 ] BackGroundSync - DEBUG - botlib.bot_log.SYNC - Market activated! Id: (4, 'Crex24', 'ETH-BTC') botlib.bot_log.SYNC
+[2019-09-13 17:59:09 ] BackGroundSync - DEBUG - botlib.bot_log.SYNC - Market activated! Id: (7, 'Crex24', 'XVG-BTC') botlib.bot_log.SYNC
+[2019-09-13 17:59:09 ] BackGroundSync - DEBUG - botlib.bot_log.SYNC - Market activated! Id: (9, 'Crex24', 'PIVX-BTC') botlib.bot_log.SYNC
+[2019-09-13 17:59:09 ] BackGroundSync - DEBUG - botlib.bot_log.SYNC - Market activated! Id: (10, 'Crex24', 'WAVES-BTC') botlib.bot_log.SYNC
+[2019-09-13 17:59:09 ] BackGroundSync - DEBUG - botlib.bot_log.SYNC - Market activated! Id: (1, 'Binance', 'DOGEBTC') botlib.bot_log.SYNC
+[2019-09-13 17:59:09 ] BackGroundSync - DEBUG - botlib.bot_log.SYNC - Market activated! Id: (3, 'Binance', 'LTCBTC') botlib.bot_log.SYNC
+[2019-09-13 17:59:09 ] BackGroundSync - DEBUG - botlib.bot_log.SYNC - Market activated! Id: (4, 'Binance', 'ETHBTC') botlib.bot_log.SYNC
+[2019-09-13 17:59:09 ] BackGroundSync - DEBUG - botlib.bot_log.SYNC - Market activated! Id: (7, 'Binance', 'XVGBTC') botlib.bot_log.SYNC
+[2019-09-13 17:59:09 ] BackGroundSync - DEBUG - botlib.bot_log.SYNC - Market activated! Id: (8, 'Binance', 'NPXSBTC') botlib.bot_log.SYNC
+[2019-09-13 17:59:09 ] BackGroundSync - DEBUG - botlib.bot_log.SYNC - Market activated! Id: (10, 'Binance', 'WAVESBTC') botlib.bot_log.SYNC
+[2019-09-13 17:59:10 ] BackGroundSync - DEBUG - botlib.bot_log.SYNC - Database syncing to bot....
+[2019-09-13 17:59:14 ] TradeOptions   - INFO  - botlib.bot_log.SYNC.Arbitrage - Daemon started!
+[2019-09-13 17:59:17 ] TradeOptions   - WARNING - botlib.bot_log.SYNC.Arbitrage - Markets not synced yet...
+[2019-09-13 21:01:41 ] MainThread     - DEBUG - API    - All exchanges initialized
+[2019-09-13 21:11:06 ] MainThread     - DEBUG - API    - All exchanges initialized
+[2019-09-13 21:25:33 ] MainThread     - DEBUG - API    - All exchanges initialized
+[2019-09-13 21:40:39 ] MainThread     - DEBUG - API    - All exchanges initialized
+[2019-09-13 21:51:02 ] MainThread     - DEBUG - API    - All exchanges initialized
+[2019-09-13 22:08:06 ] MainThread     - DEBUG - API    - All exchanges initialized
+[2019-09-13 22:08:42 ] MainThread     - DEBUG - API    - All exchanges initialized
+[2019-09-13 22:09:13 ] MainThread     - DEBUG - API    - All exchanges initialized
+[2019-09-13 22:09:48 ] MainThread     - DEBUG - API    - All exchanges initialized
+[2019-09-13 22:09:56 ] MainThread     - DEBUG - API    - All exchanges initialized
+[2019-09-13 22:10:06 ] MainThread     - DEBUG - API    - All exchanges initialized
+[2019-09-13 22:10:19 ] MainThread     - DEBUG - API    - All exchanges initialized
+[2019-09-13 22:10:48 ] MainThread     - DEBUG - API    - All exchanges initialized
+[2019-09-13 22:11:02 ] MainThread     - DEBUG - API    - All exchanges initialized
+[2019-09-13 22:11:22 ] MainThread     - DEBUG - API    - All exchanges initialized
+[2019-09-13 22:11:35 ] MainThread     - DEBUG - API    - All exchanges initialized
+[2019-09-13 23:24:58 ] MainThread     - DEBUG - API    - All exchanges initialized
+[2019-09-13 23:25:45 ] MainThread     - DEBUG - API    - All exchanges initialized
+[2019-09-13 23:25:57 ] MainThread     - DEBUG - API    - All exchanges initialized
+[2019-09-13 23:26:08 ] MainThread     - DEBUG - API    - All exchanges initialized
+[2019-09-13 23:26:44 ] MainThread     - DEBUG - API    - All exchanges initialized
+[2019-09-13 23:26:51 ] MainThread     - DEBUG - API    - All exchanges initialized
+[2019-09-13 23:27:00 ] MainThread     - DEBUG - API    - All exchanges initialized

@@ -4,6 +4,7 @@ import decimal
 import hashlib
 import hmac
 import re
+from threading import Lock
 from urllib import parse
 from datetime import datetime
 
@@ -107,6 +108,7 @@ class MarketManager(Storage):
             self[refid].base_asset = market['base_asset']
             self[refid].quote_asset = market['quote_asset']
             self[refid].minimum_order_volume = float(market['minimum_order_volume'])
+            self[refid].price_precision = int(market['price_precision'])
             self[refid].order_volume_precision = int(market['order_volume_precision'])
             self[refid].order_volume_step_size = float(market['order_volume_step_size'])
             self[refid].minimum_order_cost = float(market['minimum_order_cost']) if market['minimum_order_cost'] else 0.0000001
@@ -122,44 +124,132 @@ class Market(Storage):
     """Market helper class"""
     def __init__(self, refid: str):
         self.refid = refid
-        self.base_asset = None
-        self.quote_asset = None
+        self.__lock = Lock()
+        self._base_asset = None
+        self._quote_asset = None
 
-        self.order_volume_step_size = None
-        self.minimum_order_volume = None
-        self.minimum_order_cost = None
-        self.order_volume_precision = None
+        self._price_precision = None
+        self._order_volume_step_size = None
+        self._minimum_order_volume = None
+        self._minimum_order_cost = None
+        self._order_volume_precision = None
 
         # From Database
-        self.min_profit_rate = None
-        self.maximum_order_cost = None
+        self._minimum_profit_rate = None
+        self._maximum_order_cost = None
 
     def get_max_order_volume(self, price):
         return round(float(self.maximum_volume_in_btc / price), self.volume_step_size)
 
+    @property
+    def base_asset(self):
+        with self.__lock:
+            return self._base_asset
+
+    @base_asset.setter
+    def base_asset(self, value):
+        with self.__lock:
+            self._base_asset = value
+
+    @property
+    def quote_asset(self):
+        with self.__lock:
+            return self._quote_asset
+
+    @quote_asset.setter
+    def quote_asset(self, value):
+        with self.__lock:
+            self._quote_asset = value
+
+    @property
+    def price_precision(self):
+        with self.__lock:
+            return self._price_precision
+
+    @price_precision.setter
+    def price_precision(self, value):
+        with self.__lock:
+            self._price_precision = value
+
+    @property
+    def order_volume_step_size(self):
+        with self.__lock:
+            return self._order_volume_step_size
+
+    @order_volume_step_size.setter
+    def order_volume_step_size(self, value):
+        with self.__lock:
+            self._order_volume_step_size = value
+
+    @property
+    def minimum_order_volume(self):
+        with self.__lock:
+            return self._minimum_order_volume
+
+    @minimum_order_volume.setter
+    def minimum_order_volume(self, value):
+        with self.__lock:
+            self._minimum_order_volume = value
+
+    @property
+    def minimum_order_cost(self):
+        with self.__lock:
+            return self._minimum_order_cost
+
+    @minimum_order_cost.setter
+    def minimum_order_cost(self, value):
+        with self.__lock:
+            self._minimum_order_cost = value
+
+    @property
+    def order_volume_precision(self):
+        with self.__lock:
+            return self._order_volume_precision
+
+    @order_volume_precision.setter
+    def order_volume_precision(self, value):
+        with self.__lock:
+            self._order_volume_precision = value
+
+    @property
     def order_limits_to_dict(self):
+        with self.__lock:
+            return {
+                'order_volume_step_size': self.order_volume_step_size,
+                'minimum_order_volume': self.minimum_order_volume,
+                'minimum_order_cost': self.minimum_order_cost,
+                'min_profit_rate': self.min_profit_rate,
+                'order_volume_precision': self.order_volume_precision,
+                'maximum_order_cost': self.maximum_order_cost,
+            }
 
-        return {
-            'order_volume_step_size': self.order_volume_step_size,
-            'minimum_order_volume': self.minimum_order_volume,
-            'minimum_order_cost': self.minimum_order_cost,
-            'min_profit_rate': self.min_profit_rate,
-            'order_volume_precision': self.order_volume_precision,
-            'maximum_order_cost': self.maximum_order_cost,
-        }
-
+    @property
     def order_cost_limits_to_dict(self):
-        return {
-            'minimum_order_cost': self.minimum_order_cost,
-            'maximum_order_cost': self.maximum_order_cost,
-        }
+        with self.__lock:
+            return {
+                'minimum_order_cost': self.minimum_order_cost,
+                'maximum_order_cost': self.maximum_order_cost,
+            }
 
+    @property
     def order_volume_limits_to_dict(self):
-        return {
-            'minimum_order_volume': self.minimum_order_volume,
-        }
+        with self.__lock:
+            return {
+                'minimum_order_volume': self.minimum_order_volume,
+            }
 
+    @property
     def order_rate_limits_to_dict(self):
-        return {
-            'min_profit_rate': self.min_profit_rate,
-        }
+        with self.__lock:
+            return {
+                'min_profit_rate': self.min_profit_rate,
+            }
+
+    @property
+    def precisions_and_step_sizes_to_dict(self):
+        with self.__lock:
+            return {
+                'price_precision': self.price_precision,
+                'order_volume_precision': self.order_volume_precision,
+                'order_volume_step_size': self.order_volume_step_size,
+            }

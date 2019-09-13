@@ -2,7 +2,7 @@ import time
 import urllib.parse as _url_encode
 
 from botlib.api_client.client_utils import extend, hmac_val, url_encode, to_database_time
-from botlib.api_client.baseclient import BaseClient, private, no_errors
+from botlib.api_client.baseclient import BaseClient, private, no_errors, force_result
 
 # API ENDPOINTS
 from botlib.sql_functions import get_key_and_secret_sql
@@ -62,6 +62,7 @@ class BinanceClient(BaseClient):
     _taker_fees = 0.1
     __api_key, __api_secret = get_key_and_secret_sql(_name)
 
+    @force_result
     def parse_all_market_information(self):
         data = []
         markets = self._api_call(endpoint=INFO, params={}, api='public')['symbols']
@@ -73,6 +74,7 @@ class BinanceClient(BaseClient):
             base_asset = market["baseAsset"]
             quote_asset = market["quoteAsset"]
             order_volume_precision = market["baseAssetPrecision"]
+            price_precision = market["quotePrecision"]
             for _filter in market['filters']:
                 if _filter['filterType'] == "LOT_SIZE":
                     minimum_order_volume = _filter["minQty"]
@@ -84,6 +86,7 @@ class BinanceClient(BaseClient):
                 'base_asset': base_asset,
                 'quote_asset': quote_asset,
                 'order_volume_precision': order_volume_precision,
+                'price_precision': price_precision,
                 'minimum_order_volume': round(float(minimum_order_volume), order_volume_precision),
                 'order_volume_step_size': round(float(order_volume_step_size), order_volume_precision),
                 'minimum_order_cost': minimum_order_cost
@@ -92,6 +95,7 @@ class BinanceClient(BaseClient):
         return data
 
     @private
+    @force_result
     def fetch_all_balances(self):
         response = self._api_call(endpoint=ACCOUNT, params={}, api='private')['balances']
         return [{'symbol': bal['asset'], 'available': bal['free'], 'locked': bal['locked']} for bal in response]
@@ -143,6 +147,7 @@ class BinanceClient(BaseClient):
                [[round(float(x[0]), 10), round(float(x[1]), 10)] for x in resp['asks']]
 
     @private
+    @force_result
     def create_order(self, refid: str, side: str, price: float, volume: float):
         params = {
             'symbol': refid,
@@ -170,6 +175,7 @@ class BinanceClient(BaseClient):
         }
 
     @private
+    @force_result
     def cancel_order(self, refid, order_id):
         params = {
             'symbol': refid,
@@ -183,6 +189,7 @@ class BinanceClient(BaseClient):
         return False
 
     @private
+    @force_result
     def fetch_order_status(self, refid, order_id):
         params = {
             'symbol': refid,

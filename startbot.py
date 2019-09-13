@@ -40,28 +40,38 @@ class TradeOptionsDaemon(Thread):
     def __find_arbitrage_options(self, bot):
         """Find arbitrage options for ALL market combinations then filters"""
         order_books = self.__get_order_books_for_bot(bot)
-        if not order_books or order_books is None:
+        if not order_books:
             self.__logger.warning(order_books)
-        # Create options with checking min profit rate
         for bids in order_books:
             for asks in order_books:
                 if bids is not asks:
                     if self.__check_min_profit(bids, asks):
+                        sell_market_prec = self.__cli.get
                         self.__options += [
-                            [
-                                [bids[0], bids[1], bids[2][0], bids[2][1]],
-                                [asks[0], asks[1], asks[3][0], asks[3][1]]
-                            ]
+                            {
+                                'sell_market': {
+                                    'exchange': bids[0],
+                                    'refid': bids[1],
+                                    'price': bids[2][0],
+                                    'volume': bids[2][1]
+                                },
+                                'buy_market': {
+                                    'exchange': asks[0],
+                                    'refid': asks[1],
+                                    'price': asks[3][0],
+                                    'volume': asks[3][1]
+                                }
+                            }
                         ]
         # More filters on arbitrage options
-        print(self.__options)
         if self.__options:
             self.__filter_arbitrage_options()
 
     def __check_min_profit(self, bids, asks):
-        rate_limits = self.__cli.get_order_rate_limits()
+        rate_limits = self.__cli.get_order_rate_limits(bids[0], bids[1])
         rate = round((bids[2][0] - asks[3][0]) / bids[2][0] * 100, 2)
-        if rate >= float(self.__cli.get_min_profit_rate(bids[0], bids[1])):
+        min_rate = float(rate_limits['min_profit_rate'])
+        if rate >= min_rate:
             return True
         return False
 
@@ -69,7 +79,7 @@ class TradeOptionsDaemon(Thread):
         """
         Filters the found arbitrage options
         """
-        limits = self.__cli.get_order_limits()
+        settings = None
         # Define max amount on exchange
         self.__define_max_order_size_per_option()
 
@@ -94,7 +104,6 @@ class TradeOptionsDaemon(Thread):
     def __check_quantity_against_min_order_amount(self) -> None:
         """
         First filter on arbitrage options
-            -removes arbitrage option, if
         """
         for opt in self.__options:
             for side in opt:
@@ -122,7 +131,11 @@ class TradeOptionsDaemon(Thread):
         for opt in self.__options:
             for side in opt:
                 if isinstance(side, list):
-                    max_order_size = float(self.__cli.get_max_order_size_btc(side[0], side[1]))
+                    vol_limits = self.__cli.get_order_volume_limits(side[0], side[1])
+                    cost_limits = self.__cli.get_order_cost_limits(side[0], side[1])
+
+                    min_costs = vol_limits["minimum_order_volume"]
+                    max_costs = vol_limits["maximum_order_volume"]
                     if (side[2] * side[3]) < max_order_size:
                         order_size_max = round(side[3], 8)
                     else:

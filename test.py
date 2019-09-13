@@ -1,12 +1,30 @@
-import ccxt
+import time
+from botlib.api_client.api_wrapper import Exchange
 
-binance = ccxt.binance()
-crex24 = ccxt.crex24()
-
-binance.load_markets()
-crex24.load_markets()
+clients = Exchange()
 
 
-for x in binance.markets:
-    if x in crex24.markets:
-        print("Crex 24 " + x)
+def timeit(function):
+    def _wrapper(self, *args, **kwargs):
+        start = time.time()
+        print(f"Starting function: {start}")
+        res = function(self, *args, **kwargs)
+        end = time.time()
+        print(f"Ending function: {end}\nFunction call took {round(end - start, 4)}")
+        return res
+    return _wrapper
+
+
+@timeit
+def time_some_func(ob_size):
+    return clients.get_order_book('Binance', 'DOGEBTC', ob_size)
+
+
+t = time_some_func(10)
+print(t)
+
+t = time_some_func(50)
+print(t, len(t))
+
+t = time_some_func(100)
+print(t, len(t))

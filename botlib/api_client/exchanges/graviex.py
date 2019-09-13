@@ -3,9 +3,8 @@ import time
 import urllib.parse as _url_encode
 from collections import OrderedDict
 
-from botlib.api_client.client_utils import generate_path_from_params, hmac_val, url_encode, precision_from_string, \
-    to_database_time
-from botlib.api_client.baseclient import BaseClient, private, no_errors
+from botlib.api_client.client_utils import generate_path_from_params, hmac_val, url_encode, to_database_time
+from botlib.api_client.baseclient import BaseClient, private, no_errors, force_result
 
 # API ENDPOINTS
 from botlib.sql_functions import get_key_and_secret_sql
@@ -51,6 +50,7 @@ class GraviexClient(BaseClient):
     _withdrawal_fees = 0.002
     __api_key, __api_secret = get_key_and_secret_sql(_name)
 
+    @force_result
     def parse_all_market_information(self):
         resp = self._api_call(endpoint=TICKERS, params={}, api='public')
         return [
@@ -59,7 +59,8 @@ class GraviexClient(BaseClient):
                 'base_asset': resp[market]['base_unit'],
                 'quote_asset': resp[market]['quote_unit'],
                 'minimum_order_volume': resp[market]['base_min'],
-                'order_volume_precision': precision_from_string(resp[market]['base_min']),
+                'price_precision': resp[market]['quote_fixed'],
+                'order_volume_precision': resp[market]['base_fixed'],
                 'order_volume_step_size': resp[market]['base_min'],
                 'minimum_order_cost': None,
 
@@ -129,6 +130,7 @@ class GraviexClient(BaseClient):
         return bids, asks
 
     @private
+    @force_result
     def create_order(self, refid, side, price, volume):
         params = {
             'market': refid,
@@ -152,6 +154,7 @@ class GraviexClient(BaseClient):
         }
 
     @private
+    @force_result
     def cancel_order(self, order_id):
         params = {
             'id': int(order_id)
@@ -164,6 +167,7 @@ class GraviexClient(BaseClient):
         return False
 
     @private
+    @force_result
     def fetch_order_status(self, order_id) -> dict:
         params = {
             'id': order_id
