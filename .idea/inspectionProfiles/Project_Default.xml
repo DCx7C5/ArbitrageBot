@@ -29,6 +29,13 @@
           <option value="botlib.aio_sql.Exchanges.__table__" />
           <option value="botlib.aio_sql.BotMarkets.__table__" />
           <option value="botlib.aio_sql.Bots.__table__" />
+          <option value="botlib.exchanges.baseclient.BaseClient.fetch_all_markets" />
+          <option value="botlib.exchanges.baseclient.BaseClient.fetch_all_balances" />
+          <option value="botlib.exchanges.baseclient.BaseClient.exchange_specific_updates" />
+          <option value="botlib.exchanges.baseclient.BaseClient.fetch_all_market_information" />
+          <option value="botlib.exchanges.baseclient.BaseClient.parse_all_market_information" />
+          <option value="botlib.exchanges.baseclient.BaseClient.create_order" />
+          <option value="botlib.exchanges.baseclient.BaseClient.parse_create_order" />
         </list>
       </option>
     </inspection_tool>

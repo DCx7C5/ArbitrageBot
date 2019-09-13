@@ -22,3 +22,6 @@ class Storage:
 
     def __setitem__(self, key, value):
         return self.__setattr__(key, value)
+
+    def __repr__(self):
+        return str(self.__dict__)

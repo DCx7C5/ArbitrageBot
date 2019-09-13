@@ -2,7 +2,7 @@ import time
 from threading import Thread
 from botlib.blocked_markets import BlockedMarkets
 from botlib.bot_log import aj_logger
-from botlib.exchanges.api_wrapper import Exchange
+from botlib.api_client.api_wrapper import Exchange
 from botlib.sql_functions import create_order_sql, update_order_sql, get_bot_id_from_refid
 
 

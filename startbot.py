@@ -2,7 +2,7 @@ import sys
 import time
 from random import randint
 from threading import Thread
-from botlib.exchanges.api_wrapper import Exchange
+from botlib.api_client.api_wrapper import Exchange
 from botlib.bot_log import daemon_logger
 from botlib.blocked_markets import BlockedMarkets
 from botlib.order_book import OrderBook, OrderBookDaemon

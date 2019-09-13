@@ -63,7 +63,7 @@ def get_one_symbol_from_exchange_sql(exchange, refid):
         curs.execute(
             "SELECT symbol From bot_markets WHERE refid = %s AND exchange_id = (SELECT id FROM exchanges WHERE name = %s)", (refid, exchange, )
         )
-        return curs.fetchall()
+        return curs.fetchone()[0]
 
 
 def get_symbols_for_exchange_sql(exchange):
@@ -85,7 +85,7 @@ def get_min_profit_for_exchange_sql(exchange):
 def get_max_order_size_for_exchange_sql(exchange):
     with connection.get_connection() as curs:
         curs.execute(
-            "SELECT max_size, refid From bot_markets WHERE exchange_id = (SELECT id FROM exchanges WHERE name = %s)", exchange
+            "SELECT max_cost, refid From bot_markets WHERE exchange_id = (SELECT id FROM exchanges WHERE name = %s)", exchange
         )
         return [(float(x), y) for x, y in curs.fetchall()]
 
@@ -98,20 +98,21 @@ def get_refid_from_order_id(order_id):
         return curs.fetchone()[0]
 
 
-def create_order_sql(bot_id, order_id, status, side, refid, price, volume, executed_volume):
+def create_order_sql(bot_id, order_id, status, side, refid, price, volume, executed_volume, created, modified):
     with connection.get_connection() as curs:
         curs.execute(
-            "INSERT INTO arbitrage.orders(bot_id, order_id, status, side, refid, price, volume, executed_volume)"
-            " VALUES (%d, %d, %s, %s, %s, %s, %s, %s)", (int(bot_id), int(order_id), status, side, refid, price, volume, executed_volume,)
+            "INSERT INTO arbitrage.orders(bot_id, order_id, status, side, refid, price, volume, executed_volume, created, modified)"
+            " VALUES (%d, %d, %s, %s, %s, %s, %s, %s, %s, %s)", (int(bot_id), int(order_id), status, side, refid, price, volume, executed_volume, created, modified)
         )
     return True
 
 
-def update_order_sql(status, executed_volume, order_id):
+def update_order_sql(order_id, status, price, volume, executed_volume, created, modified):
     with connection.get_connection() as curs:
         curs.execute(
             "UPDATE arbitrage.orders "
-            "SET modified = CURTIME(), status = %s, executed_volume = %s WHERE order_id = %d", (status, executed_volume, order_id,)
+            "SET created = %s, modified = %s, status = %s, executed_volume = %s, price = %s, volume = %s WHERE order_id = %d",
+            (created, modified, status, executed_volume, price, volume, order_id,)
         )
     return True
 
@@ -149,7 +150,7 @@ def get_bot_id_from_refid(refid):
     return curs.fetchone()[0]
 
 
-def get_deposit_address(exchange, refid):
+def get_deposit_address_sql(exchange, refid):
     with connection.get_connection() as curs:
         curs.execute(
             "SELECT deposit_address FROM bot_markets "
@@ -157,3 +158,13 @@ def get_deposit_address(exchange, refid):
             "WHERE refid = %s AND e.name = %s", (refid, exchange,)
         )
     return curs.fetchone()[0]
+
+
+def get_market_data_sql(exchange):
+    with connection.get_connection() as curs:
+        curs.execute(
+            "SELECT refid, max_cost, min_profit, deposit_address FROM bot_markets "
+            "JOIN exchanges e on bot_markets.exchange_id = e.id "
+            "WHERE e.name = %s", (exchange, )
+        )
+    return [{'refid': i[0], 'max_size': i[1], 'min_profit': i[2], 'deposit': i[3]} for i in curs.fetchall()]

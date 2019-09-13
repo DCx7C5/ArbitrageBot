@@ -9,9 +9,6 @@ from queue import Queue
 class OrderBookTimer(Storage):
     """Timer management class for order book jobs"""
 
-    def __init__(self):
-        pass
-
     def update_timer(self, exchange, pair):
         t = time.time()
         if not self[exchange]:
@@ -80,7 +77,7 @@ class FetchOrderBook(Thread):
 
     def run(self):
         # Calls Exchange API
-        data = self._clients.get_order_book(self._exchange, self._refid)
+        data = self._clients.fetch_order_book(self._exchange, self._refid)
         if not data:
             self._logger.error(f'API request failed with {self.__bot_id} | {self._exchange} | {self._refid}')
 
