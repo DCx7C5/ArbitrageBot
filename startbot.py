@@ -7,7 +7,7 @@ from botlib.bot_log import daemon_logger
 from botlib.blocked_markets import BlockedMarkets
 from botlib.order_book import OrderBook, OrderBookDaemon
 from botlib.bot_markets import BotsAndMarkets, BotsAndMarketsDaemon
-from botlib.job_manager import JobThread
+from botlib.job_manager import ArbitrageJobThread
 from botlib.sql_functions import get_all_prices_from_refid
 
 
@@ -54,10 +54,12 @@ class TradeOptionsDaemon(Thread):
                             ]
                         ]
         # More filters on arbitrage options
+        print(self.__options)
         if self.__options:
             self.__filter_arbitrage_options()
 
     def __check_min_profit(self, bids, asks):
+        rate_limits = self.__cli.get_order_rate_limits()
         rate = round((bids[2][0] - asks[3][0]) / bids[2][0] * 100, 2)
         if rate >= float(self.__cli.get_min_profit_rate(bids[0], bids[1])):
             return True
@@ -67,7 +69,7 @@ class TradeOptionsDaemon(Thread):
         """
         Filters the found arbitrage options
         """
-
+        limits = self.__cli.get_order_limits()
         # Define max amount on exchange
         self.__define_max_order_size_per_option()
 
@@ -82,11 +84,12 @@ class TradeOptionsDaemon(Thread):
 
         # Find most profitable option, set as job, and lock job markets
         job = self.__filter_based_on_most_profitable()
-
         self.__logger.warning(f'Job found! {job}')
-        if job:
-            JobThread(job=[job[0], job[1]], blocked_markets=self.__market_locker, clients=self.__cli).start()
-            self.__logger.warning(f'Order Job created! {job}')
+        print(job)
+
+        # if job:
+        #     ArbitrageJobThread(job=[job[0], job[1]], blocked_markets=self.__market_locker, clients=self.__cli).start()
+        #     self.__logger.warning(f'Order Job created! {job}')
 
     def __check_quantity_against_min_order_amount(self) -> None:
         """

@@ -1,4 +1,4 @@
-import threading
+from threading import RLock
 from pymysqlpool import ConnectionPool
 
 connection = ConnectionPool(host='127.0.0.1',
@@ -8,7 +8,9 @@ connection = ConnectionPool(host='127.0.0.1',
                             autocommit=True,
                             size=5)
 
-INSERTION_LOCK_BOT_MARKETS = threading.RLock()
+INSERTION_LOCK_BOT_MARKETS = RLock()
+INSERTION_LOCK_ORDERS = RLock()
+INSERTION_LOCK_JOBS = RLock()
 
 
 def disable_orphaned_bot_market_sql(bot_id: int):
@@ -100,28 +102,31 @@ def get_refid_from_order_id(order_id):
 
 def create_order_sql(bot_id, order_id, status, side, refid, price, volume, executed_volume, created, modified):
     with connection.get_connection() as curs:
-        curs.execute(
-            "INSERT INTO arbitrage.orders(bot_id, order_id, status, side, refid, price, volume, executed_volume, created, modified)"
-            " VALUES (%d, %d, %s, %s, %s, %s, %s, %s, %s, %s)", (int(bot_id), int(order_id), status, side, refid, price, volume, executed_volume, created, modified)
-        )
+        with INSERTION_LOCK_ORDERS:
+            curs.execute(
+                "INSERT INTO arbitrage.orders(bot_id, order_id, status, side, refid, price, volume, executed_volume, created, modified)"
+                " VALUES (%d, %d, %s, %s, %s, %s, %s, %s, %s, %s)", (int(bot_id), int(order_id), status, side, refid, price, volume, executed_volume, created, modified)
+            )
     return True
 
 
 def update_order_sql(order_id, status, price, volume, executed_volume, created, modified):
     with connection.get_connection() as curs:
-        curs.execute(
-            "UPDATE arbitrage.orders "
-            "SET created = %s, modified = %s, status = %s, executed_volume = %s, price = %s, volume = %s WHERE order_id = %d",
-            (created, modified, status, executed_volume, price, volume, order_id,)
-        )
+        with INSERTION_LOCK_ORDERS:
+            curs.execute(
+                "UPDATE arbitrage.orders "
+                "SET created = %s, modified = %s, status = %s, executed_volume = %s, price = %s, volume = %s WHERE order_id = %d",
+                (created, modified, status, executed_volume, price, volume, order_id,)
+            )
     return True
 
 
 def create_job():
     with connection.get_connection() as curs:
-        curs.execute(
-            ""
-        )
+        with INSERTION_LOCK_JOBS:
+            curs.execute(
+                ""
+            )
 
 
 def get_all_prices_from_refid(refid, side):

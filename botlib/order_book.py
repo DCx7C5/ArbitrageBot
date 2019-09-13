@@ -2,7 +2,7 @@ import time
 from threading import Lock, Thread, enumerate
 from botlib.bot_markets import BotsAndMarkets
 from botlib.storage import Storage
-from botlib.bot_log import ob_logger, req_logger
+from botlib.bot_log import daemon_logger
 from queue import Queue
 
 
@@ -69,7 +69,7 @@ class FetchOrderBook(Thread):
         self.__bot_id = bot_id
         self._refid = refid
         self._exchange = exchange
-        self._logger = req_logger
+        self._logger = daemon_logger
         self._clients = clients
         self._ob = ob_storage
         self.name = "GetOrderBook"
@@ -77,7 +77,7 @@ class FetchOrderBook(Thread):
 
     def run(self):
         # Calls Exchange API
-        data = self._clients.fetch_order_book(self._exchange, self._refid)
+        data = self._clients.get_order_book(self._exchange, self._refid)
         if not data:
             self._logger.error(f'API request failed with {self.__bot_id} | {self._exchange} | {self._refid}')
 
@@ -100,7 +100,7 @@ class OrderBookDaemon(Thread):
         self._order_book = ob_storage
         self._bot_markets = bm_storage
         self._order_book_timer = OrderBookTimer()
-        self._logger = ob_logger
+        self._logger = daemon_logger
 
     def __fill_queue(self):
         if not self._bot_markets.get_bot_markets():

@@ -10920,3 +10920,99 @@
 [2019-09-07 04:09:24 ] MainThread     - DEBUG - SYNC.Cli - Crex24 initialized
 [2019-09-07 04:09:26 ] MainThread     - DEBUG - SYNC.Cli - Graviex initialized
 [2019-09-07 04:09:26 ] MainThread     - DEBUG - SYNC.Cli - Binance initialized
+[2019-09-13 14:21:14 ] MainThread     - INFO  - SYNC   - Preparing bot startup...
+[2019-09-13 14:21:14 ] MainThread     - INFO  - SYNC   - All modules initialized. Starting bot!
+[2019-09-13 14:21:14 ] BackGroundSync - INFO  - SYNC.BotMarkets - Daemon started!
+[2019-09-13 14:21:14 ] OrderBook      - INFO  - SYNC.OrderBook - Daemon started!
+[2019-09-13 14:21:14 ] BackGroundSync - DEBUG - SYNC.BotMarkets.Storage - Bot activated! Id: 1
+[2019-09-13 14:21:14 ] BackGroundSync - DEBUG - SYNC.BotMarkets.Storage - Bot activated! Id: 3
+[2019-09-13 14:21:14 ] BackGroundSync - DEBUG - SYNC.BotMarkets.Storage - Bot activated! Id: 4
+[2019-09-13 14:21:14 ] BackGroundSync - DEBUG - SYNC.BotMarkets.Storage - Bot activated! Id: 7
+[2019-09-13 14:21:14 ] BackGroundSync - DEBUG - SYNC.BotMarkets.Storage - Bot activated! Id: 8
+[2019-09-13 14:21:14 ] BackGroundSync - DEBUG - SYNC.BotMarkets.Storage - Bot activated! Id: 9
+[2019-09-13 14:21:14 ] BackGroundSync - DEBUG - SYNC.BotMarkets.Storage - Bot activated! Id: 10
+[2019-09-13 14:21:14 ] BackGroundSync - DEBUG - SYNC.BotMarkets.Storage - Market activated! Id: (1, 'Graviex', 'dogebtc')
+[2019-09-13 14:21:14 ] BackGroundSync - DEBUG - SYNC.BotMarkets.Storage - Market activated! Id: (3, 'Graviex', 'ltcbtc')
+[2019-09-13 14:21:14 ] BackGroundSync - DEBUG - SYNC.BotMarkets.Storage - Market activated! Id: (4, 'Graviex', 'ethbtc')
+[2019-09-13 14:21:14 ] BackGroundSync - DEBUG - SYNC.BotMarkets.Storage - Market activated! Id: (7, 'Graviex', 'xvgbtc')
+[2019-09-13 14:21:14 ] BackGroundSync - DEBUG - SYNC.BotMarkets.Storage - Market activated! Id: (8, 'Graviex', 'npxsbtc')
+[2019-09-13 14:21:14 ] BackGroundSync - DEBUG - SYNC.BotMarkets.Storage - Market activated! Id: (9, 'Graviex', 'pivxbtc')
+[2019-09-13 14:21:14 ] BackGroundSync - DEBUG - SYNC.BotMarkets.Storage - Market activated! Id: (10, 'Graviex', 'wavesbtc')
+[2019-09-13 14:21:14 ] BackGroundSync - DEBUG - SYNC.BotMarkets.Storage - Market activated! Id: (1, 'Crex24', 'DOGE-BTC')
+[2019-09-13 14:21:14 ] BackGroundSync - DEBUG - SYNC.BotMarkets.Storage - Market activated! Id: (3, 'Crex24', 'LTC-BTC')
+[2019-09-13 14:21:14 ] BackGroundSync - DEBUG - SYNC.BotMarkets.Storage - Market activated! Id: (4, 'Crex24', 'ETH-BTC')
+[2019-09-13 14:21:14 ] BackGroundSync - DEBUG - SYNC.BotMarkets.Storage - Market activated! Id: (7, 'Crex24', 'XVG-BTC')
+[2019-09-13 14:21:14 ] BackGroundSync - DEBUG - SYNC.BotMarkets.Storage - Market activated! Id: (9, 'Crex24', 'PIVX-BTC')
+[2019-09-13 14:21:14 ] BackGroundSync - DEBUG - SYNC.BotMarkets.Storage - Market activated! Id: (10, 'Crex24', 'WAVES-BTC')
+[2019-09-13 14:21:14 ] BackGroundSync - DEBUG - SYNC.BotMarkets.Storage - Market activated! Id: (1, 'Binance', 'DOGEBTC')
+[2019-09-13 14:21:14 ] BackGroundSync - DEBUG - SYNC.BotMarkets.Storage - Market activated! Id: (3, 'Binance', 'LTCBTC')
+[2019-09-13 14:21:14 ] BackGroundSync - DEBUG - SYNC.BotMarkets.Storage - Market activated! Id: (4, 'Binance', 'ETHBTC')
+[2019-09-13 14:21:14 ] BackGroundSync - DEBUG - SYNC.BotMarkets.Storage - Market activated! Id: (7, 'Binance', 'XVGBTC')
+[2019-09-13 14:21:14 ] BackGroundSync - DEBUG - SYNC.BotMarkets.Storage - Market activated! Id: (8, 'Binance', 'NPXSBTC')
+[2019-09-13 14:21:14 ] BackGroundSync - DEBUG - SYNC.BotMarkets.Storage - Market activated! Id: (10, 'Binance', 'WAVESBTC')
+[2019-09-13 14:21:15 ] BackGroundSync - DEBUG - SYNC.BotMarkets - Database syncing to bot....
+[2019-09-13 14:21:16 ] MainThread     - INFO  - SYNC   - Shutdown By User
+[2019-09-13 14:23:59 ] MainThread     - INFO  - SYNC   - Preparing bot startup...
+[2019-09-13 14:23:59 ] MainThread     - INFO  - SYNC   - All modules initialized. Starting bot!
+[2019-09-13 14:23:59 ] BackGroundSync - INFO  - SYNC.BotMarkets - Daemon started!
+[2019-09-13 14:23:59 ] OrderBook      - INFO  - SYNC.OrderBook - Daemon started!
+[2019-09-13 14:23:59 ] BackGroundSync - DEBUG - SYNC.BotMarkets.Storage - Bot activated! Id: 1
+[2019-09-13 14:23:59 ] BackGroundSync - DEBUG - SYNC.BotMarkets.Storage - Bot activated! Id: 3
+[2019-09-13 14:23:59 ] BackGroundSync - DEBUG - SYNC.BotMarkets.Storage - Bot activated! Id: 4
+[2019-09-13 14:23:59 ] BackGroundSync - DEBUG - SYNC.BotMarkets.Storage - Bot activated! Id: 7
+[2019-09-13 14:23:59 ] BackGroundSync - DEBUG - SYNC.BotMarkets.Storage - Bot activated! Id: 8
+[2019-09-13 14:23:59 ] BackGroundSync - DEBUG - SYNC.BotMarkets.Storage - Bot activated! Id: 9
+[2019-09-13 14:23:59 ] BackGroundSync - DEBUG - SYNC.BotMarkets.Storage - Bot activated! Id: 10
+[2019-09-13 14:23:59 ] BackGroundSync - DEBUG - SYNC.BotMarkets.Storage - Market activated! Id: (1, 'Graviex', 'dogebtc')
+[2019-09-13 14:23:59 ] BackGroundSync - DEBUG - SYNC.BotMarkets.Storage - Market activated! Id: (3, 'Graviex', 'ltcbtc')
+[2019-09-13 14:23:59 ] BackGroundSync - DEBUG - SYNC.BotMarkets.Storage - Market activated! Id: (4, 'Graviex', 'ethbtc')
+[2019-09-13 14:23:59 ] BackGroundSync - DEBUG - SYNC.BotMarkets.Storage - Market activated! Id: (7, 'Graviex', 'xvgbtc')
+[2019-09-13 14:23:59 ] BackGroundSync - DEBUG - SYNC.BotMarkets.Storage - Market activated! Id: (8, 'Graviex', 'npxsbtc')
+[2019-09-13 14:23:59 ] BackGroundSync - DEBUG - SYNC.BotMarkets.Storage - Market activated! Id: (9, 'Graviex', 'pivxbtc')
+[2019-09-13 14:23:59 ] BackGroundSync - DEBUG - SYNC.BotMarkets.Storage - Market activated! Id: (10, 'Graviex', 'wavesbtc')
+[2019-09-13 14:23:59 ] BackGroundSync - DEBUG - SYNC.BotMarkets.Storage - Market activated! Id: (1, 'Crex24', 'DOGE-BTC')
+[2019-09-13 14:23:59 ] BackGroundSync - DEBUG - SYNC.BotMarkets.Storage - Market activated! Id: (3, 'Crex24', 'LTC-BTC')
+[2019-09-13 14:23:59 ] BackGroundSync - DEBUG - SYNC.BotMarkets.Storage - Market activated! Id: (4, 'Crex24', 'ETH-BTC')
+[2019-09-13 14:23:59 ] BackGroundSync - DEBUG - SYNC.BotMarkets.Storage - Market activated! Id: (7, 'Crex24', 'XVG-BTC')
+[2019-09-13 14:23:59 ] BackGroundSync - DEBUG - SYNC.BotMarkets.Storage - Market activated! Id: (9, 'Crex24', 'PIVX-BTC')
+[2019-09-13 14:23:59 ] BackGroundSync - DEBUG - SYNC.BotMarkets.Storage - Market activated! Id: (10, 'Crex24', 'WAVES-BTC')
+[2019-09-13 14:23:59 ] BackGroundSync - DEBUG - SYNC.BotMarkets.Storage - Market activated! Id: (1, 'Binance', 'DOGEBTC')
+[2019-09-13 14:23:59 ] BackGroundSync - DEBUG - SYNC.BotMarkets.Storage - Market activated! Id: (3, 'Binance', 'LTCBTC')
+[2019-09-13 14:23:59 ] BackGroundSync - DEBUG - SYNC.BotMarkets.Storage - Market activated! Id: (4, 'Binance', 'ETHBTC')
+[2019-09-13 14:23:59 ] BackGroundSync - DEBUG - SYNC.BotMarkets.Storage - Market activated! Id: (7, 'Binance', 'XVGBTC')
+[2019-09-13 14:23:59 ] BackGroundSync - DEBUG - SYNC.BotMarkets.Storage - Market activated! Id: (8, 'Binance', 'NPXSBTC')
+[2019-09-13 14:23:59 ] BackGroundSync - DEBUG - SYNC.BotMarkets.Storage - Market activated! Id: (10, 'Binance', 'WAVESBTC')
+[2019-09-13 14:24:00 ] BackGroundSync - DEBUG - SYNC.BotMarkets - Database syncing to bot....
+[2019-09-13 14:24:03 ] MainThread     - INFO  - SYNC   - Shutdown By User
+[2019-09-13 14:26:58 ] MainThread     - INFO  - SYNC   - Preparing bot startup...
+[2019-09-13 14:26:58 ] MainThread     - INFO  - SYNC   - All modules initialized. Starting bot!
+[2019-09-13 14:26:58 ] BackGroundSync - INFO  - SYNC   - Daemon started!
+[2019-09-13 14:26:58 ] OrderBook      - INFO  - SYNC   - Daemon started!
+[2019-09-13 14:26:58 ] BackGroundSync - DEBUG - SYNC   - Bot activated! Id: 1
+[2019-09-13 14:26:58 ] BackGroundSync - DEBUG - SYNC   - Bot activated! Id: 3
+[2019-09-13 14:26:58 ] BackGroundSync - DEBUG - SYNC   - Bot activated! Id: 4
+[2019-09-13 14:26:58 ] BackGroundSync - DEBUG - SYNC   - Bot activated! Id: 7
+[2019-09-13 14:26:58 ] BackGroundSync - DEBUG - SYNC   - Bot activated! Id: 8
+[2019-09-13 14:26:58 ] BackGroundSync - DEBUG - SYNC   - Bot activated! Id: 9
+[2019-09-13 14:26:58 ] BackGroundSync - DEBUG - SYNC   - Bot activated! Id: 10
+[2019-09-13 14:26:58 ] BackGroundSync - DEBUG - SYNC   - Market activated! Id: (1, 'Graviex', 'dogebtc')
+[2019-09-13 14:26:58 ] BackGroundSync - DEBUG - SYNC   - Market activated! Id: (3, 'Graviex', 'ltcbtc')
+[2019-09-13 14:26:58 ] BackGroundSync - DEBUG - SYNC   - Market activated! Id: (4, 'Graviex', 'ethbtc')
+[2019-09-13 14:26:58 ] BackGroundSync - DEBUG - SYNC   - Market activated! Id: (7, 'Graviex', 'xvgbtc')
+[2019-09-13 14:26:58 ] BackGroundSync - DEBUG - SYNC   - Market activated! Id: (8, 'Graviex', 'npxsbtc')
+[2019-09-13 14:26:58 ] BackGroundSync - DEBUG - SYNC   - Market activated! Id: (9, 'Graviex', 'pivxbtc')
+[2019-09-13 14:26:58 ] BackGroundSync - DEBUG - SYNC   - Market activated! Id: (10, 'Graviex', 'wavesbtc')
+[2019-09-13 14:26:58 ] BackGroundSync - DEBUG - SYNC   - Market activated! Id: (1, 'Crex24', 'DOGE-BTC')
+[2019-09-13 14:26:58 ] BackGroundSync - DEBUG - SYNC   - Market activated! Id: (3, 'Crex24', 'LTC-BTC')
+[2019-09-13 14:26:58 ] BackGroundSync - DEBUG - SYNC   - Market activated! Id: (4, 'Crex24', 'ETH-BTC')
+[2019-09-13 14:26:58 ] BackGroundSync - DEBUG - SYNC   - Market activated! Id: (7, 'Crex24', 'XVG-BTC')
+[2019-09-13 14:26:58 ] BackGroundSync - DEBUG - SYNC   - Market activated! Id: (9, 'Crex24', 'PIVX-BTC')
+[2019-09-13 14:26:58 ] BackGroundSync - DEBUG - SYNC   - Market activated! Id: (10, 'Crex24', 'WAVES-BTC')
+[2019-09-13 14:26:58 ] BackGroundSync - DEBUG - SYNC   - Market activated! Id: (1, 'Binance', 'DOGEBTC')
+[2019-09-13 14:26:58 ] BackGroundSync - DEBUG - SYNC   - Market activated! Id: (3, 'Binance', 'LTCBTC')
+[2019-09-13 14:26:58 ] BackGroundSync - DEBUG - SYNC   - Market activated! Id: (4, 'Binance', 'ETHBTC')
+[2019-09-13 14:26:58 ] BackGroundSync - DEBUG - SYNC   - Market activated! Id: (7, 'Binance', 'XVGBTC')
+[2019-09-13 14:26:58 ] BackGroundSync - DEBUG - SYNC   - Market activated! Id: (8, 'Binance', 'NPXSBTC')
+[2019-09-13 14:26:58 ] BackGroundSync - DEBUG - SYNC   - Market activated! Id: (10, 'Binance', 'WAVESBTC')
+[2019-09-13 14:26:59 ] BackGroundSync - DEBUG - SYNC   - Database syncing to bot....
+[2019-09-13 14:26:59 ] MainThread     - INFO  - SYNC   - Shutdown By User

@@ -165,8 +165,15 @@ class CrexClient(BaseClient):
         }
 
     @private
-    def fetch_deposit_address(self):
-        pass
+    def fetch_deposit_address(self, refid) -> dict:
+        symbol = get_one_symbol_from_exchange_sql(self._name, refid)
+        params = {
+            'currency': symbol
+        }
+        return self._api_call(endpoint=DEPOSIT_ADDRESS, params=params, api='account', method="GET")
+
+    def parse_deposit_address(self, raw_response) -> str:
+        return raw_response['address']
 
     @private
     def create_withdrawal(self, refid, amount, address):
@@ -176,4 +183,17 @@ class CrexClient(BaseClient):
             'amount': amount,
             'address': address
         }
-        return self._api_call(endpoint=WITHDRAW, params=params, api='account', )
+        return self._api_call(endpoint=WITHDRAW, params=params, api='account', method="POST")
+
+    def parse_withdrawal(self, raw_response):
+        return {
+            'withdrawal_id': raw_response["id"],
+            'asset': raw_response['currency'],
+            'send_to': raw_response['address'],
+            'amount': raw_response['amount'],
+            'fee': raw_response['fee'] if raw_response['fee'] not in ["null", None, "Null", 'Null'] else None,
+            'tx_id': raw_response['txId'] if raw_response['txId'] not in ["null", None, "Null", 'Null'] else None,
+            'created': to_database_time(raw_response['createdAt']),
+            'processed': to_database_time(raw_response['processedAt']) if raw_response['processedAt'] not in ["null", None, "Null", 'Null'] else None,
+            'status': raw_response['status']
+        }

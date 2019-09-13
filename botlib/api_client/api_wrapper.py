@@ -57,21 +57,28 @@ class Exchange:
             return True
         return False
 
-    def get_min_profit_rate(self, exchange: str, refid: str):
-        """Loads min_profit_rate from exchange dictionary (timer based updates)"""
-        return self[exchange].get_min_profit_rate(refid)
+    def get_order_rate_limits(self, exchange: str, refid: str):
+        return self[exchange].get_order_rate_limits(refid)
 
-    def get_max_order_size_btc(self, exchange: str, refid: str):
-        """Loads max_order_size from exchange dictionary (timer based updates)"""
-        return self[exchange].get_max_order_size_btc(refid)
+    def get_order_volume_limits(self, exchange: str, refid: str):
+        return self[exchange].get_order_volume_limits(refid)
 
-    def get_minimum_order_amount(self, exchange: str, refid: str):
-        """Returns minimum order amount of a market (timer based updates)"""
-        return self[exchange].get_min_order_vol(refid)
+    def get_order_price_limits(self, exchange: str, refid: str):
+        return self[exchange].get_order_price_limits(refid)
 
-    def get_deposit_address(self, exchange: str, refid: str):
+    def get_order_cost_limits(self, exchange: str, refid: str):
+        return self[exchange].get_order_cost_limits(refid)
+
+    def get_transaction_limits(self, exchange: str, refid: str):
+        return
+
+    def get_crypto_deposit_address(self, exchange: str, refid: str):
         """Returns deposit address for refid on exchange"""
-        return self[exchange].get_deposit_address(refid)
+        return self[exchange].get_crypto_deposit_address(refid)
+
+    def create_crypto_withdrawal(self, exchange: str, refid: str, amount: float):
+        """Creates withdrawal of given asset and parameters"""
+        return self[exchange].create_crypto_withdrawal(refid, amount)
 
     def __getitem__(self, item):
         """Makes class subscribable"""

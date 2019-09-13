@@ -47,6 +47,7 @@ class GraviexClient(BaseClient):
     _rate_limit = 1.0 / 15
     _maker_fees = 0.2
     _taker_fees = 0.2
+    _withdrawal_fee_type = 'static'  # the fee amount is -0.002 Coin, except...
     _withdrawal_fees = 0.002
     __api_key, __api_secret = get_key_and_secret_sql(_name)
 

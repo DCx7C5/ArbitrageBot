@@ -19,8 +19,6 @@ from botlib.sql_functions import get_one_symbol_from_exchange_sql, get_market_da
 logging.getLogger("requests").setLevel(logging.INFO)
 logging.getLogger("urllib3").setLevel(logging.INFO)
 
-logger_api = daemon_logger.getChild('Cli')
-
 # SSL FIX
 disable_warnings()
 old_merge_environment_settings = Session.merge_environment_settings
@@ -45,7 +43,7 @@ class BaseClient:
         self.withdrawal_fees = self._withdrawal_fees if self._withdrawal_fees is not None else 0.1
 
         self.__lock = Lock()
-        self.logger = logger_api
+        self.logger = daemon_logger
         self.logger.setLevel(logging.DEBUG)
         self.session = Session()
         self.headers = {}
@@ -69,7 +67,8 @@ class BaseClient:
     def update_market_settings(self) -> None:
         api_data = self.parse_all_market_information()
         sql_data = get_market_data_sql(self._name)
-        self.markets = MarketManager(api_data, sql_data)
+        with self.__lock:
+            self.markets = MarketManager(api_data, sql_data)
 
     def get_balance(self, refid: str) -> float:
         """Returns a coin/asset balance"""
@@ -84,8 +83,9 @@ class BaseClient:
     def update_balances(self):
         """Updates internal exchange specific balance dictionary"""
         for bal in self.fetch_all_balances():
-            if bal['symbol'] not in self.balances.keys():
-                self.balances[bal['symbol']] = float(bal['available'])
+            with self.__lock:
+                if bal['symbol'] not in self.balances.keys():
+                    self.balances[bal['symbol']] = float(bal['available'])
 
     def create_limit_order(self, refid, price, volume, side):
         """Create standard limit order"""
@@ -102,6 +102,30 @@ class BaseClient:
     def get_order_status(self, order_id, refid=None):
         status_response = self.fetch_order_status(order_id, refid)
         return self.parse_canceled_order(status_response)
+
+    def get_crypto_deposit_address(self, refid):
+        deposit_response = self.fetch_deposit_address(refid)
+        return self.parse_deposit_address(deposit_response)
+
+    def create_crypto_withdrawal(self, refid, amount, address):
+        withdrawal_response = self.create_withdrawal(refid, amount, address)
+        return self.parse_withdrawal(withdrawal_response)
+
+    def get_order_rate_limits(self, refid) -> dict:
+        with self.__lock:
+            return self.markets[refid].get_order_rate_limits()
+
+    def get_order_cost_limits(self, refid) -> dict:
+        with self.__lock:
+            return self.markets[refid].order_cost_limits_to_dict()
+
+    def get_order_volume_limits(self, refid) -> dict:
+        with self.__lock:
+            return self.markets[refid].order_volume_limits_to_dict()
+
+    def get_transaction_limits(self, refid) -> dict:
+        with self.__lock:
+            return self.markets[refid].order_limits_to_dict()
 
     # Response management functions
 
@@ -225,6 +249,18 @@ class BaseClient:
         pass
 
     def fetch_all_balances(self) -> list:
+        pass
+
+    def fetch_deposit_address(self, refid):
+        pass
+
+    def parse_deposit_address(self, raw_response) -> str:
+        pass
+
+    def create_withdrawal(self, refid, amount, address):
+        pass
+
+    def parse_withdrawal(self, withdrawal_response) -> dict:
         pass
 
 

@@ -130,11 +130,36 @@ class Market(Storage):
         self.minimum_order_cost = None
         self.order_volume_precision = None
 
-        self.deposit_address = None
-
         # From Database
         self.min_profit_rate = None
         self.maximum_order_cost = None
 
     def get_max_order_volume(self, price):
         return round(float(self.maximum_volume_in_btc / price), self.volume_step_size)
+
+    def order_limits_to_dict(self):
+
+        return {
+            'order_volume_step_size': self.order_volume_step_size,
+            'minimum_order_volume': self.minimum_order_volume,
+            'minimum_order_cost': self.minimum_order_cost,
+            'min_profit_rate': self.min_profit_rate,
+            'order_volume_precision': self.order_volume_precision,
+            'maximum_order_cost': self.maximum_order_cost,
+        }
+
+    def order_cost_limits_to_dict(self):
+        return {
+            'minimum_order_cost': self.minimum_order_cost,
+            'maximum_order_cost': self.maximum_order_cost,
+        }
+
+    def order_volume_limits_to_dict(self):
+        return {
+            'minimum_order_volume': self.minimum_order_volume,
+        }
+
+    def order_rate_limits_to_dict(self):
+        return {
+            'min_profit_rate': self.min_profit_rate,
+        }

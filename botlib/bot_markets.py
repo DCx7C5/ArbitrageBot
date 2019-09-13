@@ -7,10 +7,6 @@ from botlib.sql_functions import get_enabled_bots_ids_sql, get_enabled_bot_marke
 from botlib.storage import Storage
 from botlib.bot_log import daemon_logger
 
-bad_logger = daemon_logger.getChild('BotMarkets')
-
-bas_logger = bad_logger.getChild('Storage')
-
 
 class BotsAndMarkets(Storage):
     """
@@ -18,7 +14,7 @@ class BotsAndMarkets(Storage):
     """
     def __init__(self):
         self.__lock = Lock()
-        self.__logger = bas_logger
+        self.__logger = daemon_logger
 
         # List of enabled bot ids
         self.__enabled_bot_ids = []
@@ -53,7 +49,7 @@ class BotsAndMarkets(Storage):
                 if market not in self.__bot_markets:
                     self.__bot_markets.append(market)
                     self.__markets_per_bot[str(market[0])].append((market[1], market[2]))
-                    self.__logger.debug(f'Market activated! Id: {market}')
+                    self.__logger.debug(f'Market activated! Id: {market} {self.__logger.name}')
         with self.__lock:
             for market in self.__bot_markets:
                 if market not in bot_markets:
@@ -103,7 +99,7 @@ class BotsAndMarketsDaemon(Thread):
         Thread.__init__(self)
         self.name = 'BackGroundSync'
         self.daemon = True
-        self.__logger = bad_logger
+        self.__logger = daemon_logger
         self.__last_log_awake = 0
         self.__last_log_settings = 0
         self.__bm_storage = bm_storage
