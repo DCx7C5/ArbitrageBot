@@ -71,8 +71,8 @@ class Exchange:
     def get_precisions_and_step_sizes(self, exchange: str, refid: str):
         return self[exchange].get_precisions_and_step_sizes(refid)
 
-    def get_transaction_limits(self, exchange: str, refid: str):
-        return
+    def get_limits(self, exchange: str, refid: str):
+        return self[exchange].get_limits(refid)
 
     def get_crypto_deposit_address(self, exchange: str, refid: str):
         """Returns deposit address for refid on exchange"""

@@ -211,42 +211,35 @@ class Market(Storage):
         with self.__lock:
             self._order_volume_precision = value
 
-    @property
-    def order_limits_to_dict(self):
+    def order_limits_to_dict(self) -> dict:
         with self.__lock:
             return {
-                'order_volume_step_size': self.order_volume_step_size,
                 'minimum_order_volume': self.minimum_order_volume,
+                'min_profit_rate': self._minimum_profit_rate,
                 'minimum_order_cost': self.minimum_order_cost,
-                'min_profit_rate': self.min_profit_rate,
-                'order_volume_precision': self.order_volume_precision,
                 'maximum_order_cost': self.maximum_order_cost,
             }
 
-    @property
-    def order_cost_limits_to_dict(self):
+    def order_cost_limits_to_dict(self) -> dict:
         with self.__lock:
             return {
                 'minimum_order_cost': self.minimum_order_cost,
                 'maximum_order_cost': self.maximum_order_cost,
             }
 
-    @property
-    def order_volume_limits_to_dict(self):
+    def order_volume_limits_to_dict(self) -> dict:
         with self.__lock:
             return {
                 'minimum_order_volume': self.minimum_order_volume,
             }
 
-    @property
-    def order_rate_limits_to_dict(self):
+    def order_rate_limits_to_dict(self) -> dict:
         with self.__lock:
             return {
                 'min_profit_rate': self.min_profit_rate,
             }
 
-    @property
-    def precisions_and_step_sizes_to_dict(self):
+    def precisions_and_step_sizes_to_dict(self) -> dict:
         with self.__lock:
             return {
                 'price_precision': self.price_precision,

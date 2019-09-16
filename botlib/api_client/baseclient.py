@@ -112,19 +112,19 @@ class BaseClient:
         return self.parse_withdrawal(withdrawal_response)
 
     def get_order_rate_limits(self, refid) -> dict:
-        return self.markets[refid].get_order_rate_limits
+        return self.markets[refid].order_rate_limits_to_dict()
 
     def get_order_cost_limits(self, refid) -> dict:
-        return self.markets[refid].order_cost_limits_to_dict
+        return self.markets[refid].order_cost_limits_to_dict()
 
     def get_order_volume_limits(self, refid) -> dict:
-        return self.markets[refid].order_volume_limits_to_dict
+        return self.markets[refid].order_volume_limits_to_dict()
 
     def get_precisions_and_step_sizes(self, refid):
-        return self.markets[refid].precisions_and_step_sizes_to_dict
+        return self.markets[refid].precisions_and_step_sizes_to_dict()
 
-    def get_transaction_limits(self, refid) -> dict:
-        return self.markets[refid].order_limits_to_dict
+    def get_limits(self, refid) -> dict:
+        return self.markets[refid].order_limits_to_dict()
 
     # Response management functions
 

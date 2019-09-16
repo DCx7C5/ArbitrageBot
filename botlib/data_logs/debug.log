@@ -67,3 +67,129 @@
 [2019-09-13 23:26:44 ] MainThread     - DEBUG - API    - All exchanges initialized
 [2019-09-13 23:26:51 ] MainThread     - DEBUG - API    - All exchanges initialized
 [2019-09-13 23:27:00 ] MainThread     - DEBUG - API    - All exchanges initialized
+2019-09-16 19:23:58  MainThread     - DEBUG - API    - All exchanges initialized
+2019-09-16 19:23:58  BackGroundSync - INFO  - SYNC   - Daemon started!
+2019-09-16 19:23:58  OrderBook      - INFO  - SYNC   - Daemon started!
+2019-09-16 19:23:58  BackGroundSync - DEBUG - SYNC   - Bot activated! Id: 1
+2019-09-16 19:23:58  BackGroundSync - DEBUG - SYNC   - Bot activated! Id: 3
+2019-09-16 19:23:58  BackGroundSync - DEBUG - SYNC   - Bot activated! Id: 4
+2019-09-16 19:23:58  BackGroundSync - DEBUG - SYNC   - Bot activated! Id: 7
+2019-09-16 19:23:58  BackGroundSync - DEBUG - SYNC   - Bot activated! Id: 8
+2019-09-16 19:23:58  BackGroundSync - DEBUG - SYNC   - Bot activated! Id: 9
+2019-09-16 19:23:58  BackGroundSync - DEBUG - SYNC   - Bot activated! Id: 10
+2019-09-16 19:23:58  BackGroundSync - DEBUG - SYNC   - Market activated! Id: (1, 'Graviex', 'dogebtc') SYNC
+2019-09-16 19:23:58  BackGroundSync - DEBUG - SYNC   - Market activated! Id: (3, 'Graviex', 'ltcbtc') SYNC
+2019-09-16 19:23:58  BackGroundSync - DEBUG - SYNC   - Market activated! Id: (4, 'Graviex', 'ethbtc') SYNC
+2019-09-16 19:23:58  BackGroundSync - DEBUG - SYNC   - Market activated! Id: (7, 'Graviex', 'xvgbtc') SYNC
+2019-09-16 19:23:58  BackGroundSync - DEBUG - SYNC   - Market activated! Id: (8, 'Graviex', 'npxsbtc') SYNC
+2019-09-16 19:23:58  BackGroundSync - DEBUG - SYNC   - Market activated! Id: (9, 'Graviex', 'pivxbtc') SYNC
+2019-09-16 19:23:58  BackGroundSync - DEBUG - SYNC   - Market activated! Id: (10, 'Graviex', 'wavesbtc') SYNC
+2019-09-16 19:23:58  BackGroundSync - DEBUG - SYNC   - Market activated! Id: (1, 'Crex24', 'DOGE-BTC') SYNC
+2019-09-16 19:23:58  BackGroundSync - DEBUG - SYNC   - Market activated! Id: (3, 'Crex24', 'LTC-BTC') SYNC
+2019-09-16 19:23:58  BackGroundSync - DEBUG - SYNC   - Market activated! Id: (4, 'Crex24', 'ETH-BTC') SYNC
+2019-09-16 19:23:58  BackGroundSync - DEBUG - SYNC   - Market activated! Id: (7, 'Crex24', 'XVG-BTC') SYNC
+2019-09-16 19:23:58  BackGroundSync - DEBUG - SYNC   - Market activated! Id: (9, 'Crex24', 'PIVX-BTC') SYNC
+2019-09-16 19:23:58  BackGroundSync - DEBUG - SYNC   - Market activated! Id: (10, 'Crex24', 'WAVES-BTC') SYNC
+2019-09-16 19:23:58  BackGroundSync - DEBUG - SYNC   - Market activated! Id: (1, 'Binance', 'DOGEBTC') SYNC
+2019-09-16 19:23:58  BackGroundSync - DEBUG - SYNC   - Market activated! Id: (3, 'Binance', 'LTCBTC') SYNC
+2019-09-16 19:23:58  BackGroundSync - DEBUG - SYNC   - Market activated! Id: (4, 'Binance', 'ETHBTC') SYNC
+2019-09-16 19:23:58  BackGroundSync - DEBUG - SYNC   - Market activated! Id: (7, 'Binance', 'XVGBTC') SYNC
+2019-09-16 19:23:58  BackGroundSync - DEBUG - SYNC   - Market activated! Id: (8, 'Binance', 'NPXSBTC') SYNC
+2019-09-16 19:23:58  BackGroundSync - DEBUG - SYNC   - Market activated! Id: (10, 'Binance', 'WAVESBTC') SYNC
+2019-09-16 19:23:59  BackGroundSync - DEBUG - SYNC   - Database syncing to bot....
+2019-09-16 19:28:34  MainThread     - DEBUG - API    - All exchanges initialized
+2019-09-16 19:28:54  MainThread     - DEBUG - API    - All exchanges initialized
+2019-09-16 19:28:54  BackGroundSync - INFO  - SYNC   - Daemon started!
+2019-09-16 19:28:54  OrderBook      - INFO  - SYNC   - Daemon started!
+2019-09-16 19:28:54  BackGroundSync - DEBUG - SYNC   - Bot activated! Id: 1
+2019-09-16 19:28:54  BackGroundSync - DEBUG - SYNC   - Bot activated! Id: 3
+2019-09-16 19:28:54  BackGroundSync - DEBUG - SYNC   - Bot activated! Id: 4
+2019-09-16 19:28:54  BackGroundSync - DEBUG - SYNC   - Bot activated! Id: 7
+2019-09-16 19:28:54  BackGroundSync - DEBUG - SYNC   - Bot activated! Id: 8
+2019-09-16 19:28:54  BackGroundSync - DEBUG - SYNC   - Bot activated! Id: 9
+2019-09-16 19:28:54  BackGroundSync - DEBUG - SYNC   - Bot activated! Id: 10
+2019-09-16 19:28:54  BackGroundSync - DEBUG - SYNC   - Market activated! Id: (1, 'Graviex', 'dogebtc') SYNC
+2019-09-16 19:28:54  BackGroundSync - DEBUG - SYNC   - Market activated! Id: (3, 'Graviex', 'ltcbtc') SYNC
+2019-09-16 19:28:54  BackGroundSync - DEBUG - SYNC   - Market activated! Id: (4, 'Graviex', 'ethbtc') SYNC
+2019-09-16 19:28:54  BackGroundSync - DEBUG - SYNC   - Market activated! Id: (7, 'Graviex', 'xvgbtc') SYNC
+2019-09-16 19:28:54  BackGroundSync - DEBUG - SYNC   - Market activated! Id: (8, 'Graviex', 'npxsbtc') SYNC
+2019-09-16 19:28:54  BackGroundSync - DEBUG - SYNC   - Market activated! Id: (9, 'Graviex', 'pivxbtc') SYNC
+2019-09-16 19:28:54  BackGroundSync - DEBUG - SYNC   - Market activated! Id: (10, 'Graviex', 'wavesbtc') SYNC
+2019-09-16 19:28:54  BackGroundSync - DEBUG - SYNC   - Market activated! Id: (1, 'Crex24', 'DOGE-BTC') SYNC
+2019-09-16 19:28:54  BackGroundSync - DEBUG - SYNC   - Market activated! Id: (3, 'Crex24', 'LTC-BTC') SYNC
+2019-09-16 19:28:54  BackGroundSync - DEBUG - SYNC   - Market activated! Id: (4, 'Crex24', 'ETH-BTC') SYNC
+2019-09-16 19:28:54  BackGroundSync - DEBUG - SYNC   - Market activated! Id: (7, 'Crex24', 'XVG-BTC') SYNC
+2019-09-16 19:28:54  BackGroundSync - DEBUG - SYNC   - Market activated! Id: (9, 'Crex24', 'PIVX-BTC') SYNC
+2019-09-16 19:28:54  BackGroundSync - DEBUG - SYNC   - Market activated! Id: (10, 'Crex24', 'WAVES-BTC') SYNC
+2019-09-16 19:28:54  BackGroundSync - DEBUG - SYNC   - Market activated! Id: (1, 'Binance', 'DOGEBTC') SYNC
+2019-09-16 19:28:54  BackGroundSync - DEBUG - SYNC   - Market activated! Id: (3, 'Binance', 'LTCBTC') SYNC
+2019-09-16 19:28:54  BackGroundSync - DEBUG - SYNC   - Market activated! Id: (4, 'Binance', 'ETHBTC') SYNC
+2019-09-16 19:28:54  BackGroundSync - DEBUG - SYNC   - Market activated! Id: (7, 'Binance', 'XVGBTC') SYNC
+2019-09-16 19:28:54  BackGroundSync - DEBUG - SYNC   - Market activated! Id: (8, 'Binance', 'NPXSBTC') SYNC
+2019-09-16 19:28:54  BackGroundSync - DEBUG - SYNC   - Market activated! Id: (10, 'Binance', 'WAVESBTC') SYNC
+2019-09-16 19:28:55  BackGroundSync - DEBUG - SYNC   - Database syncing to bot....
+2019-09-16 19:29:12  MainThread     - DEBUG - API    - All exchanges initialized
+2019-09-16 19:29:12  BackGroundSync - INFO  - SYNC   - Daemon started!
+2019-09-16 19:29:12  OrderBook      - INFO  - SYNC   - Daemon started!
+2019-09-16 19:29:12  BackGroundSync - DEBUG - SYNC   - Bot activated! Id: 1
+2019-09-16 19:29:12  BackGroundSync - DEBUG - SYNC   - Bot activated! Id: 3
+2019-09-16 19:29:12  BackGroundSync - DEBUG - SYNC   - Bot activated! Id: 4
+2019-09-16 19:29:12  BackGroundSync - DEBUG - SYNC   - Bot activated! Id: 7
+2019-09-16 19:29:12  BackGroundSync - DEBUG - SYNC   - Bot activated! Id: 8
+2019-09-16 19:29:12  BackGroundSync - DEBUG - SYNC   - Bot activated! Id: 9
+2019-09-16 19:29:12  BackGroundSync - DEBUG - SYNC   - Bot activated! Id: 10
+2019-09-16 19:29:12  BackGroundSync - DEBUG - SYNC   - Market activated! Id: (1, 'Graviex', 'dogebtc') SYNC
+2019-09-16 19:29:12  BackGroundSync - DEBUG - SYNC   - Market activated! Id: (3, 'Graviex', 'ltcbtc') SYNC
+2019-09-16 19:29:12  BackGroundSync - DEBUG - SYNC   - Market activated! Id: (4, 'Graviex', 'ethbtc') SYNC
+2019-09-16 19:29:12  BackGroundSync - DEBUG - SYNC   - Market activated! Id: (7, 'Graviex', 'xvgbtc') SYNC
+2019-09-16 19:29:12  BackGroundSync - DEBUG - SYNC   - Market activated! Id: (8, 'Graviex', 'npxsbtc') SYNC
+2019-09-16 19:29:12  BackGroundSync - DEBUG - SYNC   - Market activated! Id: (9, 'Graviex', 'pivxbtc') SYNC
+2019-09-16 19:29:12  BackGroundSync - DEBUG - SYNC   - Market activated! Id: (10, 'Graviex', 'wavesbtc') SYNC
+2019-09-16 19:29:12  BackGroundSync - DEBUG - SYNC   - Market activated! Id: (1, 'Crex24', 'DOGE-BTC') SYNC
+2019-09-16 19:29:12  BackGroundSync - DEBUG - SYNC   - Market activated! Id: (3, 'Crex24', 'LTC-BTC') SYNC
+2019-09-16 19:29:12  BackGroundSync - DEBUG - SYNC   - Market activated! Id: (4, 'Crex24', 'ETH-BTC') SYNC
+2019-09-16 19:29:12  BackGroundSync - DEBUG - SYNC   - Market activated! Id: (7, 'Crex24', 'XVG-BTC') SYNC
+2019-09-16 19:29:12  BackGroundSync - DEBUG - SYNC   - Market activated! Id: (9, 'Crex24', 'PIVX-BTC') SYNC
+2019-09-16 19:29:12  BackGroundSync - DEBUG - SYNC   - Market activated! Id: (10, 'Crex24', 'WAVES-BTC') SYNC
+2019-09-16 19:29:12  BackGroundSync - DEBUG - SYNC   - Market activated! Id: (1, 'Binance', 'DOGEBTC') SYNC
+2019-09-16 19:29:12  BackGroundSync - DEBUG - SYNC   - Market activated! Id: (3, 'Binance', 'LTCBTC') SYNC
+2019-09-16 19:29:12  BackGroundSync - DEBUG - SYNC   - Market activated! Id: (4, 'Binance', 'ETHBTC') SYNC
+2019-09-16 19:29:12  BackGroundSync - DEBUG - SYNC   - Market activated! Id: (7, 'Binance', 'XVGBTC') SYNC
+2019-09-16 19:29:12  BackGroundSync - DEBUG - SYNC   - Market activated! Id: (8, 'Binance', 'NPXSBTC') SYNC
+2019-09-16 19:29:12  BackGroundSync - DEBUG - SYNC   - Market activated! Id: (10, 'Binance', 'WAVESBTC') SYNC
+2019-09-16 19:29:13  BackGroundSync - DEBUG - SYNC   - Database syncing to bot....
+2019-09-16 19:29:28  BackGroundSync - DEBUG - SYNC   - Database syncing to bot....
+2019-09-16 19:29:32  OrderBook      - DEBUG - SYNC   - Exchanges syncing to bot... Sub-threads active:10
+2019-09-16 19:29:43  BackGroundSync - DEBUG - SYNC   - Database syncing to bot....
+2019-09-16 19:29:52  OrderBook      - DEBUG - SYNC   - Exchanges syncing to bot... Sub-threads active:11
+2019-09-16 19:29:58  BackGroundSync - DEBUG - SYNC   - Database syncing to bot....
+2019-09-16 19:30:12  OrderBook      - DEBUG - SYNC   - Exchanges syncing to bot... Sub-threads active:16
+2019-09-16 19:30:13  BackGroundSync - DEBUG - SYNC   - Database syncing to bot....
+2019-09-16 19:30:28  BackGroundSync - DEBUG - SYNC   - Database syncing to bot....
+2019-09-16 19:30:32  OrderBook      - DEBUG - SYNC   - Exchanges syncing to bot... Sub-threads active:4
+2019-09-16 19:30:43  BackGroundSync - DEBUG - SYNC   - Database syncing to bot....
+2019-09-16 19:30:52  OrderBook      - DEBUG - SYNC   - Exchanges syncing to bot... Sub-threads active:3
+2019-09-16 19:30:58  BackGroundSync - DEBUG - SYNC   - Database syncing to bot....
+2019-09-16 19:31:13  OrderBook      - DEBUG - SYNC   - Exchanges syncing to bot... Sub-threads active:3
+2019-09-16 19:31:13  BackGroundSync - DEBUG - SYNC   - Database syncing to bot....
+2019-09-16 19:31:28  BackGroundSync - DEBUG - SYNC   - Database syncing to bot....
+2019-09-16 19:31:33  OrderBook      - DEBUG - SYNC   - Exchanges syncing to bot... Sub-threads active:7
+2019-09-16 19:31:43  BackGroundSync - DEBUG - SYNC   - Database syncing to bot....
+2019-09-16 19:31:53  OrderBook      - DEBUG - SYNC   - Exchanges syncing to bot... Sub-threads active:7
+2019-09-16 19:31:58  BackGroundSync - DEBUG - SYNC   - Database syncing to bot....
+2019-09-16 19:32:13  OrderBook      - DEBUG - SYNC   - Exchanges syncing to bot... Sub-threads active:13
+2019-09-16 19:32:13  BackGroundSync - DEBUG - SYNC   - Database syncing to bot....
+2019-09-16 19:32:28  BackGroundSync - DEBUG - SYNC   - Database syncing to bot....
+2019-09-16 19:32:33  OrderBook      - DEBUG - SYNC   - Exchanges syncing to bot... Sub-threads active:15
+2019-09-16 19:32:43  BackGroundSync - DEBUG - SYNC   - Database syncing to bot....
+2019-09-16 19:32:54  OrderBook      - DEBUG - SYNC   - Exchanges syncing to bot... Sub-threads active:14
+2019-09-16 19:32:59  BackGroundSync - DEBUG - SYNC   - Database syncing to bot....
+2019-09-16 19:33:14  BackGroundSync - DEBUG - SYNC   - Database syncing to bot....
+2019-09-16 19:33:14  OrderBook      - DEBUG - SYNC   - Exchanges syncing to bot... Sub-threads active:11
+2019-09-16 19:33:29  BackGroundSync - DEBUG - SYNC   - Database syncing to bot....
+2019-09-16 19:33:34  OrderBook      - DEBUG - SYNC   - Exchanges syncing to bot... Sub-threads active:9
+2019-09-16 19:33:44  BackGroundSync - DEBUG - SYNC   - Database syncing to bot....
+2019-09-16 19:33:54  OrderBook      - DEBUG - SYNC   - Exchanges syncing to bot... Sub-threads active:12
+2019-09-16 19:33:59  BackGroundSync - DEBUG - SYNC   - Database syncing to bot....
+2019-09-16 19:34:14  BackGroundSync - DEBUG - SYNC   - Database syncing to bot....
+2019-09-16 19:34:14  OrderBook      - DEBUG - SYNC   - Exchanges syncing to bot... Sub-threads active:14

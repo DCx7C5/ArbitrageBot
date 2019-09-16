@@ -63,7 +63,7 @@ class BotsAndMarkets(Storage):
             self.__logger.warning(f'There must be at least two bot_markets activated for each bot!')
 
     def find_orphan_markets(self):
-        """This class checks for activated bots that have less than two bot_markets active"""
+        """checks for activated bots that have less than two bot_markets active"""
         with self.__lock:
             c = Counter(elem[0] for elem in self.__bot_markets)
             orphan = min(c, key=lambda x: c.get(x))
