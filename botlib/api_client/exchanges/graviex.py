@@ -4,7 +4,9 @@ import urllib.parse as _url_encode
 from collections import OrderedDict
 
 from botlib.api_client.client_utils import generate_path_from_params, hmac_val, url_encode, to_database_time
-from botlib.api_client.baseclient import BaseClient, private, no_errors, force_result
+from botlib.api_client.baseclient import BaseClient
+from botlib.api_client.client_utils import no_errors, force_result, private
+
 
 # API ENDPOINTS
 from botlib.sql_functions import get_key_and_secret_sql
@@ -67,6 +69,7 @@ class GraviexClient(BaseClient):
         ]
 
     @private
+    @force_result
     def fetch_all_balances(self):
         resp = self._api_call(endpoint=BALANCE, params={'limit': 1111}, api='private')["accounts_filtered"]
         return [

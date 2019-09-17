@@ -2,7 +2,8 @@ import time
 import urllib.parse as _url_encode
 
 from botlib.api_client.client_utils import extend, hmac_val, url_encode, to_database_time
-from botlib.api_client.baseclient import BaseClient, private, no_errors, force_result
+from botlib.api_client.baseclient import BaseClient
+from botlib.api_client.client_utils import no_errors, force_result, private
 
 # API ENDPOINTS
 from botlib.sql_functions import get_key_and_secret_sql

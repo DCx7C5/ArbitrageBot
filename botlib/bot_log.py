@@ -1,5 +1,4 @@
 import logging
-import sys
 
 
 formatter = logging.Formatter(fmt='%(asctime)-20s %(threadName)-14s - %(levelname)-5s - %(name)-6s - %(message)s',

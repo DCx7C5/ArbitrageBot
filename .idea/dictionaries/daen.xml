@@ -4,6 +4,7 @@
       <w>apikey</w>
       <w>appl</w>
       <w>arbi</w>
+      <w>asctime</w>
       <w>asyncbot</w>
       <w>asyncloop</w>
       <w>binance</w>
@@ -16,11 +17,13 @@
       <w>datefmt</w>
       <w>ddadk</w>
       <w>ddfsdlkhsdhvuliu</w>
+      <w>dogebtc</w>
       <w>ethbtc</w>
       <w>exas</w>
       <w>exch</w>
       <w>exma</w>
       <w>graviex</w>
+      <w>levelname</w>
       <w>orderbooks</w>
       <w>pyth</w>
       <w>refid</w>

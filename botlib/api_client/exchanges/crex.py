@@ -6,8 +6,9 @@ import time
 
 from botlib.api_client.client_utils import implode_params, omit, url_encode, hmac_val, precision_from_string, \
     to_database_time
-from botlib.api_client.baseclient import BaseClient, private, no_errors, force_result
+from botlib.api_client.baseclient import BaseClient
 from botlib.sql_functions import get_key_and_secret_sql, get_one_symbol_from_exchange_sql
+from botlib.api_client.client_utils import no_errors, force_result, private
 
 BALANCE = "balance"
 CREATE_ORDER = "placeOrder"
@@ -149,7 +150,7 @@ class CrexClient(BaseClient):
 
     @private
     @force_result
-    def fetch_order_status(self, refid, order_id):
+    def fetch_order_status(self, order_id, refid=None):
         params = {
             'id': int(order_id)
         }

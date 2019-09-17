@@ -1,3 +1,4 @@
+import time
 from threading import Lock
 
 from botlib.storage import Storage
@@ -29,7 +30,7 @@ class MarketManager(Storage):
 
 
 class Market(Storage):
-    """Market helper class"""
+    """Market settings storage class"""
     def __init__(self, refid: str):
         self.refid = refid
         self.__lock = Lock()
@@ -45,6 +46,8 @@ class Market(Storage):
         # From Database
         self._minimum_profit_rate = 1
         self._maximum_order_cost = 0.00012
+
+        self.last_call_settings = time.time()
 
     @property
     def base_asset(self) -> str:
@@ -146,9 +149,7 @@ class Market(Storage):
                 'maximum_order_cost': self._maximum_order_cost,
                 'price_precision': self._price_precision,
                 'order_volume_precision': self._order_volume_precision,
-                'order_volume_step_size': self._order_volume_step_size,
-                'taker_fee': self._taker_fee,
-                'maker_fee': self._maker_fee
+                'order_volume_step_size': self._order_volume_step_size
             }
 
     def order_cost_limits_to_dict(self) -> dict:
@@ -156,12 +157,6 @@ class Market(Storage):
             return {
                 'minimum_order_cost': self._minimum_order_cost,
                 'maximum_order_cost': self._maximum_order_cost,
-            }
-
-    def order_volume_limits_to_dict(self) -> dict:
-        with self.__lock:
-            return {
-                'minimum_order_volume': self._minimum_order_volume,
             }
 
     def precisions_and_step_sizes_to_dict(self) -> dict:

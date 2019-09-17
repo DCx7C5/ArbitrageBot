@@ -27,17 +27,17 @@ class TradeOptionsDaemon(Thread):
         self.name = f'TradeOptions'
         self.logger = daemon_logger
         self.__last_log = time.time()
-        self.__bm_storage = bm_storage
-        self.__ob_storage = ob_storage
+        self.bm_storage = bm_storage
+        self.ob_storage = ob_storage
         self.market_locker = blocked_markets
-        self.__active_bots = []
-        self.__ec = 0
-        self.__last_run = time.time()
+        self.active_bots = []
+        self.ec = 0
+        self.last_run = time.time()
         self.cli = clients
 
     def find_arbitrage_options(self, bot) -> None:
-        arbitrage_options = []
         """Find arbitrage options for ALL market combinations then filters"""
+        arbitrage_options = []
         if not self.create_options_based_on_min_profit_rate(bot, arbitrage_options):
             return
         self.search_arbitrage_options(arbitrage_options)
@@ -109,11 +109,11 @@ class TradeOptionsDaemon(Thread):
                 refid=final_order_option['buy_market']['refid']
             )
             # Create order job
-            ArbitrageJobThread(
-                job=final_order_option,
-                blocked_markets=self.market_locker,
-                clients=self.cli
-            ).start()
+            #ArbitrageJobThread(
+            #    job=final_order_option,
+            #    blocked_markets=self.market_locker,
+            #    clients=self.cli
+            #).start()
 
             self.logger.debug(f'Found Option! {final_order_option}')
         time.sleep(0.002)
@@ -127,7 +127,7 @@ class TradeOptionsDaemon(Thread):
             exchange=option['sell_market']['exchange'],
             refid=option['sell_market']['refid']
         )
-        if min(buy_market_min_profit_rate, sell_market_min_profit_rate) < option['profit_rate']:
+        if option['profit_rate'] < min(buy_market_min_profit_rate, sell_market_min_profit_rate):
             return False
         return True
 
@@ -209,7 +209,7 @@ class TradeOptionsDaemon(Thread):
         order_books = []
         for ob_rq in bot[1]:
             try:
-                book = self.__ob_storage.get_order_book(ob_rq[0], ob_rq[1])
+                book = self.ob_storage.get_order_book(ob_rq[0], ob_rq[1])
                 order_books.append((ob_rq[0], ob_rq[1], book[0][0], book[1][0]))
             except TypeError:
                 time.sleep(3)
@@ -218,13 +218,13 @@ class TradeOptionsDaemon(Thread):
         return order_books
 
     def __update_active_bots(self):
-        bots = self.__bm_storage.get_enabled_bot_ids()
+        bots = self.bm_storage.get_enabled_bot_ids()
         for bot_id in bots:
-            if bot_id not in self.__active_bots:
-                self.__active_bots.append(bot_id)
-        for bot_id in self.__active_bots:
+            if bot_id not in self.active_bots:
+                self.active_bots.append(bot_id)
+        for bot_id in self.active_bots:
             if bot_id not in bots:
-                self.__active_bots.remove(bot_id)
+                self.active_bots.remove(bot_id)
 
     def __exclude_blocked_markets(self, bots_mpb):
         """If exchange + market is locked it gets removed from bots bot-market-list"""
@@ -238,7 +238,7 @@ class TradeOptionsDaemon(Thread):
         self.logger.info('Daemon started!')
         while True:
             # Get list with bots and their bot_markets
-            bots_mpb = self.__bm_storage.get_markets_per_bot()
+            bots_mpb = self.bm_storage.get_markets_per_bot()
 
             # Check if items are in bots_mpb
             if bots_mpb:
@@ -256,7 +256,7 @@ class TradeOptionsDaemon(Thread):
 
             # After condition is true, print to log if self is still alive
             if time.time() > self.__last_log + randint(20, 30):
-                self.logger.debug(f"Bots {self.__active_bots} are searching for arbitrage options...")
+                self.logger.debug(f"Bots {self.active_bots} are searching for arbitrage options...")
                 self.__last_log = time.time()
 
             # Sleep, to reduce cpu usage
@@ -284,7 +284,9 @@ if __name__ == '__main__':
     bots_markets_storage = BotsAndMarkets()
 
     # Init database sync daemon
-    bots_markets_daemon = BotsAndMarketsDaemon(bm_storage=bots_markets_storage)
+    bots_markets_daemon = BotsAndMarketsDaemon(
+        bm_storage=bots_markets_storage
+    )
 
     # Init order_book daemon
     order_book_daemon = OrderBookDaemon(
@@ -306,7 +308,7 @@ if __name__ == '__main__':
     try:
         bots_markets_daemon.start()
         order_book_daemon.start()
-        time.sleep(10)
+        time.sleep(15)
         trade_finder.start()
         trade_finder.join()
     except KeyboardInterrupt:

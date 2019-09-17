@@ -15,7 +15,7 @@ class Exchange:
         self.__extended_init()
         api_logger.debug("All exchanges initialized")
 
-    def get_order_book(self, exchange: str, ref_id: str, limit=None):
+    def get_order_book(self, exchange: str, ref_id: str, limit=None) -> tuple:
         """
         Function call to fetch order book from exchange
         :returns:
@@ -162,7 +162,7 @@ class Exchange:
         """
         Returns deposit address for refid on exchange
         :returns:
-            dSDdadkADSLKASD0Ddfsdlkhsdhvuliu
+            str('dSDdadkADSLKASD0Ddfsdlkhsdhvuliu')
         """
         return self[exchange].get_crypto_deposit_address(refid=refid)
 
@@ -193,7 +193,6 @@ class Exchange:
         :returns:
 
         """
-
 
     def __getitem__(self, item):
         """Makes class subscribable"""

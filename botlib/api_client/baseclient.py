@@ -25,16 +25,13 @@ old_merge_environment_settings = Session.merge_environment_settings
 
 
 class BaseClient:
-    """
-    Exchange Client Base Class
-
-    """
+    """Exchange Client Base Class"""
     name = None
     rate_limit = None
     taker_fees = None
     maker_fees = None
-    transaction_fee_type = 'percentage'
-    trading_fee_type = 'percentage'
+    transaction_fee_type = None
+    trading_fee_type = None
     __api_key, __api_secret = None, None
 
     def __init__(self):
@@ -62,6 +59,7 @@ class BaseClient:
         self.markets = None
 
     def update_market_settings(self) -> None:
+        """Updates market settings class with data from exchange"""
         api_data = self.parse_all_market_information()
         sql_data = get_market_data_sql(self.name)
         with self.__lock:
@@ -89,7 +87,8 @@ class BaseClient:
                     self.balances[bal['symbol']] = float(bal['available'])
         self.last_calls['update_balances'] = time.time()
 
-    def calculate_trading_fees(self):
+    def calculate_trading_fees(self, base_asset, quote_asset, price, amount):
+
         pass
 
     def create_limit_order(self, refid, price, volume, side):
@@ -263,63 +262,3 @@ def no_ssl_verification():
                 adapter.close()
             except:
                 pass
-
-
-def force_result(func):
-    """Repeats function 3 times, then gives up"""
-    def _wrapper(self, *args, **kwargs):
-        resp = None
-        counter = 0
-        while resp is None:
-            resp = func(self, *args, **kwargs)
-            if not resp:
-                counter += 1
-                api_logger.warning(f"Failed to force function result: {counter} times."
-                                   f"Giving up now. {func.__name__} on exchange {self.name}")
-                if counter == 4:
-                    api_logger.critical(f"Forced function result 3 times."
-                                        f" Giving up now. {func.__name__} on exchange {self.name}")
-                    break
-                time.sleep(1 * (counter + 1))
-                continue
-            else:
-                return resp
-        return False
-    return _wrapper
-
-
-def no_errors(func):
-    """Suppresses all possible response errors"""
-    # noinspection PyBroadException
-    def wrapper(self, *args, **kwargs):
-        try:
-            return func(self, *args, **kwargs)
-        except:
-
-            pass
-    return wrapper
-
-
-def private(func):
-    """Wraps exchange specific private api routines around a private function call"""
-    def _wrapper(self, *args, **kwargs):
-        rate_limit = self.rate_limit
-        last_call = self.last_calls['private_api']
-        private_api_elapsed = time.time() - last_call
-        if private_api_elapsed < rate_limit:
-            delay = rate_limit - private_api_elapsed
-            time.sleep(delay / 1000.0)
-        value = func(self, *args, **kwargs)
-        self.last_calls['private_api'] = time.time()
-        return value
-    return _wrapper
-
-
-def log_timestamps(func):
-    """Logs timestamps for important exchange calls"""
-    def _wrapper(self, *args, **kwargs):
-        last_call_ts = self.last_calls.get(func.__name__)[0]
-        call_after_secs = self.last_calls.get(func.__name__)[1]
-        if last_call_ts and (time.time() > (last_call_ts + call_after_secs)):
-            pass
-        last_calls_key = func.__name__
