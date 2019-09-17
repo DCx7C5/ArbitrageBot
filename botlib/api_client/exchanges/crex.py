@@ -42,11 +42,13 @@ ORDER_STATES = {
 class CrexClient(BaseClient):
     """Crex24 Exchange API Client"""
 
-    _name = "Crex24"
-    _rate_limit = 1.0 / 6
-    _maker_fees = 0.001
-    _taker_fees = 0.001
-    __api_key, __api_secret = get_key_and_secret_sql(_name)
+    name = "Crex24"
+    rate_limit = 1.0 / 6
+    maker_fees = 0.001
+    taker_fees = 0.001
+    trading_fee_type = 'percentage'
+    transaction_fee_type = ''
+    __api_key, __api_secret = get_key_and_secret_sql(name)
 
     @force_result
     def parse_all_market_information(self):
@@ -173,7 +175,7 @@ class CrexClient(BaseClient):
     @private
     @force_result
     def fetch_deposit_address(self, refid) -> dict:
-        symbol = get_one_symbol_from_exchange_sql(self._name, refid)
+        symbol = get_one_symbol_from_exchange_sql(self.name, refid)
         params = {
             'currency': symbol
         }
@@ -185,7 +187,7 @@ class CrexClient(BaseClient):
     @private
     @force_result
     def create_withdrawal(self, refid, amount, address):
-        symbol = get_one_symbol_from_exchange_sql(self._name, refid)
+        symbol = get_one_symbol_from_exchange_sql(self.name, refid)
         params = {
             'currency': symbol,
             'amount': amount,

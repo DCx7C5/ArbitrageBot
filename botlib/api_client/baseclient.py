@@ -13,7 +13,7 @@ from urllib3.exceptions import InsecureRequestWarning
 from urllib3 import disable_warnings
 
 from botlib.bot_log import api_logger
-from botlib.api_client.client_utils import MarketManager
+from botlib.api_client.market_manager import MarketManager
 from botlib.sql_functions import get_one_symbol_from_exchange_sql, get_market_data_sql
 
 logging.getLogger("requests").setLevel(logging.INFO)
@@ -29,20 +29,19 @@ class BaseClient:
     Exchange Client Base Class
 
     """
-    _name = None
-    _rate_limit = None
-    _taker_fees = None
-    _maker_fees = None
-    _transaction_fee_type = 'percentage'
-    _trading_fee_type = 'percentage'
-    _withdrawal_fees = None
+    name = None
+    rate_limit = None
+    taker_fees = None
+    maker_fees = None
+    transaction_fee_type = 'percentage'
+    trading_fee_type = 'percentage'
+    __api_key, __api_secret = None, None
 
     def __init__(self):
-        self.name = self._name
-        self.rate_limit = self._rate_limit if self._rate_limit is not None else 7
-        self.taker_fees = self._taker_fees if self._taker_fees is not None else 0.2
-        self.maker_fees = self._maker_fees if self._maker_fees is not None else 0.2
-        self.withdrawal_fees = self._withdrawal_fees if self._withdrawal_fees is not None else 0.1
+        self.name = self.name
+        self.rate_limit = self.rate_limit if self.rate_limit is not None else 7
+        self.taker_fees = self.taker_fees if self.taker_fees is not None else 0.2
+        self.maker_fees = self.maker_fees if self.maker_fees is not None else 0.2
 
         self.__lock = Lock()
         self.logger = api_logger
@@ -64,14 +63,17 @@ class BaseClient:
 
     def update_market_settings(self) -> None:
         api_data = self.parse_all_market_information()
-        sql_data = get_market_data_sql(self._name)
+        sql_data = get_market_data_sql(self.name)
         with self.__lock:
             self.markets = MarketManager(api_data, sql_data)
         self.last_calls['update_market_settings'] = time.time()
 
     def get_balance(self, refid: str) -> float:
         """Returns a coin/asset balance"""
-        symbol = get_one_symbol_from_exchange_sql(self._name, refid)
+        if not refid == 'BTC':
+            symbol = get_one_symbol_from_exchange_sql(self.name, refid)
+        else:
+            symbol = refid
         with self.__lock:
             bal = self.balances.get(symbol)
             if not bal:
@@ -87,6 +89,9 @@ class BaseClient:
                     self.balances[bal['symbol']] = float(bal['available'])
         self.last_calls['update_balances'] = time.time()
 
+    def calculate_trading_fees(self):
+        pass
+
     def create_limit_order(self, refid, price, volume, side):
         """Create standard limit order"""
         precision = self.markets[refid].order_volume_precision
@@ -101,7 +106,7 @@ class BaseClient:
 
     def get_order_status(self, order_id, refid=None):
         status_response = self.fetch_order_status(order_id, refid)
-        return self.parse_canceled_order(status_response)
+        return self.parse_order_status(status_response)
 
     def get_crypto_deposit_address(self, refid):
         deposit_response = self.fetch_deposit_address(refid)
@@ -111,20 +116,13 @@ class BaseClient:
         withdrawal_response = self.create_withdrawal(refid, amount, address)
         return self.parse_withdrawal(withdrawal_response)
 
-    def get_order_rate_limits(self, refid) -> dict:
-        return self.markets[refid].order_rate_limits_to_dict()
-
-    def get_order_cost_limits(self, refid) -> dict:
-        return self.markets[refid].order_cost_limits_to_dict()
-
-    def get_order_volume_limits(self, refid) -> dict:
-        return self.markets[refid].order_volume_limits_to_dict()
-
-    def get_precisions_and_step_sizes(self, refid):
-        return self.markets[refid].precisions_and_step_sizes_to_dict()
+    def get_minimum_profit_rate(self, refid) -> float:
+        """Calls rate limit dictionary from market manager class"""
+        return self.markets[refid].minimum_profit_rate
 
     def get_limits(self, refid) -> dict:
-        return self.markets[refid].order_limits_to_dict()
+        """Calls limit dictionary from market manager class"""
+        return self.markets[refid].market_limits_to_dict()
 
     # Response management functions
 
@@ -195,47 +193,14 @@ class BaseClient:
         pass
 
     def parse_created_order(self, raw_response):
-        """
-        Parse exchange specific create_order response to bot and db format
-        :rtype: dict
-        :returns:
-            e.g.:
-                    {
-                        'refid': "dogebtc",
-                        'order_id': 3244844,
-                        'status': "done" or "",
-                        'side': "buy" or "sell"
-                        'price': 0.00003234,
-                        'volume': 102.00303.
-                        'executed_volume': 77.997,
-                        'created': datetime,
-                        'modified': datetime
-                    }
-        """
+        """Parse exchange specific create_order response to bot and db format"""
         pass
 
     def fetch_order_status(self, order_id, refid=None):
         pass
 
     def parse_order_status(self, raw_response) -> dict:
-        """
-        Parse exchange specific create_order response to bot and db format
-        :rtype: dict
-        :returns:
-            e.g.:
-                    {
-                        'refid': "dogebtc",
-                        'order_id': 3244844,
-                        'status': "done" or "",
-                        'side': "buy" or "sell"
-                        'price': 0.00003234,
-                        'volume': 102.00303.
-                        'executed_volume': 77.997,
-                        'created': datetime,
-                        'modified': datetime
-                    }
-        """
-
+        """Parse exchange specific create_order response to bot and db format"""
         pass
 
     def cancel_order(self, order_id, refid=None):
@@ -244,20 +209,12 @@ class BaseClient:
     def parse_canceled_order(self, raw_response) -> bool:
         """
         Parse exchange specific cancel_order response to bot and db format
-
-        :returns: True or False
         """
         pass
 
     def parse_all_market_information(self) -> list:
         """
         Parse exchange specific market/asset information
-
-        :returns:
-            e.g.:
-                    [
-
-                    ]
         """
         pass
 
@@ -268,35 +225,16 @@ class BaseClient:
         pass
 
     def parse_deposit_address(self, raw_response) -> str:
-        """
-        Parse deposit address from raw response
-
-        :returns: e.g.: 'PJHemTQJZCpMKbXpbGvtRRxT9EEada8YUh'
-        """
+        """Parse deposit address from raw response"""
         pass
 
     def create_withdrawal(self, refid, amount, address):
+        """Creates withdrawal api request"""
         pass
 
     def parse_withdrawal(self, withdrawal_response) -> dict:
-        """
-        Parse exchange specific withdrawal response
-        :rtype: dict
-        :returns:
-            e.g.:
-                    {
-                        'asset': "dogebtc",
-                        'withdrawal_id': 3244844,
-                        'status': ?,
-                        'send_to': "PJHemTQJZCpMKbXpbGvtRRxT9EEada8YUh"
-                        'fee': 0.00003234,
-                        'amount': 102.00303.
-                        'tx_id': 77.997,
-                        'created': datetime str,
-                        'processed': datetime str
-                    }
-        """
-
+        """Parse exchange specific withdrawal response"""
+        pass
 
 # noinspection PyBroadException
 @contextlib.contextmanager
@@ -327,18 +265,6 @@ def no_ssl_verification():
                 pass
 
 
-def no_errors(func):
-    """Suppresses all possible response errors"""
-    # noinspection PyBroadException
-    def wrapper(self, *args, **kwargs):
-        try:
-            return func(self, *args, **kwargs)
-        except:
-
-            pass
-    return wrapper
-
-
 def force_result(func):
     """Repeats function 3 times, then gives up"""
     def _wrapper(self, *args, **kwargs):
@@ -360,6 +286,18 @@ def force_result(func):
                 return resp
         return False
     return _wrapper
+
+
+def no_errors(func):
+    """Suppresses all possible response errors"""
+    # noinspection PyBroadException
+    def wrapper(self, *args, **kwargs):
+        try:
+            return func(self, *args, **kwargs)
+        except:
+
+            pass
+    return wrapper
 
 
 def private(func):

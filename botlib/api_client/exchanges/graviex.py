@@ -42,13 +42,12 @@ ORDER_STATES = {
 class GraviexClient(BaseClient):
     """Graviex Exchange API Client"""
 
-    _name = "Graviex"
-    _rate_limit = 1.0 / 15
-    _maker_fees = 0.2
-    _taker_fees = 0.2
-    _withdrawal_fee_type = 'static'  # the fee amount is -0.002 Coin, except...
-    _withdrawal_fees = 0.002
-    __api_key, __api_secret = get_key_and_secret_sql(_name)
+    name = "Graviex"
+    rate_limit = 1.0 / 15
+    maker_fees = 0.2
+    taker_fees = 0.2
+    transaction_fee_type = 'static'  # the fee amount is -0.002 Coin, except...
+    __api_key, __api_secret = get_key_and_secret_sql(name)
 
     @force_result
     def parse_all_market_information(self):
@@ -99,11 +98,11 @@ class GraviexClient(BaseClient):
         return {'url': url, 'method': method, 'body': body, 'headers': {}}
 
     @no_errors
-    def fetch_order_book(self, ref_id, limit=None):
+    def fetch_order_book(self, refid, limit=None):
         was_seen = set()
         bids = []
         asks = []
-        params = {"market": ref_id,
+        params = {"market": refid,
                   'bids_limit': limit if limit else 50,
                   'asks_limit': limit if limit else 50}
         resp = self._api_call(endpoint=ORDER_BOOK, params=params, api='public')

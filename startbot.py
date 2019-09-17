@@ -3,7 +3,7 @@ import time
 from random import randint
 from threading import Thread
 from botlib.api_client.api_wrapper import Exchange
-from botlib.bot_log import trade_logger
+from botlib.bot_log import daemon_logger
 from botlib.blocked_markets import BlockedMarkets
 from botlib.order_book import OrderBook, OrderBookDaemon
 from botlib.bot_markets import BotsAndMarkets, BotsAndMarketsDaemon
@@ -25,11 +25,11 @@ class TradeOptionsDaemon(Thread):
         Thread.__init__(self)
         self.daemon = True
         self.name = f'TradeOptions'
-        self.__logger = trade_logger.getChild('Arbitrage')
+        self.logger = daemon_logger
         self.__last_log = time.time()
         self.__bm_storage = bm_storage
         self.__ob_storage = ob_storage
-        self.__market_locker = blocked_markets
+        self.market_locker = blocked_markets
         self.__active_bots = []
         self.__ec = 0
         self.__last_run = time.time()
@@ -40,41 +40,36 @@ class TradeOptionsDaemon(Thread):
         """Find arbitrage options for ALL market combinations then filters"""
         if not self.create_options_based_on_min_profit_rate(bot, arbitrage_options):
             return
+        self.search_arbitrage_options(arbitrage_options)
 
     def create_options_based_on_min_profit_rate(self, bot, arbitrage_options):
         order_books = self._request_order_books_for_bot(bot)
         if not order_books:
-            self.__logger.warning(order_books)
+            self.logger.warning(order_books)
         for bids in order_books:
             for asks in order_books:
                 if bids is not asks:
-                    if self._check_min_profit(bids, asks):
-                        arbitrage_options += [
-                            {
-                                'sell_market': {
-                                    'exchange': bids[0],
-                                    'refid': bids[1],
-                                    'price': bids[2][0],
-                                    'volume': bids[2][1],
-                                    'limits': self.cli.get_limits(bids[0], bids[1])
-                                },
-                                'buy_market': {
-                                    'exchange': asks[0],
-                                    'refid': asks[1],
-                                    'price': asks[3][0],
-                                    'volume': asks[3][1],
-                                    'limits': self.cli.get_limits(asks[0], asks[1])
-                                }
-                            }
-                        ]
-
+                    arbitrage_options += [
+                        {
+                            'sell_market': {
+                                'exchange': bids[0],
+                                'refid': bids[1],
+                                'price': bids[2][0],
+                                'volume': bids[2][1],
+                                'limits': self.cli.get_limits(bids[0], bids[1])
+                            },
+                            'buy_market': {
+                                'exchange': asks[0],
+                                'refid': asks[1],
+                                'price': asks[3][0],
+                                'volume': asks[3][1],
+                                'limits': self.cli.get_limits(asks[0], asks[1])
+                            },
+                            'profit_rate': round((bids[2][0] - asks[3][0]) / bids[2][0] * 100, 2)
+                        }
+                    ]
+                    time.sleep(.005)
         if arbitrage_options:
-            return True
-        return False
-
-    def _check_min_profit(self, bids, asks):
-        rate_limits = self.cli.get_order_rate_limits(bids[0], bids[1])
-        if (round((bids[2][0] - asks[3][0]) / bids[2][0] * 100, 2)) >= float(rate_limits['min_profit_rate']):
             return True
         return False
 
@@ -83,9 +78,14 @@ class TradeOptionsDaemon(Thread):
         final_order_option = None
         profit = 0
         for opt in arbitrage_options:
+            if not self._check_profit_rate_limit(opt):
+                arbitrage_options.remove(opt)
+                continue
+
             if not self._check_limits_and_set_volume(opt):
                 arbitrage_options.remove(opt)
                 continue
+
             if not self._check_balances_per_option(opt):
                 arbitrage_options.remove(opt)
                 continue
@@ -98,14 +98,38 @@ class TradeOptionsDaemon(Thread):
                 profit = opt['profit']
 
         if final_order_option is not None:
-            self.__market_locker.add_to_blocked_list(final_order_option['sell_market']['exchange'], final_order_option['sell_market']['refid'])
-            self.__market_locker.add_to_blocked_list(final_order_option['buy_market']['exchange'], final_order_option['buy_market']['refid'])
+            # Add sell market to block list
+            self.market_locker.add_to_blocked_list(
+                exchange=final_order_option['sell_market']['exchange'],
+                refid=final_order_option['sell_market']['refid']
+            )
+            # Add buy market to block list
+            self.market_locker.add_to_blocked_list(
+                exchange=final_order_option['buy_market']['exchange'],
+                refid=final_order_option['buy_market']['refid']
+            )
+            # Create order job
+            ArbitrageJobThread(
+                job=final_order_option,
+                blocked_markets=self.market_locker,
+                clients=self.cli
+            ).start()
 
-        print(final_order_option)
+            self.logger.debug(f'Found Option! {final_order_option}')
+        time.sleep(0.002)
 
-        # if job:
-        #     ArbitrageJobThread(job=[job[0], job[1]], blocked_markets=self.__market_locker, clients=self.__cli).start()
-        #     self.__logger.warning(f'Order Job created! {job}')
+    def _check_profit_rate_limit(self, option):
+        sell_market_min_profit_rate = self.cli.get_minimum_profit_rate(
+            exchange=option['sell_market']['exchange'],
+            refid=option['sell_market']['refid']
+        )
+        buy_market_min_profit_rate = self.cli.get_minimum_profit_rate(
+            exchange=option['sell_market']['exchange'],
+            refid=option['sell_market']['refid']
+        )
+        if min(buy_market_min_profit_rate, sell_market_min_profit_rate) < option['profit_rate']:
+            return False
+        return True
 
     @staticmethod
     def _check_limits_and_set_volume(option) -> bool:
@@ -166,7 +190,8 @@ class TradeOptionsDaemon(Thread):
         profit = float(sell_market - buy_market)
         option.update({'profit': profit})
 
-    def __calculate_average_prices(self, options):
+    @staticmethod
+    def __calculate_average_prices(options):
         for opt in options:
             refid = opt[0][1]
             sell_prices_list = get_all_prices_from_refid(refid, 'sell')
@@ -188,11 +213,9 @@ class TradeOptionsDaemon(Thread):
                 order_books.append((ob_rq[0], ob_rq[1], book[0][0], book[1][0]))
             except TypeError:
                 time.sleep(3)
-                self.__logger.warning('Markets not synced yet...')
+                self.logger.warning('Markets not synced yet...')
                 self._request_order_books_for_bot(bot)
         return order_books
-
-
 
     def __update_active_bots(self):
         bots = self.__bm_storage.get_enabled_bot_ids()
@@ -207,12 +230,12 @@ class TradeOptionsDaemon(Thread):
         """If exchange + market is locked it gets removed from bots bot-market-list"""
         for i in bots_mpb:
             for x in i[1]:
-                if x in self.__market_locker.get_blocked_list():
+                if x in self.market_locker.get_blocked_list():
                     i[1].remove(x)
         return bots_mpb
 
     def run(self) -> None:
-        self.__logger.info('Daemon started!')
+        self.logger.info('Daemon started!')
         while True:
             # Get list with bots and their bot_markets
             bots_mpb = self.__bm_storage.get_markets_per_bot()
@@ -226,14 +249,14 @@ class TradeOptionsDaemon(Thread):
                     if len(bot[1]) > 1:
                         self.find_arbitrage_options(bot)
             else:
-                self.__logger.warning('Markets not synced yet...')
+                self.logger.warning('Markets not synced yet...')
 
             # Update the bot_ids
             self.__update_active_bots()
 
             # After condition is true, print to log if self is still alive
             if time.time() > self.__last_log + randint(20, 30):
-                self.__logger.debug(f"Bots {self.__active_bots} are searching for arbitrage options...")
+                self.logger.debug(f"Bots {self.__active_bots} are searching for arbitrage options...")
                 self.__last_log = time.time()
 
             # Sleep, to reduce cpu usage
@@ -246,7 +269,7 @@ def save_and_exit():
 
 
 if __name__ == '__main__':
-    trade_logger.info("Preparing bot startup...")
+    daemon_logger.info("Preparing bot startup...")
 
     # Initialize market locker
     market_locker = BlockedMarkets()
@@ -277,17 +300,17 @@ if __name__ == '__main__':
         blocked_markets=market_locker
     )
 
-    trade_logger.info("All modules initialized. Starting bot!")
+    daemon_logger.info("All modules initialized. Starting bot!")
 
     # Let the daemons run in background
     try:
         bots_markets_daemon.start()
         order_book_daemon.start()
-        time.sleep(5)
+        time.sleep(10)
         trade_finder.start()
         trade_finder.join()
     except KeyboardInterrupt:
-        trade_logger.info('Shutdown By User')
+        daemon_logger.info('Shutdown By User')
         save_and_exit()
     finally:
         sys.exit()

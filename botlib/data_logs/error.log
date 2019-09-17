@@ -4,3 +4,42 @@
 [2019-09-13 17:32:29 ] MainThread     - ERROR - __main__.SYNC - testing 2321232133321
 [2019-09-13 17:32:29 ] MainThread     - ERROR - __main__.SYNC - testing 2321232133321
 [2019-09-13 17:37:39 ] MainThread     - ERROR - __main__.SYNC - debtesting 2321232133321shittiy
+2019-09-17 02:30:39  GetOrderBook   - ERROR - SYNC   - API request failed with 1 | Graviex | dogebtc
+2019-09-17 02:30:39  GetOrderBook   - ERROR - SYNC   - API request failed with 3 | Graviex | ltcbtc
+2019-09-17 02:30:39  GetOrderBook   - ERROR - SYNC   - API request failed with 4 | Graviex | ethbtc
+2019-09-17 02:30:39  GetOrderBook   - ERROR - SYNC   - API request failed with 7 | Graviex | xvgbtc
+2019-09-17 02:30:39  GetOrderBook   - ERROR - SYNC   - API request failed with 8 | Graviex | npxsbtc
+2019-09-17 02:30:40  GetOrderBook   - ERROR - SYNC   - API request failed with 9 | Graviex | pivxbtc
+2019-09-17 02:30:40  GetOrderBook   - ERROR - SYNC   - API request failed with 10 | Graviex | wavesbtc
+2019-09-17 02:30:42  GetOrderBook   - ERROR - SYNC   - API request failed with 1 | Graviex | dogebtc
+2019-09-17 02:30:43  GetOrderBook   - ERROR - SYNC   - API request failed with 3 | Graviex | ltcbtc
+2019-09-17 02:30:43  GetOrderBook   - ERROR - SYNC   - API request failed with 4 | Graviex | ethbtc
+2019-09-17 02:30:43  GetOrderBook   - ERROR - SYNC   - API request failed with 7 | Graviex | xvgbtc
+2019-09-17 02:30:57  GetOrderBook   - ERROR - SYNC   - API request failed with 1 | Graviex | dogebtc
+2019-09-17 02:30:57  GetOrderBook   - ERROR - SYNC   - API request failed with 3 | Graviex | ltcbtc
+2019-09-17 02:30:57  GetOrderBook   - ERROR - SYNC   - API request failed with 4 | Graviex | ethbtc
+2019-09-17 02:30:57  GetOrderBook   - ERROR - SYNC   - API request failed with 7 | Graviex | xvgbtc
+2019-09-17 02:30:57  GetOrderBook   - ERROR - SYNC   - API request failed with 8 | Graviex | npxsbtc
+2019-09-17 02:30:58  GetOrderBook   - ERROR - SYNC   - API request failed with 9 | Graviex | pivxbtc
+2019-09-17 02:30:58  GetOrderBook   - ERROR - SYNC   - API request failed with 10 | Graviex | wavesbtc
+2019-09-17 02:32:49  GetOrderBook   - ERROR - SYNC   - API request failed with 1 | Graviex | dogebtc
+2019-09-17 02:32:49  GetOrderBook   - ERROR - SYNC   - API request failed with 3 | Graviex | ltcbtc
+2019-09-17 02:32:50  GetOrderBook   - ERROR - SYNC   - API request failed with 4 | Graviex | ethbtc
+2019-09-17 02:32:50  GetOrderBook   - ERROR - SYNC   - API request failed with 7 | Graviex | xvgbtc
+2019-09-17 02:32:50  GetOrderBook   - ERROR - SYNC   - API request failed with 8 | Graviex | npxsbtc
+2019-09-17 02:32:50  GetOrderBook   - ERROR - SYNC   - API request failed with 9 | Graviex | pivxbtc
+2019-09-17 02:32:50  GetOrderBook   - ERROR - SYNC   - API request failed with 10 | Graviex | wavesbtc
+2019-09-17 02:32:53  GetOrderBook   - ERROR - SYNC   - API request failed with 1 | Graviex | dogebtc
+2019-09-17 02:32:53  GetOrderBook   - ERROR - SYNC   - API request failed with 3 | Graviex | ltcbtc
+2019-09-17 02:32:53  GetOrderBook   - ERROR - SYNC   - API request failed with 4 | Graviex | ethbtc
+2019-09-17 02:32:54  GetOrderBook   - ERROR - SYNC   - API request failed with 7 | Graviex | xvgbtc
+2019-09-17 02:32:54  GetOrderBook   - ERROR - SYNC   - API request failed with 8 | Graviex | npxsbtc
+2019-09-17 02:32:54  GetOrderBook   - ERROR - SYNC   - API request failed with 9 | Graviex | pivxbtc
+2019-09-17 02:32:54  GetOrderBook   - ERROR - SYNC   - API request failed with 10 | Graviex | wavesbtc
+2019-09-17 02:32:57  GetOrderBook   - ERROR - SYNC   - API request failed with 1 | Graviex | dogebtc
+2019-09-17 02:32:57  GetOrderBook   - ERROR - SYNC   - API request failed with 3 | Graviex | ltcbtc
+2019-09-17 02:32:57  GetOrderBook   - ERROR - SYNC   - API request failed with 4 | Graviex | ethbtc
+2019-09-17 02:32:58  GetOrderBook   - ERROR - SYNC   - API request failed with 7 | Graviex | xvgbtc
+2019-09-17 02:32:58  GetOrderBook   - ERROR - SYNC   - API request failed with 8 | Graviex | npxsbtc
+2019-09-17 02:32:58  GetOrderBook   - ERROR - SYNC   - API request failed with 9 | Graviex | pivxbtc
+2019-09-17 02:32:58  GetOrderBook   - ERROR - SYNC   - API request failed with 10 | Graviex | wavesbtc

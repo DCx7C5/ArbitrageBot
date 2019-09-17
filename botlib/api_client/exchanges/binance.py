@@ -26,7 +26,6 @@ X_MBX_APIKEY = 'X-MBX-APIKEY'
 APPL_JSON = 'application/json'
 BIN_PYTH = 'binance/python'
 
-IP = "143.204.206.178"  #
 PUBLIC_API = f'https://api.binance.com/api/v1'
 PRIVATE_API = f'https://api.binance.com/api/v3'
 WAPI = f'https://api.binance.com/wapi/v3'
@@ -56,11 +55,13 @@ ORDER_STATES = {
 class BinanceClient(BaseClient):
     """Binance Exchange API Client"""
 
-    _name = "Binance"
-    _rate_limit = 1.0 / 7
-    _maker_fees = 0.1
-    _taker_fees = 0.1
-    __api_key, __api_secret = get_key_and_secret_sql(_name)
+    name = "Binance"
+    rate_limit = 1.0 / 7
+    maker_fees = 0.1
+    taker_fees = 0.1
+    trading_fee_type = 'percentage'
+    transaction_fee_type = None
+    __api_key, __api_secret = get_key_and_secret_sql(name)
 
     @force_result
     def parse_all_market_information(self):
@@ -141,7 +142,7 @@ class BinanceClient(BaseClient):
 
     @no_errors
     def fetch_order_book(self, refid, limit=None):
-        params = {"symbol": refid, 'limit': limit if limit else 500}
+        params = {"symbol": refid, 'limit': limit if limit else 50}
         resp = self._api_call(endpoint=ORDER_BOOK, params=params, api='public')
         return [[round(float(x[0]), 10), round(float(x[1]), 10)] for x in resp['bids']],\
                [[round(float(x[0]), 10), round(float(x[1]), 10)] for x in resp['asks']]

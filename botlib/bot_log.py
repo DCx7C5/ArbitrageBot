@@ -1,5 +1,6 @@
 import logging
-import coloredlogs
+import sys
+
 
 formatter = logging.Formatter(fmt='%(asctime)-20s %(threadName)-14s - %(levelname)-5s - %(name)-6s - %(message)s',
                               datefmt='%Y-%m-%d %H:%M:%S')
@@ -25,10 +26,3 @@ api_logger = logging.getLogger('API')
 api_logger.addHandler(fh_debug)
 api_logger.addHandler(fh_error)
 daemon_logger.setLevel(level=logging.DEBUG)
-
-trade_logger = logging.getLogger('TRADE')
-trade_logger.addHandler(fh_trade)
-
-coloredlogs.install(level=logging.DEBUG, datefmt='%Y-%m-%d %H:%M:%S',
-                    fmt='%(asctime)-20s %(threadName)-14s - %(levelname)-5s - %(name)-6s - %(message)s',
-                    logger=trade_logger)
